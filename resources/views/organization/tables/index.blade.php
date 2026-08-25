@@ -5,7 +5,7 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Table & QR Management</h1>
         <div class="flex gap-2">
-            <a href="{{ route('organization.tables.print') }}" target="_blank" class="bg-gray-800 text-white px-4 py-2 rounded shadow hover:bg-gray-700 font-medium">
+            <a href="{{ route('organization.menu.tables.print') }}" target="_blank" class="bg-gray-800 text-white px-4 py-2 rounded shadow hover:bg-gray-700 font-medium">
                 Print All QR Codes
             </a>
             <button onclick="document.getElementById('add-table-modal').classList.remove('hidden')" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 font-medium">
@@ -43,12 +43,12 @@
                 <div class="bg-gray-50 p-3 border-t flex justify-between items-center text-sm">
                     <button onclick="openEditTableModal({{ $table->id }}, '{{ $table->name }}', {{ $table->is_active }})" class="text-blue-600 hover:underline">Edit</button>
                     
-                    <form action="{{ route('organization.tables.regenerate', $table) }}" method="POST" onsubmit="return confirm('This will invalidate the old QR code. Are you sure?');">
+                    <form action="{{ route('organization.menu.tables.regenerate', $table) }}" method="POST" onsubmit="return confirm('This will invalidate the old QR code. Are you sure?');">
                         @csrf
                         <button type="submit" class="text-yellow-600 hover:underline" title="Regenerate QR Token">Regenerate</button>
                     </form>
 
-                    <form action="{{ route('organization.tables.destroy', $table) }}" method="POST" onsubmit="return confirm('Delete this table?');">
+                    <form action="{{ route('organization.menu.tables.destroy', $table) }}" method="POST" onsubmit="return confirm('Delete this table?');">
                         @csrf @method('DELETE')
                         <button type="submit" class="text-red-600 hover:underline">Delete</button>
                     </form>
@@ -69,7 +69,7 @@
 <div id="add-table-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <h3 class="text-lg font-bold mb-4">Add Table</h3>
-        <form action="{{ route('organization.tables.store') }}" method="POST">
+        <form action="{{ route('organization.menu.tables.store') }}" method="POST">
             @csrf
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Table Name/Number *</label>
