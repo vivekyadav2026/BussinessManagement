@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khatabook Pro — SME Business Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F5F3;
+    --paper:#FFFFFF;
+    --ink:#17233F;
+    --ink-soft:#4B5670;
+    --ink-faint:#8991A5;
+    --gold:#D99A2B;
+    --gold-deep:#B87F1B;
+    --teal:#146356;
+    --teal-soft:#E4F0EC;
+    --rose:#AE3B34;
+    --rose-soft:#F5E6E4;
+    --border:#DFE1DA;
+    --border-soft:#EBECE6;
+    --radius:14px;
+    --shadow: 0 1px 2px rgba(23,35,63,.04), 0 8px 24px rgba(23,35,63,.06);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif; letter-spacing:-0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit; text-decoration:none;}
+  img,svg{display:block;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
+
+  /* ===== view switcher ===== */
+  .view-switch{
+    position:fixed; top:18px; right:18px; z-index:999;
+    background:var(--ink); border-radius:100px; padding:4px; display:flex; gap:2px;
+    box-shadow:var(--shadow);
+  }
+  .view-switch button{
+    border:none; background:transparent; color:#B9C0D4; font-family:'Space Grotesk',sans-serif;
+    font-size:12.5px; font-weight:600; padding:8px 16px; border-radius:100px; cursor:pointer;
+    transition:.2s;
+  }
+  .view-switch button.active{background:var(--gold); color:var(--ink);}
+
+  #dashboard-view{display:none;}
+
+  /* ================= LANDING ================= */
+  header.site{
+    position:sticky; top:0; z-index:50; background:rgba(243,245,243,.86); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border-soft);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:18px 32px;}
+  .logo{display:flex; align-items:center; gap:9px; font-family:'Space Grotesk'; font-weight:700; font-size:18px;}
+  .logo .mark{width:26px; height:26px; background:var(--ink); border-radius:6px; position:relative; flex:none;}
+  .logo .mark::before{content:''; position:absolute; left:6px; right:6px; top:7px; height:2px; background:var(--gold); box-shadow:0 5px 0 var(--gold), 0 10px 0 var(--gold);}
+  .nav-links{display:flex; gap:34px; font-size:14.5px; color:var(--ink-soft); font-weight:500;}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{display:flex; gap:10px; align-items:center;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; font-family:'Space Grotesk'; font-weight:600;
+    font-size:14px; padding:11px 20px; border-radius:9px; cursor:pointer; border:1px solid transparent;
+    transition:.15s;
+  }
+  .btn-gold{background:var(--gold); color:var(--ink);}
+  .btn-gold:hover{background:var(--gold-deep);}
+  .btn-ghost{border-color:var(--border); color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--ink);}
+  .btn-dark{background:var(--ink); color:#fff;}
+  .btn-dark:hover{background:#0E1830;}
+  .btn-sm{padding:8px 14px; font-size:13px;}
+
+  /* Hero */
+  .hero{padding:88px 0 60px;}
+  .hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:center;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono'; font-size:12px;
+    color:var(--gold-deep); background:#FBF1DD; border:1px solid #EFDDAE; padding:6px 12px; border-radius:100px;
+    margin-bottom:22px; letter-spacing:.03em;
+  }
+  .eyebrow::before{content:'●'; font-size:8px;}
+  .hero h1{font-size:52px; line-height:1.06; font-weight:600; margin-bottom:22px;}
+  .hero h1 em{font-style:normal; color:var(--gold-deep); position:relative;}
+  .hero p.lead{font-size:17px; color:var(--ink-soft); line-height:1.6; max-width:490px; margin-bottom:32px;}
+  .hero-actions{display:flex; gap:14px; margin-bottom:36px;}
+  .hero-note{font-size:13px; color:var(--ink-faint); display:flex; gap:18px;}
+  .hero-note span{display:flex; align-items:center; gap:6px;}
+  .hero-note span::before{content:'✓'; color:var(--teal); font-weight:700;}
+
+  /* invoice mock card - signature element */
+  .invoice-mock{
+    background:var(--paper); border-radius:4px; padding:28px 26px 24px; position:relative; max-width:390px; margin-left:auto;
+    box-shadow:var(--shadow); border:1px solid var(--border-soft);
+  }
+  .invoice-mock::before, .invoice-mock::after{
+    content:''; position:absolute; width:22px; height:22px; background:var(--bg); border-radius:50%; top:50%; transform:translateY(-50%);
+  }
+  .invoice-mock::before{left:-11px;} .invoice-mock::after{right:-11px;}
+  .invoice-mock .perf{
+    position:absolute; left:0; right:0; top:50%; border-top:2px dashed var(--border); transform:translateY(-1px);
+  }
+  .inv-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px;}
+  .inv-top .who{font-family:'Space Grotesk'; font-weight:700; font-size:15px;}
+  .inv-top .num{font-family:'IBM Plex Mono'; font-size:11px; color:var(--ink-faint);}
+  .stamp{
+    font-family:'Space Grotesk'; font-weight:700; font-size:13px; color:var(--teal); border:2.5px solid var(--teal);
+    border-radius:50%; width:64px; height:64px; display:flex; align-items:center; justify-content:center; text-align:center;
+    transform:rotate(-14deg); opacity:.9; letter-spacing:.02em;
+  }
+  .inv-lines{padding:16px 0; border-top:1px solid var(--border-soft); font-size:13px;}
+  .inv-line{display:flex; justify-content:space-between; padding:6px 0; color:var(--ink-soft);}
+  .inv-line span:last-child{font-family:'IBM Plex Mono'; color:var(--ink);}
+  .inv-total{display:flex; justify-content:space-between; padding-top:14px; margin-top:6px; border-top:1.5px solid var(--ink); font-family:'Space Grotesk'; font-weight:700; font-size:16px;}
+  .inv-total span:last-child{font-family:'IBM Plex Mono';}
+  .inv-bottom{margin-top:20px; padding-top:16px; border-top:2px dashed var(--border); display:flex; justify-content:space-between; align-items:center;}
+  .badge{font-family:'IBM Plex Mono'; font-size:10.5px; padding:4px 9px; border-radius:100px; font-weight:600; letter-spacing:.03em;}
+  .badge-paid{background:var(--teal-soft); color:var(--teal);}
+  .badge-due{background:var(--rose-soft); color:var(--rose);}
+  .badge-partial{background:#FBF1DD; color:var(--gold-deep);}
+
+  /* trust strip */
+  .trust{padding:26px 0; border-top:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft);}
+  .trust-row{display:flex; justify-content:space-between; flex-wrap:wrap; gap:14px; font-family:'IBM Plex Mono'; font-size:12px; color:var(--ink-faint);}
+  .trust-row div{display:flex; align-items:center; gap:7px;}
+  .trust-row div::before{content:''; width:5px; height:5px; background:var(--gold); border-radius:50%;}
+
+  /* section generic */
+  section{padding:88px 0;}
+  .sec-head{max-width:600px; margin-bottom:52px;}
+  .sec-head .eyebrow{margin-bottom:16px;}
+  .sec-head h2{font-size:34px; font-weight:600; margin-bottom:14px; line-height:1.15;}
+  .sec-head p{color:var(--ink-soft); font-size:15.5px; line-height:1.6;}
+
+  .feat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+  .feat-card{
+    background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); padding:26px;
+    transition:.2s;
+  }
+  .feat-card:hover{border-color:var(--gold); transform:translateY(-2px); box-shadow:var(--shadow);}
+  .feat-icon{width:38px; height:38px; border-radius:9px; background:var(--ink); display:flex; align-items:center; justify-content:center; margin-bottom:18px;}
+  .feat-icon svg{width:18px; height:18px; stroke:var(--gold);}
+  .feat-card h3{font-size:16px; font-weight:600; margin-bottom:8px;}
+  .feat-card p{font-size:13.8px; color:var(--ink-soft); line-height:1.55;}
+
+  /* restaurant split */
+  .rest-split{display:grid; grid-template-columns:.9fr 1.1fr; gap:60px; align-items:center;}
+  .phone{
+    width:230px; margin:0 auto; background:var(--ink); border-radius:32px; padding:10px; box-shadow:var(--shadow);
+  }
+  .phone-screen{background:var(--paper); border-radius:24px; overflow:hidden; padding:16px 14px;}
+  .phone-screen .menu-cat{font-family:'IBM Plex Mono'; font-size:9.5px; color:var(--gold-deep); text-transform:uppercase; letter-spacing:.06em; margin:14px 0 8px;}
+  .menu-item{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--border-soft); font-size:12px;}
+  .menu-item .price{font-family:'IBM Plex Mono'; font-weight:600;}
+  .menu-item .add{width:20px; height:20px; border-radius:50%; background:var(--teal-soft); color:var(--teal); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;}
+  .qr-chip{display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono'; font-size:10px; color:var(--ink-faint); background:var(--bg); border-radius:8px; padding:8px 10px; margin-bottom:6px;}
+  .qr-chip .dot{width:6px; height:6px; border-radius:1px; background:var(--ink);}
+
+  .rest-list{list-style:none;}
+  .rest-list li{display:flex; gap:16px; padding:16px 0; border-bottom:1px solid var(--border-soft);}
+  .rest-list li:last-child{border-bottom:none;}
+  .rest-num{font-family:'IBM Plex Mono'; font-size:12px; color:var(--gold-deep); flex:none; padding-top:2px;}
+  .rest-list h4{font-size:15px; font-weight:600; margin-bottom:5px; font-family:'Space Grotesk';}
+  .rest-list p{font-size:13.5px; color:var(--ink-soft); line-height:1.55;}
+
+  /* payments flow */
+  .flow-card{background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); padding:32px; box-shadow:var(--shadow);}
+  .flow-title{font-family:'IBM Plex Mono'; font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:18px;}
+  .flow-row{display:flex; align-items:center; gap:0; flex-wrap:wrap;}
+  .flow-step{background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:11px 16px; font-size:13px; font-weight:500; white-space:nowrap;}
+  .flow-arrow{color:var(--ink-faint); padding:0 12px; font-family:'IBM Plex Mono';}
+  .flow-row + .flow-row{margin-top:16px;}
+
+  /* pricing */
+  .plans{display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
+  .plan-card{background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); padding:26px 22px; position:relative;}
+  .plan-card.feat{border:1.5px solid var(--gold); box-shadow:var(--shadow);}
+  .plan-tag{position:absolute; top:-11px; right:20px; background:var(--gold); color:var(--ink); font-family:'IBM Plex Mono'; font-size:10px; font-weight:700; padding:4px 10px; border-radius:100px;}
+  .plan-name{font-family:'Space Grotesk'; font-weight:700; font-size:16px; margin-bottom:6px;}
+  .plan-price{font-family:'IBM Plex Mono'; font-size:24px; font-weight:600; margin-bottom:18px;}
+  .plan-price span{font-size:12px; color:var(--ink-faint); font-weight:400;}
+  .plan-feats{list-style:none; font-size:12.8px; color:var(--ink-soft); margin-bottom:22px;}
+  .plan-feats li{padding:6px 0; display:flex; gap:8px; border-bottom:1px dashed var(--border-soft);}
+  .plan-feats li::before{content:'—'; color:var(--gold-deep);}
+
+  /* CTA banner */
+  .cta-banner{background:var(--ink); border-radius:20px; padding:56px; display:flex; justify-content:space-between; align-items:center; color:#fff;}
+  .cta-banner h2{color:#fff; font-size:28px; max-width:480px;}
+  .cta-banner p{color:#AAB3CB; margin-top:8px; font-size:14px;}
+
+  footer.site{padding:44px 0; border-top:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center; color:var(--ink-faint); font-size:13px;}
+
+  @media(max-width:900px){
+    .hero-grid,.rest-split,.plans,.feat-grid{grid-template-columns:1fr;}
+    .plans{grid-template-columns:repeat(2,1fr);}
+    .hero h1{font-size:36px;}
+    .nav-links{display:none;}
+    .cta-banner{flex-direction:column; gap:20px; text-align:center; padding:36px;}
+  }
+
+  /* ================= DASHBOARD ================= */
+  .dash{display:grid; grid-template-columns:230px 1fr; min-height:100vh;}
+  .sidebar{background:var(--ink); color:#B9C0D4; padding:22px 16px; position:sticky; top:0; height:100vh; display:flex; flex-direction:column;}
+  .sidebar .logo{color:#fff; padding:0 8px; margin-bottom:30px;}
+  .sidebar .logo .mark{background:var(--gold);}
+  .sidebar .logo .mark::before{background:var(--ink); box-shadow:0 5px 0 var(--ink), 0 10px 0 var(--ink);}
+  .side-label{font-family:'IBM Plex Mono'; font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:#5C6785; padding:0 12px; margin:16px 0 8px;}
+  .side-link{display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:8px; font-size:13.5px; font-weight:500; cursor:pointer; margin-bottom:2px;}
+  .side-link svg{width:16px; height:16px; stroke:currentColor; flex:none;}
+  .side-link:hover{background:rgba(255,255,255,.05); color:#fff;}
+  .side-link.active{background:var(--gold); color:var(--ink); font-weight:600;}
+  .side-foot{margin-top:auto; padding:14px 12px; border-top:1px solid rgba(255,255,255,.08); display:flex; align-items:center; gap:10px;}
+  .avatar{width:30px; height:30px; border-radius:50%; background:var(--gold); color:var(--ink); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; font-family:'Space Grotesk'; flex:none;}
+  .side-foot .who{font-size:12.5px; font-weight:600; color:#fff;}
+  .side-foot .role{font-size:10.5px; color:#8991A5;}
+
+  .main-panel{background:var(--bg); min-height:100vh;}
+  .topbar{display:flex; justify-content:space-between; align-items:center; padding:18px 30px; background:var(--paper); border-bottom:1px solid var(--border-soft); position:sticky; top:0; z-index:5;}
+  .topbar .org{font-family:'Space Grotesk'; font-weight:600; font-size:15px; display:flex; align-items:center; gap:8px;}
+  .topbar .org .chev{color:var(--ink-faint); font-size:11px;}
+  .search{background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 14px; font-size:13px; color:var(--ink-faint); width:280px;}
+  .top-actions{display:flex; align-items:center; gap:16px;}
+  .bell{width:34px; height:34px; border-radius:9px; background:var(--bg); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; position:relative;}
+  .bell::after{content:''; position:absolute; top:7px; right:8px; width:6px; height:6px; background:var(--rose); border-radius:50%;}
+
+  .dash-content{padding:28px 30px;}
+  .dash-head{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:22px;}
+  .dash-head h1{font-size:24px; font-weight:600;}
+  .dash-head p{color:var(--ink-faint); font-size:13px; margin-top:4px;}
+
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px;}
+  .stat-card{background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); padding:20px;}
+  .stat-card .lbl{font-family:'IBM Plex Mono'; font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px;}
+  .stat-card .val{font-family:'Space Grotesk'; font-size:24px; font-weight:700;}
+  .stat-card .delta{font-size:12px; margin-top:6px; font-weight:600;}
+  .delta.up{color:var(--teal);} .delta.down{color:var(--rose);}
+
+  .grid-2{display:grid; grid-template-columns:1.4fr 1fr; gap:16px; margin-bottom:16px;}
+  .panel{background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); padding:22px;}
+  .panel-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+  .panel-head h3{font-size:14.5px; font-weight:600; font-family:'Space Grotesk';}
+  .panel-head a{font-size:12px; color:var(--gold-deep); font-weight:600;}
+
+  .health-gauge{display:flex; align-items:center; gap:22px;}
+  .health-num{font-family:'Space Grotesk'; font-size:38px; font-weight:700; color:var(--teal);}
+  .health-num span{font-size:15px; color:var(--ink-faint); font-weight:500;}
+  .health-bars{flex:1;}
+  .hbar-row{display:flex; align-items:center; gap:10px; margin-bottom:9px; font-size:11.5px;}
+  .hbar-row .l{width:78px; color:var(--ink-soft); flex:none;}
+  .hbar-track{flex:1; height:6px; background:var(--border-soft); border-radius:100px; overflow:hidden;}
+  .hbar-fill{height:100%; background:var(--teal); border-radius:100px;}
+
+  table.inv-table{width:100%; border-collapse:collapse; font-size:12.8px;}
+  table.inv-table th{text-align:left; font-family:'IBM Plex Mono'; font-size:10.5px; text-transform:uppercase; color:var(--ink-faint); font-weight:500; padding:0 0 10px; letter-spacing:.04em;}
+  table.inv-table td{padding:11px 0; border-top:1px solid var(--border-soft);}
+  table.inv-table td.amt{font-family:'IBM Plex Mono'; font-weight:600;}
+  .mini-badge{font-family:'IBM Plex Mono'; font-size:10px; padding:3px 9px; border-radius:100px; font-weight:600;}
+
+  .quick-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .quick-card{background:var(--paper); border:1px dashed var(--border); border-radius:12px; padding:18px; text-align:center; cursor:pointer;}
+  .quick-card:hover{border-color:var(--gold); border-style:solid;}
+  .quick-card svg{width:20px; height:20px; margin:0 auto 10px; stroke:var(--ink);}
+  .quick-card .t{font-size:12.5px; font-weight:600;}
+
+  @media(max-width:1000px){
+    .dash{grid-template-columns:1fr;}
+    .sidebar{display:none;}
+    .stat-row, .grid-2, .quick-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="view-switch">
+  <button id="btn-site" class="active" onclick="setView('site')">Website</button>
+  <button id="btn-dash" onclick="setView('dash')">Dashboard</button>
+</div>
+
+<!-- ============ WEBSITE ============ -->
+<div id="site-view">
+  <header class="site">
+    <nav class="wrap nav">
+      <div class="logo"><div class="mark"></div>Khatabook Pro</div>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#restaurant">Restaurant</a>
+        <a href="#payments">Payments</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-ghost btn-sm" href="#" onclick="setView('dash');return false;">See Dashboard</a>
+        <a class="btn btn-gold btn-sm" href="#pricing">Start Free</a>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">Built for Indian SMEs</div>
+        <h1>Saara business,<br><em>ek jagah.</em></h1>
+        <p class="lead">Inventory, billing, staff, payroll aur restaurant orders — sab ek Laravel-powered platform mein. Har invoice ka paisa track ho, har customer ka order kitchen tak pahunche.</p>
+        <div class="hero-actions">
+          <a class="btn btn-gold" href="#pricing">Start Free Trial</a>
+          <a class="btn btn-ghost" href="#" onclick="setView('dash');return false;">See Dashboard →</a>
+        </div>
+        <div class="hero-note">
+          <span>No card required</span>
+          <span>GST-ready invoices</span>
+          <span>Setup in a day</span>
+        </div>
+      </div>
+      <div class="invoice-mock">
+        <div class="inv-top">
+          <div>
+            <div class="who">Sharma Traders</div>
+            <div class="num">INV-2026-0417 · 25 Aug</div>
+          </div>
+          <div class="stamp">PAID</div>
+        </div>
+        <div class="inv-lines">
+          <div class="inv-line"><span>Basmati Rice 25kg × 4</span><span>₹6,200</span></div>
+          <div class="inv-line"><span>Sunflower Oil 15L × 2</span><span>₹3,450</span></div>
+          <div class="inv-line"><span>GST @ 5%</span><span>₹482</span></div>
+        </div>
+        <div class="inv-total"><span>Total Due</span><span>₹10,132</span></div>
+        <div class="inv-bottom">
+          <span class="mono" style="font-size:11px;color:var(--ink-faint)">Paid via Razorpay · UPI</span>
+          <span class="badge badge-paid">SETTLED</span>
+        </div>
+        <div class="perf"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="trust">
+    <div class="wrap trust-row">
+      <div>Multi-organization &amp; role based access</div>
+      <div>Barcode inventory scanning</div>
+      <div>WhatsApp invoice sharing</div>
+      <div>Razorpay verified webhooks</div>
+      <div>Multi-location ready</div>
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Core modules</div>
+        <h2>Everything a growing shop needs, minus the extra tabs.</h2>
+        <p>Sixteen modules, one login. Employees see only what their role allows — the owner sees everything.</p>
+      </div>
+      <div class="feat-grid">
+        <div class="feat-card">
+          <div class="feat-icon"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4zM3 7v10l9 4 9-4V7"/></svg></div>
+          <h3>Products &amp; Barcode Inventory</h3>
+          <p>Scan to add, scan to sell. Real-time stock with low-stock alerts before you run out.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/></svg></div>
+          <h3>Invoicing, Pay Now or Later</h3>
+          <p>Auto tax and totals, PDF and WhatsApp sharing, and dues that chase themselves.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg></div>
+          <h3>Receivables Dashboard</h3>
+          <p>See every rupee owed, by client, with one-tap reminders and a direct pay link.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M4 21V9M12 21V3M20 21v-7"/></svg></div>
+          <h3>Attendance &amp; Payroll</h3>
+          <p>Check-ins feed straight into salary slips. No spreadsheets at month-end.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <h3>Business Health Score</h3>
+          <p>Sales, profit, stock and receivables rolled into one number you check in five seconds.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21l4-4 4 4M3 3l4 4 4-4M21 21l-4-4-4 4M21 3l-4 4-4-4"/></svg></div>
+          <h3>Multi-location Support</h3>
+          <p>One owner login, many stores. Stock and staff scoped to each branch automatically.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="restaurant" style="background:var(--paper); border-top:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft);">
+    <div class="wrap rest-split">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="qr-chip"><span class="dot"></span> Table 04 · scan to order</div>
+          <div class="menu-cat">Starters</div>
+          <div class="menu-item"><span>Paneer Tikka</span><span style="display:flex;gap:8px;align-items:center"><span class="price">₹220</span><span class="add">+</span></span></div>
+          <div class="menu-item"><span>Veg Seekh Kebab</span><span style="display:flex;gap:8px;align-items:center"><span class="price">₹190</span><span class="add">+</span></span></div>
+          <div class="menu-cat">Main Course</div>
+          <div class="menu-item"><span>Dal Makhani</span><span style="display:flex;gap:8px;align-items:center"><span class="price">₹260</span><span class="add">+</span></span></div>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow">Restaurant module</div>
+        <h2 style="font-size:30px;font-weight:600;margin-bottom:22px;">No app to install. Just a table, a QR, an order.</h2>
+        <ul class="rest-list">
+          <li><span class="rest-num">Menu</span><div><h4>Live digital menu</h4><p>Toggle any dish in or out of stock instantly — the customer's screen updates the same second.</p></div></li>
+          <li><span class="rest-num">Order</span><div><h4>Scan, browse, order</h4><p>Customer scans the table QR, adds to cart, and sends the order straight to the kitchen screen.</p></div></li>
+          <li><span class="rest-num">Kitchen</span><div><h4>Received → Preparing → Ready → Served</h4><p>Staff track every order's status in real time, then it converts into an invoice automatically.</p></div></li>
+          <li><span class="rest-num">Pay</span><div><h4>Pay online or at the counter</h4><p>Razorpay checkout at the table, or settle the bill after the meal — both close the same invoice.</p></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="payments">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Razorpay integration</div>
+        <h2>Two payment flows, kept strictly apart.</h2>
+        <p>Your subscription money and your customers' money never touch — every confirmation is verified server-side by webhook, never from the browser.</p>
+      </div>
+      <div class="flow-card">
+        <div class="flow-title">Platform subscription</div>
+        <div class="flow-row">
+          <div class="flow-step">Organization picks a plan</div><span class="flow-arrow">→</span>
+          <div class="flow-step">Pays via Razorpay</div><span class="flow-arrow">→</span>
+          <div class="flow-step">Webhook confirms</div><span class="flow-arrow">→</span>
+          <div class="flow-step" style="border-color:var(--teal); color:var(--teal);">Plan activated</div>
+        </div>
+        <div class="flow-title" style="margin-top:26px;">Invoice / order payment</div>
+        <div class="flow-row">
+          <div class="flow-step">Client clicks Pay Now</div><span class="flow-arrow">→</span>
+          <div class="flow-step">UPI / Card / Netbanking</div><span class="flow-arrow">→</span>
+          <div class="flow-step">Webhook confirms</div><span class="flow-arrow">→</span>
+          <div class="flow-step" style="border-color:var(--teal); color:var(--teal);">Invoice marked Paid</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Plans</div>
+        <h2>Configurable from day one.</h2>
+        <p>Every limit below is a setting, not a hard-code — plans can change without a new release.</p>
+      </div>
+      <div class="plans">
+        <div class="plan-card">
+          <div class="plan-name">Free</div>
+          <div class="plan-price">₹0<span>/mo</span></div>
+          <ul class="plan-feats"><li>1 employee</li><li>50 invoices/mo</li><li>Basic inventory</li></ul>
+          <a class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;">Get started</a>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">₹499<span>/mo</span></div>
+          <ul class="plan-feats"><li>5 employees</li><li>Barcode scanning</li><li>WhatsApp invoicing</li></ul>
+          <a class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;">Get started</a>
+        </div>
+        <div class="plan-card feat">
+          <div class="plan-tag">Most picked</div>
+          <div class="plan-name">Business</div>
+          <div class="plan-price">₹1,499<span>/mo</span></div>
+          <ul class="plan-feats"><li>20 employees</li><li>Payroll &amp; attendance</li><li>Restaurant module</li></ul>
+          <a class="btn btn-gold btn-sm" style="width:100%;justify-content:center;">Get started</a>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">₹3,999<span>/mo</span></div>
+          <ul class="plan-feats"><li>Unlimited staff</li><li>Multi-location</li><li>Priority support</li></ul>
+          <a class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;">Get started</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="cta-banner">
+        <div>
+          <h2>Ready to run the whole shop from one screen?</h2>
+          <p>Set up your organization in minutes — invoices, stock and staff, from day one.</p>
+        </div>
+        <a class="btn btn-gold" href="#pricing">Start Free Trial</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site">
+    <div class="wrap" style="display:flex;justify-content:space-between;">
+      <div class="logo" style="font-size:15px;"><div class="mark" style="width:20px;height:20px;"></div>Khatabook Pro</div>
+      <div>© 2026 Khatabook Pro · Laravel · MySQL · Razorpay</div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="dashboard-view">
+  <div class="dash">
+    <aside class="sidebar">
+      <div class="logo"><div class="mark"></div>Khatabook Pro</div>
+      <div class="side-label">Overview</div>
+      <div class="side-link active"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</div>
+      <div class="side-link"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0v10l-8 4m8-14l-8 4m0 10l-8-4V7m8 10V7"/></svg>Products</div>
+      <div class="side-link"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/></svg>Invoices</div>
+      <div class="side-link"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>Clients</div>
+      <div class="side-label">Operations</div>
+      <div class="side-link"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>Restaurant</div>
+      <div class="side-link"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>Attendance</div>
+      <div class="side-link"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>Payroll</div>
+      <div class="side-label">Insights</div>
+      <div class="side-link"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18M8 17V9m5 8V5m5 12v-6"/></svg>Analytics</div>
+      <div class="side-link"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.2-1.7l2-1.5-2-3.4-2.4 1a7 7 0 00-3-1.7L13 2h-2l-.4 2.7a7 7 0 00-3 1.7l-2.4-1-2 3.4 2 1.5A7 7 0 005 12"/></svg>Settings</div>
+      <div class="side-foot">
+        <div class="avatar">SS</div>
+        <div><div class="who">Sharma Traders</div><div class="role">Organization Admin</div></div>
+      </div>
+    </aside>
+
+    <div class="main-panel">
+      <div class="topbar">
+        <div class="org">Sharma Traders <span class="chev">▾</span></div>
+        <div class="search">Search invoices, products, clients…</div>
+        <div class="top-actions">
+          <div class="bell"><svg width="16" height="16" fill="none" stroke="var(--ink-soft)" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg></div>
+          <div class="avatar">SS</div>
+        </div>
+      </div>
+
+      <div class="dash-content">
+        <div class="dash-head">
+          <div><h1>Namaste, Suresh 👋</h1><p>Here's how Sharma Traders is doing today, 25 August.</p></div>
+          <a class="btn btn-gold btn-sm">+ New Invoice</a>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-card"><div class="lbl">Sales — this month</div><div class="val">₹4,82,300</div><div class="delta up">↑ 12.4% vs last month</div></div>
+          <div class="stat-card"><div class="lbl">Outstanding receivables</div><div class="val">₹68,900</div><div class="delta down">7 clients overdue</div></div>
+          <div class="stat-card"><div class="lbl">Low stock items</div><div class="val">6</div><div class="delta down">Reorder needed</div></div>
+          <div class="stat-card"><div class="lbl">Restaurant orders today</div><div class="val">38</div><div class="delta up">↑ 5 vs yesterday</div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head"><h3>Recent invoices</h3><a>View all</a></div>
+            <table class="inv-table">
+              <tr><th>Invoice</th><th>Client</th><th>Amount</th><th>Status</th></tr>
+              <tr><td class="mono">INV-0417</td><td>Sharma Traders</td><td class="amt">₹10,132</td><td><span class="mini-badge badge-paid">Paid</span></td></tr>
+              <tr><td class="mono">INV-0416</td><td>Verma Store</td><td class="amt">₹4,560</td><td><span class="mini-badge badge-due">Overdue</span></td></tr>
+              <tr><td class="mono">INV-0415</td><td>Gupta Kirana</td><td class="amt">₹22,100</td><td><span class="mini-badge badge-partial">Partial</span></td></tr>
+              <tr><td class="mono">INV-0414</td><td>Anjali Foods</td><td class="amt">₹7,850</td><td><span class="mini-badge badge-paid">Paid</span></td></tr>
+              <tr><td class="mono">INV-0413</td><td>Table 07 · Dine-in</td><td class="amt">₹1,240</td><td><span class="mini-badge badge-paid">Paid</span></td></tr>
+            </table>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Business health</h3></div>
+            <div class="health-gauge">
+              <div class="health-num">82<span>/100</span></div>
+              <div class="health-bars">
+                <div class="hbar-row"><span class="l">Sales</span><div class="hbar-track"><div class="hbar-fill" style="width:88%"></div></div></div>
+                <div class="hbar-row"><span class="l">Profit</span><div class="hbar-track"><div class="hbar-fill" style="width:74%"></div></div></div>
+                <div class="hbar-row"><span class="l">Stock</span><div class="hbar-track"><div class="hbar-fill" style="width:66%;background:var(--gold)"></div></div></div>
+                <div class="hbar-row"><span class="l">Receivables</span><div class="hbar-track"><div class="hbar-fill" style="width:58%;background:var(--rose)"></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-head"><h3>Quick actions</h3></div>
+          <div class="quick-grid">
+            <div class="quick-card"><svg fill="none" stroke="var(--ink)" stroke-width="2" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/></svg><div class="t">New Invoice</div></div>
+            <div class="quick-card"><svg fill="none" stroke="var(--ink)" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0v10l-8 4m8-14l-8 4m0 10l-8-4V7m8 10V7"/></svg><div class="t">Add Product</div></div>
+            <div class="quick-card"><svg fill="none" stroke="var(--ink)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="4" height="16"/><rect x="9" y="4" width="1" height="16"/><rect x="12" y="4" width="3" height="16"/><rect x="17" y="4" width="4" height="16"/></svg><div class="t">Scan Barcode</div></div>
+            <div class="quick-card"><svg fill="none" stroke="var(--ink)" stroke-width="2" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg><div class="t">Restaurant Orders</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setView(v){
+  const site = document.getElementById('site-view');
+  const dash = document.getElementById('dashboard-view');
+  const bSite = document.getElementById('btn-site');
+  const bDash = document.getElementById('btn-dash');
+  if(v==='site'){
+    site.style.display='block'; dash.style.display='none';
+    bSite.classList.add('active'); bDash.classList.remove('active');
+    window.scrollTo(0,0);
+  } else {
+    site.style.display='none'; dash.style.display='block';
+    bDash.classList.add('active'); bSite.classList.remove('active');
+    window.scrollTo(0,0);
+  }
+}
+</script>
+
+</body>
+</html>
