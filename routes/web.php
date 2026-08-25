@@ -6,9 +6,11 @@ use App\Services\DocumentService;
 use App\Models\Invoice;
 use App\Models\Payroll;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::view('/', 'welcome')->name('welcome');
+Route::view('/features', 'pages.features')->name('public.features');
+Route::view('/restaurant', 'pages.restaurant')->name('public.restaurant');
+Route::view('/payments', 'pages.payments')->name('public.payments');
+Route::view('/pricing', 'pages.pricing')->name('public.pricing');
 
 // Public Document Endpoints
 Route::get('/document/invoice/{invoice}/download', function (Invoice $invoice) {
@@ -220,3 +222,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
