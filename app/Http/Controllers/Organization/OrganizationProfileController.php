@@ -34,12 +34,42 @@ class OrganizationProfileController extends Controller
             if ($organization->logo) {
                 Storage::disk('public')->delete($organization->logo);
             }
-            $path = $request->file('logo')->store('logos', 'public');
+            $path = $this->compressAndSaveImage($request->file('logo'), 'logos');
             $validated['logo'] = $path;
         }
 
         $organization->update($validated);
 
         return redirect()->route('organization.profile')->with('success', 'Organization profile updated successfully.');
+    }
+
+    private function compressAndSaveImage($file, $directory)
+    {
+        $tempPath = $file->getRealPath();
+        $info = getimagesize($tempPath);
+
+        if ($info['mime'] == 'image/jpeg') {
+            $image = imagecreatefromjpeg($tempPath);
+        } elseif ($info['mime'] == 'image/gif') {
+            $image = imagecreatefromgif($tempPath);
+        } elseif ($info['mime'] == 'image/png') {
+            $image = imagecreatefrompng($tempPath);
+        } else {
+            return $file->store($directory, 'public');
+        }
+
+        // Generate custom name
+        $filename = uniqid() . '.jpg';
+        $destinationDir = storage_path('app/public/' . $directory);
+        if (!file_exists($destinationDir)) {
+            mkdir($destinationDir, 0755, true);
+        }
+        $destinationPath = $destinationDir . '/' . $filename;
+
+        // Compress and save as JPEG with 60% quality
+        imagejpeg($image, $destinationPath, 60);
+        imagedestroy($image);
+
+        return $directory . '/' . $filename;
     }
 }

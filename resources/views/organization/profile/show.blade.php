@@ -49,15 +49,23 @@
                 </div>
 
                 <!-- Logo Uploader -->
-                <div>
+                <div x-data="{ imgPreview: '{{ $organization->logo ? asset('storage/' . $organization->logo) : '' }}' }">
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Logo</label>
                     <div class="flex items-center gap-4">
-                        @if($organization->logo)
-                            <img src="{{ asset('storage/' . $organization->logo) }}" alt="Logo" class="w-16 h-16 rounded-xl object-cover border border-gray-200">
-                        @else
+                        <template x-if="imgPreview">
+                            <img :src="imgPreview" alt="Logo Preview" class="w-16 h-16 rounded-xl object-cover border border-gray-200">
+                        </template>
+                        <template x-if="!imgPreview">
                             <div class="w-16 h-16 rounded-xl border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xs font-semibold bg-gray-50">No Logo</div>
-                        @endif
-                        <input type="file" name="logo" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                        </template>
+                        <input type="file" name="logo" @change="
+                            const file = $event.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (e) => { imgPreview = e.target.result; };
+                                reader.readAsDataURL(file);
+                            }
+                        " class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
                     </div>
                     @error('logo') <p class="text-red-500 text-xs mt-2">{{ $message }}</p> @enderror
                 </div>
