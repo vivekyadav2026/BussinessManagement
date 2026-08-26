@@ -183,6 +183,22 @@
                     <x-sidebar-item :dark="true" route="{{ route('super-admin.subscriptions.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' :active="request()->routeIs('super-admin.subscriptions.*')">Subscriptions</x-sidebar-item>
                 </nav>
             </div>
+            <div class="flex flex-shrink-0 border-t border-white/10 p-4">
+                <div class="group block w-full flex-shrink-0">
+                    <div class="flex items-center">
+                        <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold">
+                            {{ substr(auth()->user()->name, 0, 1) }}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-white">{{ auth()->user()->name }}</p>
+                            <form method="POST" action="{{ route('logout') }}" class="mt-1">
+                                @csrf
+                                <button type="submit" class="text-xs font-medium text-[var(--theme-text)] hover:text-white transition-colors">Sign out</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

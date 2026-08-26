@@ -177,6 +177,22 @@
                     @include('layouts.partials.sidebar-links')
                 </nav>
             </div>
+            <div class="flex flex-shrink-0 border-t border-white/10 p-4">
+                <div class="group block w-full flex-shrink-0">
+                    <div class="flex items-center">
+                        <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold">
+                            {{ substr(auth()->user()->name, 0, 1) }}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-white">{{ auth()->user()->name }}</p>
+                            <form method="POST" action="{{ route('logout') }}" class="mt-1">
+                                @csrf
+                                <button type="submit" class="text-xs font-medium text-[var(--theme-text)] hover:text-white transition-colors">Sign out</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
