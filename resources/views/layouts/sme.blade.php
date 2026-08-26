@@ -121,6 +121,59 @@
             background-color: var(--bg-card) !important;
             border-color: var(--border-color) !important;
         }
+        /* Global inputs & form elements styling overrides for professional SaaS look */
+        input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="date"], select, textarea {
+            width: 100% !important;
+            border-width: 1px !important;
+            border-color: var(--border-hard) !important;
+            border-radius: 0.75rem !important; /* rounded-xl */
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            padding-top: 0.625rem !important;
+            padding-bottom: 0.625rem !important;
+            font-size: 0.875rem !important; /* text-sm */
+            outline: 2px solid transparent !important;
+            outline-offset: 2px !important;
+            transition-property: all !important;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition-duration: 200ms !important;
+            background-color: var(--bg-card) !important;
+            color: var(--text-main) !important;
+            box-shadow: none !important;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+            border-color: var(--theme-active) !important;
+            box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1) !important;
+        }
+
+        /* Checkbox overrides */
+        input[type="checkbox"], input[type="radio"] {
+            width: auto !important;
+            padding: 0 !important;
+            border-radius: 0.25rem !important;
+            border-color: var(--border-hard) !important;
+            color: var(--theme-active) !important;
+            transition: all 0.2s !important;
+        }
+        input[type="checkbox"]:focus, input[type="radio"]:focus {
+            box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1) !important;
+        }
+
+        /* Form Labels styling */
+        label {
+            color: var(--text-muted) !important;
+            font-size: 0.75rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+        }
+
+        /* Card and Panels rounded overrides */
+        .panel, .bg-white {
+            border-radius: 1rem !important; /* rounded-2xl */
+        }
+        
         .theme-dark input, .theme-dark select, .theme-dark textarea {
             background-color: var(--bg-main) !important;
             border-color: var(--border-hard) !important;
