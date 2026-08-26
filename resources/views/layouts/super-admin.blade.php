@@ -18,34 +18,121 @@
     </script>
     <style>
         :root {
+            /* Theme bases */
+            --bg-main: #f3f4f6;
+            --bg-card: #ffffff;
+            --border-color: #f3f4f6;
+            --border-hard: #e5e7eb;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+
+            /* Sidebar custom */
             --theme-bg: #0f172a; /* Default to Midnight Slate for Super Admin */
+            --theme-text: #e2e8f0;
             --theme-active: #3b82f6;
             --theme-active-text: #ffffff;
+            --theme-hover: rgba(255, 255, 255, 0.1);
+            --theme-hover-text: #ffffff;
         }
+
+        .theme-orange {
+            --theme-bg: #ea580c;
+            --theme-text: #ffedd5;
+            --theme-active: #ffffff;
+            --theme-active-text: #ea580c;
+            --theme-hover: rgba(255, 255, 255, 0.15);
+            --theme-hover-text: #ffffff;
+        }
+        
         .theme-navy {
             --theme-bg: #1c2331;
+            --theme-text: #d1d5db;
             --theme-active: #f59e0b;
             --theme-active-text: #111827;
+            --theme-hover: rgba(255, 255, 255, 0.1);
+            --theme-hover-text: #ffffff;
         }
+
+        .theme-purple { /* GoTRI Purple */
+            --theme-bg: #7c3aed;
+            --theme-text: #ede9fe;
+            --theme-active: #ffffff;
+            --theme-active-text: #7c3aed;
+            --theme-hover: rgba(255, 255, 255, 0.15);
+            --theme-hover-text: #ffffff;
+        }
+
         .theme-emerald {
             --theme-bg: #064e3b;
+            --theme-text: #d1fae5;
             --theme-active: #10b981;
             --theme-active-text: #ffffff;
+            --theme-hover: rgba(255, 255, 255, 0.1);
+            --theme-hover-text: #ffffff;
         }
+
         .theme-indigo {
             --theme-bg: #1e1b4b;
+            --theme-text: #e0e7ff;
             --theme-active: #6366f1;
             --theme-active-text: #ffffff;
+            --theme-hover: rgba(255, 255, 255, 0.1);
+            --theme-hover-text: #ffffff;
         }
+
         .theme-slate {
             --theme-bg: #0f172a;
+            --theme-text: #e2e8f0;
             --theme-active: #3b82f6;
             --theme-active-text: #ffffff;
+            --theme-hover: rgba(255, 255, 255, 0.1);
+            --theme-hover-text: #ffffff;
         }
-        .theme-rose {
-            --theme-bg: #4c0519;
-            --theme-active: #f43f5e;
+
+        /* True Dark Theme Override */
+        .theme-dark {
+            --bg-main: #0b0f19;
+            --bg-card: #111827;
+            --border-color: #1f2937;
+            --border-hard: #374151;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            
+            --theme-bg: #111827;
+            --theme-text: #9ca3af;
+            --theme-active: #f97316; /* Orange accent in dark theme */
             --theme-active-text: #ffffff;
+            --theme-hover: rgba(255, 255, 255, 0.05);
+            --theme-hover-text: #ffffff;
+        }
+
+        /* Dynamic overrides for the main layout to apply dark theme without refactoring every view */
+        .theme-dark body, .theme-dark .bg-gray-50, .theme-dark .bg-gray-100 {
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+        }
+        .theme-dark .bg-white, .theme-dark .panel, .theme-dark .stat-card, .theme-dark .bg-white\/10 {
+            background-color: var(--bg-card) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+        .theme-dark h1, .theme-dark h2, .theme-dark h3, .theme-dark h4, .theme-dark th, .theme-dark td, .theme-dark .text-gray-900, .theme-dark .text-gray-800, .theme-dark .text-slate-900 {
+            color: var(--text-main) !important;
+        }
+        .theme-dark p, .theme-dark .text-gray-500, .theme-dark .text-gray-400, .theme-dark .text-slate-500, .theme-dark .text-slate-400 {
+            color: var(--text-muted) !important;
+        }
+        .theme-dark .border-gray-100, .theme-dark .border-gray-200, .theme-dark .border-slate-100, .theme-dark .border-b, .theme-dark .border-t, .theme-dark .divide-gray-50 > * {
+            border-color: var(--border-color) !important;
+        }
+        .theme-dark .sticky {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+        }
+        .theme-dark input, .theme-dark select, .theme-dark textarea {
+            background-color: var(--bg-main) !important;
+            border-color: var(--border-hard) !important;
+            color: var(--text-main) !important;
         }
     </style>
 
@@ -115,20 +202,20 @@
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
                         </button>
                         <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30" style="display: none;">
+                            <button @click="localStorage.setItem('theme-color', 'orange'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#ea580c] inline-block border border-gray-300"></span> Modern Orange
+                            </button>
+                            <button @click="localStorage.setItem('theme-color', 'purple'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#7c3aed] inline-block border border-gray-300"></span> GoTRI Purple
+                            </button>
+                            <button @click="localStorage.setItem('theme-color', 'dark'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#0b0f19] inline-block border border-gray-300"></span> Midnight Dark
+                            </button>
                             <button @click="localStorage.setItem('theme-color', 'navy'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                 <span class="w-3.5 h-3.5 rounded-full bg-[#1c2331] inline-block border border-gray-300"></span> Dark Navy
                             </button>
-                            <button @click="localStorage.setItem('theme-color', 'indigo'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                <span class="w-3.5 h-3.5 rounded-full bg-[#1e1b4b] inline-block border border-gray-300"></span> Royal Indigo
-                            </button>
-                            <button @click="localStorage.setItem('theme-color', 'emerald'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                <span class="w-3.5 h-3.5 rounded-full bg-[#064e3b] inline-block border border-gray-300"></span> Emerald Forest
-                            </button>
                             <button @click="localStorage.setItem('theme-color', 'slate'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                 <span class="w-3.5 h-3.5 rounded-full bg-[#0f172a] inline-block border border-gray-300"></span> Midnight Slate
-                            </button>
-                            <button @click="localStorage.setItem('theme-color', 'rose'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                <span class="w-3.5 h-3.5 rounded-full bg-[#4c0519] inline-block border border-gray-300"></span> Velvet Rose
                             </button>
                         </div>
                     </div>
