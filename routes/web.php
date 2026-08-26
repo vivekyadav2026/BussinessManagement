@@ -213,7 +213,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/inventory', [\App\Http\Controllers\Organization\InventoryController::class, 'index'])->name('organization.inventory.index');
     Route::post('/inventory/stock-movements', [\App\Http\Controllers\Organization\InventoryController::class, 'storeMovement'])->name('organization.inventory.movements.store');
     
-    Route::get('/organization-profile', function(){ return "Profile"; })->name('organization.profile');
+    Route::get('/organization-profile', [\App\Http\Controllers\Organization\OrganizationProfileController::class, 'show'])->name('organization.profile');
+    Route::put('/organization-profile', [\App\Http\Controllers\Organization\OrganizationProfileController::class, 'update'])->name('organization.profile.update');
     
     // Auth profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
