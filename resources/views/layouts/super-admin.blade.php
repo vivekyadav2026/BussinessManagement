@@ -135,12 +135,12 @@
             border-width: 1px !important;
             border-color: var(--border-hard) !important;
             border-radius: 0.5rem !important; /* rounded-lg */
-            padding-left: 0.875rem !important;
-            padding-right: 0.875rem !important;
-            padding-top: 0.625rem !important;
-            padding-bottom: 0.625rem !important;
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
             font-size: 0.875rem !important; /* text-sm */
-            line-height: 1.25rem !important;
+            font-family: inherit !important;
             outline: 2px solid transparent !important;
             outline-offset: 2px !important;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
