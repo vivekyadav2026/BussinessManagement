@@ -1,87 +1,97 @@
 @extends('layouts.sme')
 
 @section('content')
-<div class="dash-head flex justify-between items-end mb-6">
-  <div>
-      <h1 class="text-2xl font-bold text-gray-900">Clients</h1>
-      <p class="text-gray-500 mt-1">Manage your customer database globally.</p>
-  </div>
-  <a class="btn btn-gold btn-sm" href="{{ route('organization.clients.create') }}">+ Add Client</a>
-</div>
-
-@if(session('success'))
-<div class="bg-green-50 text-green-700 px-4 py-3 rounded-lg mb-6 border border-green-200 text-sm font-medium">
-    {{ session('success') }}
-</div>
-@endif
-
-<div class="panel mb-6">
-    <form method="GET" action="{{ route('organization.clients.index') }}" class="flex gap-4 items-end">
-        <div class="flex-1">
-            <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Search</label>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name, phone, email, GST..." class="w-full border-gray-300 rounded-lg text-sm">
+<div class="p-6 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Clients</h1>
+            <p class="text-sm text-gray-500 mt-0.5">Manage customer database details, financial health statuses, and invoice tracking logs.</p>
         </div>
-        <button type="submit" class="btn btn-gold py-2">Filter</button>
-        @if(request('search'))
-            <a href="{{ route('organization.clients.index') }}" class="btn bg-gray-100 text-gray-600 py-2">Clear</a>
-        @endif
-    </form>
-</div>
+        <a href="{{ route('organization.clients.create') }}" class="px-4 py-2.5 bg-[var(--theme-active)] text-[var(--theme-active-text)] rounded-xl font-semibold text-sm hover:opacity-95 shadow-sm transition">+ Add Client</a>
+    </div>
 
-<div class="panel">
-  <table class="inv-table w-full">
-    <thead>
-      <tr>
-        <th>Client Name</th>
-        <th>Contact Info</th>
-        <th>Financial Status</th>
-        <th>Status</th>
-        <th class="text-right">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      @forelse($clients as $client)
-      <tr>
-        <td>
-            <div class="font-bold text-gray-900">{{ $client->name }}</div>
-            @if($client->gst_number)
-            <div class="text-xs text-gray-500 mt-1">GST: <span class="font-mono">{{ $client->gst_number }}</span></div>
-            @endif
-        </td>
-        <td>
-            <div class="text-sm text-gray-700">{{ $client->phone ?? 'N/A' }}</div>
-            <div class="text-xs text-gray-500">{{ $client->email ?? 'N/A' }}</div>
-        </td>
-        <td>
-            <div class="text-xs text-gray-500">Purchased: ₹{{ number_format($client->total_purchased, 2) }}</div>
-            @if($client->outstanding_amount > 0)
-                <div class="text-sm font-bold text-red-600 mt-1">Due: ₹{{ number_format($client->outstanding_amount, 2) }}</div>
-            @else
-                <div class="text-sm font-bold text-green-600 mt-1">Settled</div>
-            @endif
-        </td>
-        <td>
-            @if($client->is_active)
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Active</span>
-            @else
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Inactive</span>
-            @endif
-        </td>
-        <td class="text-right">
-            <a href="{{ route('organization.clients.show', $client) }}" class="text-gray-600 hover:text-gray-900 font-medium text-xs mr-3">View</a>
-            <a href="{{ route('organization.clients.edit', $client) }}" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">Edit</a>
-        </td>
-      </tr>
-      @empty
-      <tr>
-        <td colspan="5" class="text-center py-6 text-gray-500">No clients found.</td>
-      </tr>
-      @endforelse
-    </tbody>
-  </table>
-  
-  <div class="mt-4">
-      {{ $clients->links() }}
-  </div>
+    @if(session('success'))
+    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm font-semibold shadow-sm">
+        {{ session('success') }}
+    </div>
+    @endif
+
+    <!-- Table Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <!-- Search Filter -->
+        <div class="p-4 border-b border-gray-100 bg-gray-50/50">
+            <form method="GET" action="{{ route('organization.clients.index') }}" class="flex gap-3 w-full max-w-lg">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name, phone, email, GST..." class="border border-gray-200 focus:border-[var(--theme-active)] rounded-xl px-4 py-2 text-sm w-full outline-none transition">
+                <button type="submit" class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-50 transition shadow-sm">Filter</button>
+                @if(request('search'))
+                    <a href="{{ route('organization.clients.index') }}" class="px-4 py-2 text-gray-500 hover:text-gray-750 text-sm flex items-center font-medium">Clear</a>
+                @endif
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-600">
+                <thead class="bg-gray-50/50 text-[10px] uppercase text-gray-400 font-bold border-b border-gray-100 tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4">Client Name</th>
+                        <th class="px-6 py-4">Contact Info</th>
+                        <th class="px-6 py-4">Financial Status</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    @forelse($clients as $client)
+                    <tr class="hover:bg-gray-50/50 transition">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-900">{{ $client->name }}</div>
+                            @if($client->gst_number)
+                                <div class="text-[11px] text-gray-400 font-mono mt-0.5">GST: {{ $client->gst_number }}</div>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-gray-800 font-medium">{{ $client->phone ?? '—' }}</div>
+                            <div class="text-[11px] text-gray-400 mt-0.5">{{ $client->email ?? '—' }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-xs text-gray-500 font-medium">Purchased: ₹{{ number_format($client->total_purchased, 2) }}</div>
+                            @if($client->outstanding_amount > 0)
+                                <div class="text-xs font-bold text-rose-600 mt-1">Due: ₹{{ number_format($client->outstanding_amount, 2) }}</div>
+                            @else
+                                <div class="text-xs font-bold text-emerald-600 mt-1">Settled / Paid</div>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            @if($client->is_active)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">Active</span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-100">Inactive</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-3">
+                                <a href="{{ route('organization.clients.show', $client) }}" class="text-indigo-650 hover:text-indigo-900 font-bold text-xs">View Ledger</a>
+                                <span class="text-gray-300">|</span>
+                                <a href="{{ route('organization.clients.edit', $client) }}" class="text-gray-400 hover:text-gray-700 font-bold text-xs">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center py-12 text-gray-400 font-medium">No clients found in the database directory.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($clients->hasPages())
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+            {{ $clients->links() }}
+        </div>
+        @endif
+    </div>
 </div>
 @endsection
