@@ -130,29 +130,33 @@
             border-color: var(--border-color) !important;
         }
         /* Global inputs & form elements styling overrides for professional SaaS look */
-        input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="date"], select, textarea {
+        input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="date"], input[type="time"], input[type="search"], select, textarea {
             width: 100% !important;
             border-width: 1px !important;
             border-color: var(--border-hard) !important;
-            border-radius: 0.75rem !important; /* rounded-xl */
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            border-radius: 0.5rem !important; /* rounded-lg */
+            padding-left: 0.875rem !important;
+            padding-right: 0.875rem !important;
             padding-top: 0.625rem !important;
             padding-bottom: 0.625rem !important;
             font-size: 0.875rem !important; /* text-sm */
+            line-height: 1.25rem !important;
             outline: 2px solid transparent !important;
             outline-offset: 2px !important;
-            transition-property: all !important;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
-            transition-duration: 200ms !important;
-            background-color: var(--bg-card) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            background-color: #f9fafb !important;
             color: var(--text-main) !important;
-            box-shadow: none !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; /* shadow-sm */
+        }
+        
+        .theme-dark input[type="text"], .theme-dark input[type="number"], .theme-dark input[type="email"], .theme-dark input[type="password"], .theme-dark input[type="date"], .theme-dark input[type="time"], .theme-dark input[type="search"], .theme-dark select, .theme-dark textarea {
+            background-color: var(--bg-main) !important;
         }
 
-        input[type="text"]:focus, input[type="number"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+        input[type="text"]:focus, input[type="number"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="date"]:focus, input[type="time"]:focus, input[type="search"]:focus, select:focus, textarea:focus {
             border-color: var(--theme-active) !important;
-            box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1) !important;
+            background-color: var(--bg-card) !important;
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-active) 20%, transparent) !important;
         }
 
         /* Checkbox overrides */
@@ -163,25 +167,25 @@
             border-color: var(--border-hard) !important;
             color: var(--theme-active) !important;
             cursor: pointer !important;
-            transition: all 0.2s !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            background-color: #f9fafb !important;
         }
         .theme-dark input[type="checkbox"], .theme-dark input[type="radio"] {
-            border-color: var(--border-hard) !important;
             background-color: var(--bg-main) !important;
         }
         input[type="checkbox"]:focus, input[type="radio"]:focus {
-            box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1) !important;
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-active) 20%, transparent) !important;
         }
 
         /* Card and Panels rounded overrides */
         .panel, .bg-white {
-            border-radius: 1rem !important; /* rounded-2xl */
+            border-radius: 0.75rem !important; /* rounded-xl */
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
         }
-        
-        .theme-dark input, .theme-dark select, .theme-dark textarea {
-            background-color: var(--bg-main) !important;
-            border-color: var(--border-hard) !important;
-            color: var(--text-main) !important;
+        .theme-dark .panel, .theme-dark .bg-white {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3) !important;
         }
     </style>
 
