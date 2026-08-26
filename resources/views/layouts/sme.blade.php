@@ -89,23 +89,6 @@
                     </div>
                 </div>
 
-                <!-- Top-Left Profile Widget -->
-                <div class="px-4 py-3 mb-4 bg-black/25 rounded-lg mx-3 flex items-center gap-3">
-                    <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold flex-shrink-0">
-                        {{ substr(auth()->user()->name, 0, 1) }}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</div>
-                        <div class="flex items-center gap-1.5 mt-0.5">
-                            <a href="{{ route('profile.edit') }}" class="text-[11px] text-gray-300 hover:text-white underline">Settings</a>
-                            <span class="text-gray-500 text-[10px]">&bull;</span>
-                            <form method="POST" action="{{ route('logout') }}" class="inline">
-                                @csrf
-                                <button type="submit" class="text-[11px] text-gray-300 hover:text-white underline">Sign out</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
 
                 <nav class="mt-2 flex-1 space-y-1 px-3">
                     @include('layouts.partials.sidebar-links')
@@ -217,8 +200,29 @@
                         </div>
                     </div>
 
-                    <a href="/" class="px-4 py-1.5 text-sm font-medium rounded-full bg-[#1c2331] text-white hover:bg-slate-800 transition-colors" style="background-color: var(--theme-bg);">Website</a>
-                    <a href="{{ route('dashboard') }}" class="px-4 py-1.5 text-sm font-semibold rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] hover:opacity-90 transition-colors">Dashboard</a>
+                    <!-- Profile Dropdown -->
+                    <div class="relative ml-2" x-data="{ open: false }">
+                        <div>
+                            <button @click="open = !open" class="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--theme-active)] focus:ring-offset-2" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                                <span class="sr-only">Open user menu</span>
+                                <div class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold text-sm">
+                                    {{ substr(auth()->user()->name, 0, 1) }}
+                                </div>
+                            </button>
+                        </div>
+                        <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30" style="display: none;">
+                            <div class="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
+                                <div class="font-semibold text-gray-800">{{ auth()->user()->name }}</div>
+                                <div class="truncate text-[10px]">{{ auth()->user()->email }}</div>
+                            </div>
+                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 font-medium">Profile Settings</a>
+                            <a href="/" class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 font-medium">Visit Website</a>
+                            <form method="POST" action="{{ route('logout') }}" class="m-0">
+                                @csrf
+                                <button type="submit" class="block w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 border-t border-gray-100 font-semibold">Sign out</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
