@@ -1,86 +1,6 @@
 @extends('layouts.public')
 
 @section('content')
-  .feat-card h3{font-size:16px; font-weight:600; margin-bottom:8px;}
-  .feat-card p{font-size:13.8px; color:var(--ink-soft); line-height:1.55;}
-
-  /* restaurant split */
-  .rest-split{display:grid; grid-template-columns:.9fr 1.1fr; gap:60px; align-items:center;}
-  .phone{
-    width:230px; margin:0 auto; background:var(--ink); border-radius:32px; padding:10px; box-shadow:var(--shadow);
-  }
-  .phone-screen{background:var(--paper); border-radius:24px; overflow:hidden; padding:16px 14px;}
-  .phone-screen .menu-cat{font-family:'IBM Plex Mono'; font-size:9.5px; color:var(--gold-deep); text-transform:uppercase; letter-spacing:.06em; margin:14px 0 8px;}
-  .menu-item{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--border-soft); font-size:12px;}
-  .menu-item .price{font-family:'IBM Plex Mono'; font-weight:600;}
-  .menu-item .add{width:20px; height:20px; border-radius:50%; background:var(--teal-soft); color:var(--teal); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;}
-  .qr-chip{display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono'; font-size:10px; color:var(--ink-faint); background:var(--bg); border-radius:8px; padding:8px 10px; margin-bottom:6px;}
-  .qr-chip .dot{width:6px; height:6px; border-radius:1px; background:var(--ink);}
-
-  .rest-list{list-style:none;}
-  .rest-list li{display:flex; gap:16px; padding:16px 0; border-bottom:1px solid var(--border-soft);}
-  .rest-list li:last-child{border-bottom:none;}
-  .rest-num{font-family:'IBM Plex Mono'; font-size:12px; color:var(--gold-deep); flex:none; padding-top:2px;}
-  .rest-list h4{font-size:15px; font-weight:600; margin-bottom:5px; font-family:'Space Grotesk';}
-  .rest-list p{font-size:13.5px; color:var(--ink-soft); line-height:1.55;}
-
-  /* payments flow */
-  .flow-card{background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); padding:32px; box-shadow:var(--shadow);}
-  .flow-title{font-family:'IBM Plex Mono'; font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:18px;}
-  .flow-row{display:flex; align-items:center; gap:0; flex-wrap:wrap;}
-  .flow-step{background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:11px 16px; font-size:13px; font-weight:500; white-space:nowrap;}
-  .flow-arrow{color:var(--ink-faint); padding:0 12px; font-family:'IBM Plex Mono';}
-  .flow-row + .flow-row{margin-top:16px;}
-
-  /* pricing */
-  .plans{display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
-  .plan-card{background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); padding:26px 22px; position:relative;}
-  .plan-card.feat{border:1.5px solid var(--gold); box-shadow:var(--shadow);}
-  .plan-tag{position:absolute; top:-11px; right:20px; background:var(--gold); color:var(--ink); font-family:'IBM Plex Mono'; font-size:10px; font-weight:700; padding:4px 10px; border-radius:100px;}
-  .plan-name{font-family:'Space Grotesk'; font-weight:700; font-size:16px; margin-bottom:6px;}
-  .plan-price{font-family:'IBM Plex Mono'; font-size:24px; font-weight:600; margin-bottom:18px;}
-  .plan-price span{font-size:12px; color:var(--ink-faint); font-weight:400;}
-  .plan-feats{list-style:none; font-size:12.8px; color:var(--ink-soft); margin-bottom:22px;}
-  .plan-feats li{padding:6px 0; display:flex; gap:8px; border-bottom:1px dashed var(--border-soft);}
-  .plan-feats li::before{content:'—'; color:var(--gold-deep);}
-
-  /* CTA banner */
-  .cta-banner{background:var(--ink); border-radius:20px; padding:56px; display:flex; justify-content:space-between; align-items:center; color:#fff;}
-  .cta-banner h2{color:#fff; font-size:28px; max-width:480px;}
-  .cta-banner p{color:#AAB3CB; margin-top:8px; font-size:14px;}
-
-  footer.site{padding:44px 0; border-top:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center; color:var(--ink-faint); font-size:13px;}
-
-  @media(max-width:900px){
-    .hero-grid,.rest-split,.plans,.feat-grid{grid-template-columns:1fr;}
-    .plans{grid-template-columns:repeat(2,1fr);}
-    .hero h1{font-size:36px;}
-    .nav-links{display:none;}
-    .cta-banner{flex-direction:column; gap:20px; text-align:center; padding:36px;}
-  }
-</style>
-</head>
-<body>
-
-  <header class="site">
-    <nav class="wrap nav">
-      <div class="logo"><div class="mark"></div>Khatabook Pro</div>
-      <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#restaurant">Restaurant</a>
-        <a href="#payments">Payments</a>
-        <a href="#pricing">Pricing</a>
-      </div>
-      <div class="nav-cta">
-        @auth
-            <a class="btn btn-ghost btn-sm" href="{{ route('dashboard') }}">See Dashboard</a>
-        @else
-            <a class="btn btn-ghost btn-sm" href="{{ route('login') }}">Log in</a>
-            <a class="btn btn-gold btn-sm" href="{{ route('register') }}">Start Free</a>
-        @endauth
-      </div>
-    </nav>
-  </header>
 
   <section class="hero">
     <div class="wrap hero-grid">
@@ -168,6 +88,141 @@
           <h3>Multi-location Support</h3>
           <p>One owner login, many stores. Stock and staff scoped to each branch automatically.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Restaurant Section -->
+  <section id="restaurant" style="background:#fff;">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Restaurant POS</div>
+        <h2>Built for modern cafes &amp; restaurants.</h2>
+        <p>Manage tables, send orders directly to the kitchen, and let customers order via QR codes seamlessly.</p>
+      </div>
+      <div class="rest-split">
+        <div class="phone">
+          <div class="phone-screen">
+            <div style="font-family:'Space Grotesk'; font-weight:700; text-align:center; margin-bottom:12px;">Spice Kitchen</div>
+            <div class="qr-chip" style="justify-content:center;">Table 07 &middot; Dine-in</div>
+            <div class="menu-cat">Starters</div>
+            <div class="menu-item"><div>Paneer Tikka</div><div style="display:flex; gap:10px; align-items:center;"><span class="price">₹220</span><div class="add">+</div></div></div>
+            <div class="menu-item"><div>Spring Rolls</div><div style="display:flex; gap:10px; align-items:center;"><span class="price">₹180</span><div class="add">+</div></div></div>
+            <div class="menu-cat" style="margin-top:16px;">Main Course</div>
+            <div class="menu-item" style="border:none;"><div>Butter Chicken</div><div style="display:flex; gap:10px; align-items:center;"><span class="price">₹350</span><div class="add">+</div></div></div>
+          </div>
+        </div>
+        <div>
+          <h2 style="font-size:32px; font-weight:600; margin-bottom:24px;">Smart QR Ordering</h2>
+          <ul class="rest-list">
+            <li>
+              <div class="rest-num">01</div>
+              <div>
+                <h4>Dynamic QR Codes</h4>
+                <p>Generate secure QR codes for every table. Customers scan and order instantly from their phones.</p>
+              </div>
+            </li>
+            <li>
+              <div class="rest-num">02</div>
+              <div>
+                <h4>Kitchen Display System</h4>
+                <p>Orders flow directly to the kitchen screen. No lost tickets, no delays.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Payments Section -->
+  <section id="payments">
+    <div class="wrap text-center" style="max-width:700px; margin:0 auto; margin-bottom:50px;">
+      <div class="eyebrow">Razorpay Integration</div>
+      <h2>Accept payments instantly.</h2>
+      <p style="color:var(--ink-soft); font-size:15.5px; line-height:1.6;">Send payment links with invoices and let clients pay via UPI, cards, and net banking with automatic reconciliation.</p>
+    </div>
+    <div class="wrap">
+      <div class="flow-card" style="max-width:800px; margin:0 auto; text-align:center;">
+        <div class="flow-title" style="margin-bottom:32px;">Seamless Payment Flow</div>
+        <div class="flow-row" style="justify-content:center;">
+          <div class="flow-step">1. Generate Invoice</div>
+          <div class="flow-arrow">➔</div>
+          <div class="flow-step">2. Send Payment Link</div>
+          <div class="flow-arrow">➔</div>
+          <div class="flow-step">3. Client Pays via UPI</div>
+          <div class="flow-arrow">➔</div>
+          <div class="flow-step">4. Auto-Reconciled</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" style="background:#fff;">
+    <div class="wrap text-center" style="max-width:700px; margin:0 auto; margin-bottom:60px;">
+      <div class="eyebrow">Pricing Plans</div>
+      <h2>Simple pricing, no hidden fees.</h2>
+      <p style="color:var(--ink-soft); font-size:15.5px; line-height:1.6;">Start for free and upgrade as your business grows. Cancel anytime.</p>
+    </div>
+    <div class="wrap plans">
+      <div class="plan-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">₹0<span> / forever</span></div>
+        <ul class="plan-feats">
+          <li>1 User</li>
+          <li>Unlimited Products</li>
+          <li>Up to 50 Invoices/mo</li>
+          <li>Basic Reports</li>
+        </ul>
+        <a class="btn btn-ghost" href="{{ route('register') }}" style="width:100%; justify-content:center;">Get Started</a>
+      </div>
+      <div class="plan-card feat">
+        <div class="plan-tag">MOST POPULAR</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">₹499<span> / mo</span></div>
+        <ul class="plan-feats">
+          <li>5 Users</li>
+          <li>Unlimited Invoices</li>
+          <li>Employee Payroll</li>
+          <li>Payment Gateway (Razorpay)</li>
+        </ul>
+        <a class="btn btn-gold" href="{{ route('register') }}" style="width:100%; justify-content:center;">Start Free Trial</a>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Restaurant</div>
+        <div class="plan-price">₹999<span> / mo</span></div>
+        <ul class="plan-feats">
+          <li>Everything in Pro</li>
+          <li>Digital QR Menu</li>
+          <li>Kitchen Display System</li>
+          <li>Table Management</li>
+        </ul>
+        <a class="btn btn-ghost" href="{{ route('register') }}" style="width:100%; justify-content:center;">Start Free Trial</a>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price">Custom</div>
+        <ul class="plan-feats">
+          <li>Unlimited Users</li>
+          <li>Multiple Locations</li>
+          <li>Priority Support</li>
+          <li>Custom Integrations</li>
+        </ul>
+        <a class="btn btn-ghost" href="{{ route('register') }}" style="width:100%; justify-content:center;">Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section style="padding-bottom:100px;">
+    <div class="wrap">
+      <div class="cta-banner">
+        <div>
+          <h2>Ready to transform how you run your business?</h2>
+          <p>Join thousands of growing SMEs in India.</p>
+        </div>
+        <a class="btn btn-gold" style="font-size:16px; padding:14px 28px;" href="{{ route('register') }}">Create Free Account</a>
       </div>
     </div>
   </section>

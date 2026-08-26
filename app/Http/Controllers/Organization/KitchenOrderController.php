@@ -14,7 +14,7 @@ class KitchenOrderController extends Controller
     {
         $locationId = session('active_location_id');
         if (!$locationId) {
-            return redirect()->route('organization.dashboard')->with('error', 'Select a location first.');
+            return redirect()->route('dashboard')->with('error', 'You are not assigned to any location. Please contact your administrator.');
         }
 
         $orgId = auth()->user()->organization_id;

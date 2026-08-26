@@ -131,8 +131,85 @@
   .feat-card:hover{border-color:var(--gold); transform:translateY(-2px); box-shadow:var(--shadow);}
   .feat-icon{width:38px; height:38px; border-radius:9px; background:var(--ink); display:flex; align-items:center; justify-content:center; margin-bottom:18px;}
 
-    @yield('content')
+  /* Component CSS moved from welcome */
+  .feat-card h3{font-size:16px; font-weight:600; margin-bottom:8px;}
+  .feat-card p{font-size:13.8px; color:var(--ink-soft); line-height:1.55;}
+  .rest-split{display:grid; grid-template-columns:.9fr 1.1fr; gap:60px; align-items:center;}
+  .phone{width:230px; margin:0 auto; background:var(--ink); border-radius:32px; padding:10px; box-shadow:var(--shadow);}
+  .phone-screen{background:var(--paper); border-radius:24px; overflow:hidden; padding:16px 14px;}
+  .phone-screen .menu-cat{font-family:'IBM Plex Mono'; font-size:9.5px; color:var(--gold-deep); text-transform:uppercase; letter-spacing:.06em; margin:14px 0 8px;}
+  .menu-item{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--border-soft); font-size:12px;}
+  .menu-item .price{font-family:'IBM Plex Mono'; font-weight:600;}
+  .menu-item .add{width:20px; height:20px; border-radius:50%; background:var(--teal-soft); color:var(--teal); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;}
+  .qr-chip{display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono'; font-size:10px; color:var(--ink-faint); background:var(--bg); border-radius:8px; padding:8px 10px; margin-bottom:6px;}
+  .qr-chip .dot{width:6px; height:6px; border-radius:1px; background:var(--ink);}
+  .rest-list{list-style:none;}
+  .rest-list li{display:flex; gap:16px; padding:16px 0; border-bottom:1px solid var(--border-soft);}
+  .rest-list li:last-child{border-bottom:none;}
+  .rest-num{font-family:'IBM Plex Mono'; font-size:12px; color:var(--gold-deep); flex:none; padding-top:2px;}
+  .rest-list h4{font-size:15px; font-weight:600; margin-bottom:5px; font-family:'Space Grotesk';}
+  .rest-list p{font-size:13.5px; color:var(--ink-soft); line-height:1.55;}
+  .flow-card{background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); padding:32px; box-shadow:var(--shadow);}
+  .flow-title{font-family:'IBM Plex Mono'; font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:18px;}
+  .flow-row{display:flex; align-items:center; gap:0; flex-wrap:wrap;}
+  .flow-step{background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:11px 16px; font-size:13px; font-weight:500; white-space:nowrap;}
+  .flow-arrow{color:var(--ink-faint); padding:0 12px; font-family:'IBM Plex Mono';}
+  .flow-row + .flow-row{margin-top:16px;}
+  .plans{display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
+  .plan-card{background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); padding:26px 22px; position:relative;}
+  .plan-card.feat{border:1.5px solid var(--gold); box-shadow:var(--shadow);}
+  .plan-tag{position:absolute; top:-11px; right:20px; background:var(--gold); color:var(--ink); font-family:'IBM Plex Mono'; font-size:10px; font-weight:700; padding:4px 10px; border-radius:100px;}
+  .plan-name{font-family:'Space Grotesk'; font-weight:700; font-size:16px; margin-bottom:6px;}
+  .plan-price{font-family:'IBM Plex Mono'; font-size:24px; font-weight:600; margin-bottom:18px;}
+  .plan-price span{font-size:12px; color:var(--ink-faint); font-weight:400;}
+  .plan-feats{list-style:none; font-size:12.8px; color:var(--ink-soft); margin-bottom:22px;}
+  .plan-feats li{padding:6px 0; display:flex; gap:8px; border-bottom:1px dashed var(--border-soft);}
+  .plan-feats li::before{content:'—'; color:var(--gold-deep);}
+  .cta-banner{background:var(--ink); border-radius:20px; padding:56px; display:flex; justify-content:space-between; align-items:center; color:#fff;}
+  .cta-banner h2{color:#fff; font-size:28px; max-width:480px;}
+  .cta-banner p{color:#AAB3CB; margin-top:8px; font-size:14px;}
+  footer.site{padding:44px 0; border-top:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center; color:var(--ink-faint); font-size:13px;}
+  @media(max-width:900px){
+    .hero-grid,.rest-split,.plans,.feat-grid{grid-template-columns:1fr;}
+    .plans{grid-template-columns:repeat(2,1fr);}
+    .hero h1{font-size:36px;}
+    .nav-links{display:none;}
+    .cta-banner{flex-direction:column; gap:20px; text-align:center; padding:36px;}
+  }
+</style>
+</head>
+<body>
 
+  <header class="site">
+    <nav class="wrap nav">
+      <div class="logo">
+        <a href="{{ route('welcome') }}" style="display:flex; align-items:center; gap:9px;">
+          <div class="mark"></div>Khatabook Pro
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="{{ route('public.features') }}">Features</a>
+        <a href="{{ route('public.restaurant') }}">Restaurant</a>
+        <a href="{{ route('public.payments') }}">Payments</a>
+        <a href="{{ route('public.pricing') }}">Pricing</a>
+      </div>
+      <div class="nav-cta">
+        @auth
+            <a class="btn btn-ghost btn-sm" href="{{ route('dashboard') }}">See Dashboard</a>
+        @else
+            <a class="btn btn-ghost btn-sm" href="{{ route('login') }}">Log in</a>
+            <a class="btn btn-gold btn-sm" href="{{ route('register') }}">Start Free</a>
+        @endauth
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    @yield('content')
+  </main>
+
+  <footer class="site">
+    <div class="wrap" style="width: 100%; display: flex; justify-content: space-between;">
       <div>© 2026 Khatabook Pro · Laravel · MySQL · Razorpay</div>
     </div>
   </footer>

@@ -10,7 +10,9 @@
 </x-sidebar-item>
 
 <!-- Administration -->
-<div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Administration</div>
+@if($can('manage_organization') || $can('manage_employees') || $can('manage_roles') || ($isAdmin && $feature('multi_location')))
+    <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Administration</div>
+@endif
 
 @if($can('manage_organization'))
     <x-sidebar-item route="{{ route('organization.profile') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>' :active="request()->routeIs('organization.profile')">
@@ -37,7 +39,9 @@
 @endif
 
 <!-- Operations -->
-<div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Operations</div>
+@if($can('inventory.view') || $can('clients.view') || $can('invoices.view'))
+    <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Operations</div>
+@endif
 
 @if($can('inventory.view'))
     <x-sidebar-item route="{{ route('organization.inventory.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>' :active="request()->routeIs('organization.inventory.*')">
@@ -61,7 +65,9 @@
 @endif
 
 @if($feature('module_payroll'))
-    <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">HR & Payroll</div>
+    @if($can('attendance.view') || $can('payroll.view'))
+        <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">HR & Payroll</div>
+    @endif
     
     @if($can('attendance.view'))
         <x-sidebar-item route="{{ route('organization.attendance.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' :active="request()->routeIs('organization.attendance.*')">
@@ -83,15 +89,20 @@
 @endif
 
 @if($feature('module_restaurant'))
-    <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Restaurant</div>
-    
     @if($can('restaurant.view'))
+        <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Restaurant</div>
+    @endif
+    
+    @if($can('restaurant.manage'))
         <x-sidebar-item route="{{ route('organization.menu.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>' :active="request()->routeIs('organization.menu.index')">
             Menu Builder
         </x-sidebar-item>
         <x-sidebar-item route="{{ route('organization.menu.tables.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>' :active="request()->routeIs('organization.menu.tables.*')">
             Tables & QR
         </x-sidebar-item>
+    @endif
+    
+    @if($can('restaurant.view'))
         <x-sidebar-item route="{{ route('organization.menu.kitchen.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>' :active="request()->routeIs('organization.menu.kitchen.index')">
             Kitchen Display
         </x-sidebar-item>
@@ -99,7 +110,9 @@
 @endif
 
 <!-- System -->
-<div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
+@if($isAdmin)
+    <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>
+@endif
 
 @if($isAdmin)
     <x-sidebar-item route="{{ route('organization.subscription.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>' :active="request()->routeIs('organization.subscription.*')">
