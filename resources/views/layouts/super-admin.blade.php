@@ -157,24 +157,20 @@
 
         /* Checkbox overrides */
         input[type="checkbox"], input[type="radio"] {
-            width: auto !important;
-            padding: 0 !important;
-            border-radius: 0.25rem !important;
+            width: 1.125rem !important;
+            height: 1.125rem !important;
+            border-radius: 0.375rem !important;
             border-color: var(--border-hard) !important;
             color: var(--theme-active) !important;
+            cursor: pointer !important;
             transition: all 0.2s !important;
+        }
+        .theme-dark input[type="checkbox"], .theme-dark input[type="radio"] {
+            border-color: var(--border-hard) !important;
+            background-color: var(--bg-main) !important;
         }
         input[type="checkbox"]:focus, input[type="radio"]:focus {
             box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1) !important;
-        }
-
-        /* Form Labels styling */
-        label {
-            color: var(--text-muted) !important;
-            font-size: 0.75rem !important;
-            font-weight: 700 !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.05em !important;
         }
 
         /* Card and Panels rounded overrides */
