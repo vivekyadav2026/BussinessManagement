@@ -12,7 +12,7 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
     <!-- Summary Sidebar -->
     <div class="md:col-span-1 space-y-6">
-        <div class="panel bg-indigo-50 border-2 border-indigo-100">
+        <div class="panel bg-indigo-50 border border-indigo-100 p-6 shadow-sm">
             <h3 class="font-bold text-indigo-900 border-b border-indigo-200 pb-2 mb-4">{{ $dateObj->format('F Y') }} Summary</h3>
             <div class="space-y-3">
                 <div class="flex justify-between items-center text-sm">
@@ -40,7 +40,7 @@
             </div>
         </div>
 
-        <form method="GET" action="{{ route('organization.attendance.show', $employee) }}" class="panel">
+        <form method="GET" action="{{ route('organization.attendance.show', $employee) }}" class="panel p-6 shadow-sm">
             <h3 class="font-bold border-b pb-2 mb-4">Change Month</h3>
             <div class="mb-3">
                 <select name="month" class="w-full border-gray-300 rounded-lg text-sm mb-2">
@@ -54,12 +54,12 @@
                     @endfor
                 </select>
             </div>
-            <button type="submit" class="btn border border-gray-300 hover:bg-gray-50 text-gray-700 w-full justify-center text-sm">View Calendar</button>
+            <button type="submit" class="btn btn-ghost w-full justify-center text-xs py-2">View Calendar</button>
         </form>
     </div>
 
     <!-- Calendar View -->
-    <div class="md:col-span-3 panel">
+    <div class="md:col-span-3 panel p-6 shadow-sm">
         <h3 class="font-bold text-lg mb-4">{{ $dateObj->format('F Y') }}</h3>
         
         <div class="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden">

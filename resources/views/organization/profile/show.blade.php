@@ -1,8 +1,8 @@
 @extends('layouts.sme')
 
 @section('content')
-<div class="p-6 max-w-4xl space-y-6">
-    <div>
+<div class="max-w-4xl space-y-6">
+    <div class="dash-head">
         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Organization Profile</h1>
         <p class="text-sm text-gray-500 mt-0.5">Manage your tenant business information, contact details, and platform settings.</p>
     </div>
@@ -13,7 +13,7 @@
     </div>
     @endif
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="panel shadow-sm overflow-hidden">
         <form action="{{ route('organization.profile.update') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
             @csrf
             @method('PUT')
@@ -22,35 +22,35 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Org Name -->
                 <div class="col-span-full">
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Business Name</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Business Name</label>
                     <input type="text" name="name" value="{{ old('name', $organization->name) }}" required class="w-full border border-gray-200 focus:border-[var(--theme-active)] focus:ring-2 focus:ring-[var(--theme-active)]/20 rounded-xl px-4 py-2.5 text-sm outline-none transition @error('name') border-red-300 @enderror">
                     @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <!-- Email Address -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Business Email</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Business Email</label>
                     <input type="email" name="email" value="{{ old('email', $organization->email) }}" class="w-full border border-gray-200 focus:border-[var(--theme-active)] focus:ring-2 focus:ring-[var(--theme-active)]/20 rounded-xl px-4 py-2.5 text-sm outline-none transition @error('email') border-red-300 @enderror">
                     @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <!-- Phone -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Business Phone</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Business Phone</label>
                     <input type="text" name="phone" value="{{ old('phone', $organization->phone) }}" class="w-full border border-gray-200 focus:border-[var(--theme-active)] focus:ring-2 focus:ring-[var(--theme-active)]/20 rounded-xl px-4 py-2.5 text-sm outline-none transition @error('phone') border-red-300 @enderror">
                     @error('phone') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <!-- GSTIN -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">GSTIN Number</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">GSTIN Number</label>
                     <input type="text" name="gst_number" value="{{ old('gst_number', $organization->gst_number) }}" placeholder="e.g., 22AAAAA0000A1Z5" class="w-full border border-gray-200 focus:border-[var(--theme-active)] focus:ring-2 focus:ring-[var(--theme-active)]/20 rounded-xl px-4 py-2.5 text-sm outline-none transition uppercase @error('gst_number') border-red-300 @enderror">
                     @error('gst_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <!-- Logo Uploader -->
                 <div x-data="{ imgPreview: '{{ $organization->logo ? asset('storage/' . $organization->logo) : '' }}' }">
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Logo</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Logo</label>
                     <div class="flex items-center gap-4">
                         <template x-if="imgPreview">
                             <img :src="imgPreview" alt="Logo Preview" class="w-16 h-16 rounded-xl object-cover border border-gray-200">
@@ -72,7 +72,7 @@
 
                 <!-- Address -->
                 <div class="col-span-full">
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Address</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Address</label>
                     <textarea name="address" rows="3" class="w-full border border-gray-200 focus:border-[var(--theme-active)] focus:ring-2 focus:ring-[var(--theme-active)]/20 rounded-xl px-4 py-2.5 text-sm outline-none transition @error('address') border-red-300 @enderror">{{ old('address', $organization->address) }}</textarea>
                     @error('address') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -80,7 +80,7 @@
 
             <!-- Submit buttons -->
             <div class="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
-                <button type="submit" class="px-5 py-2.5 bg-[var(--theme-active)] text-[var(--theme-active-text)] rounded-xl font-semibold text-sm hover:opacity-95 shadow-sm transition">Save Changes</button>
+                <button type="submit" class="btn btn-gold py-2.5 px-6 font-semibold text-sm shadow-sm transition">Save Changes</button>
             </div>
         </form>
     </div>

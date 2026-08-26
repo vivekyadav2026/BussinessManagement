@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forms — Khatabook Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F5F3; --paper:#FFFFFF; --ink:#17233F; --ink-soft:#4B5670; --ink-faint:#8991A5;
+    --gold:#D99A2B; --gold-deep:#B87F1B; --teal:#146356; --teal-soft:#E4F0EC;
+    --rose:#AE3B34; --rose-soft:#F5E6E4; --border:#DFE1DA; --border-soft:#EBECE6;
+    --radius:14px; --shadow:0 1px 2px rgba(23,35,63,.04), 0 8px 24px rgba(23,35,63,.06);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; min-height:100vh;}
+  h1,h2,.display{font-family:'Space Grotesk',sans-serif; letter-spacing:-.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* top bar with logo + form switcher, mimics dashboard topbar */
+  .topbar{display:flex; justify-content:space-between; align-items:center; padding:16px 30px; background:var(--paper); border-bottom:1px solid var(--border-soft); position:sticky; top:0; z-index:10;}
+  .logo{display:flex; align-items:center; gap:9px; font-family:'Space Grotesk'; font-weight:700; font-size:16px;}
+  .logo .mark{width:24px; height:24px; background:var(--ink); border-radius:6px; position:relative;}
+  .logo .mark::before{content:''; position:absolute; left:5px; right:5px; top:6px; height:2px; background:var(--gold); box-shadow:0 4px 0 var(--gold), 0 8px 0 var(--gold);}
+  .switch{display:flex; gap:4px; background:var(--bg); border:1px solid var(--border); border-radius:100px; padding:4px;}
+  .switch button{border:none; background:transparent; font-family:'Space Grotesk'; font-weight:600; font-size:12.5px; padding:8px 16px; border-radius:100px; cursor:pointer; color:var(--ink-soft);}
+  .switch button.active{background:var(--ink); color:#fff;}
+
+  .wrap{max-width:760px; margin:0 auto; padding:40px 24px 80px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;}
+  .card-head{padding:24px 28px; border-bottom:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:flex-start;}
+  .card-head h2{font-size:19px; font-weight:600; margin-bottom:5px;}
+  .card-head p{font-size:13px; color:var(--ink-soft);}
+  .card-body{padding:26px 28px;}
+  .card-foot{padding:18px 28px; border-top:1px solid var(--border-soft); display:flex; justify-content:flex-end; gap:10px; background:var(--bg);}
+
+  .eyebrow{display:inline-flex; align-items:center; gap:7px; font-family:'IBM Plex Mono'; font-size:11px; color:var(--gold-deep); background:#FBF1DD; border:1px solid #EFDDAE; padding:5px 11px; border-radius:100px;}
+  .eyebrow::before{content:'●'; font-size:7px;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:flex; justify-content:space-between; font-size:12.5px; font-weight:600; margin-bottom:7px;}
+  .field label .opt{font-weight:400; color:var(--ink-faint); font-family:'IBM Plex Mono'; font-size:10.5px;}
+  .field input, .field select, .field textarea{
+    width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:9px; background:var(--paper);
+    font-family:'Inter'; font-size:13.5px; color:var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(217,154,43,.15);}
+  .field input::placeholder, .field textarea::placeholder{color:var(--ink-faint);}
+  .row-2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .row-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;}
+  .section-label{font-family:'IBM Plex Mono'; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); margin:22px 0 12px; display:flex; align-items:center; gap:10px;}
+  .section-label::after{content:''; flex:1; height:1px; background:var(--border-soft);}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; font-family:'Space Grotesk'; font-weight:600; font-size:13.5px; padding:11px 18px; border-radius:9px; cursor:pointer; border:1px solid transparent;}
+  .btn-gold{background:var(--gold); color:var(--ink);} .btn-gold:hover{background:var(--gold-deep);}
+  .btn-ghost{border-color:var(--border); background:var(--paper); color:var(--ink);}
+
+  .avatar-picker{display:flex; align-items:center; gap:14px; margin-bottom:22px;}
+  .avatar-circle{width:56px; height:56px; border-radius:50%; background:var(--teal-soft); color:var(--teal); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk'; font-weight:700; font-size:18px;}
+  .avatar-picker .hint{font-size:12px; color:var(--ink-faint);}
+
+  .role-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .role-opt{border:1px solid var(--border); border-radius:10px; padding:12px 14px; cursor:pointer; font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:9px;}
+  .role-opt input{accent-color:var(--gold); margin:0;}
+  .role-opt.checked{border-color:var(--gold); background:#FBF1DD;}
+
+  /* ===== invoice builder specific ===== */
+  .client-pick{display:flex; gap:10px;}
+  .client-pick input{flex:1;}
+  .client-chip{display:flex; align-items:center; gap:10px; background:var(--teal-soft); border:1px solid #C7E1D8; border-radius:9px; padding:9px 12px; margin-top:10px; font-size:12.5px;}
+  .client-chip .who{font-weight:600; color:var(--teal);}
+  .client-chip .meta{color:var(--ink-faint); font-family:'IBM Plex Mono'; font-size:11px;}
+
+  table.item-table{width:100%; border-collapse:collapse; margin-top:6px;}
+  table.item-table th{text-align:left; font-family:'IBM Plex Mono'; font-size:10px; text-transform:uppercase; color:var(--ink-faint); font-weight:500; padding:0 8px 8px 0; letter-spacing:.04em;}
+  table.item-table td{padding:8px 8px 8px 0; border-top:1px solid var(--border-soft); vertical-align:middle;}
+  table.item-table input{width:100%; padding:7px 9px; border:1px solid var(--border); border-radius:7px; font-size:12.5px; font-family:'Inter';}
+  table.item-table input.qty{width:56px;}
+  table.item-table input.amt{width:76px; font-family:'IBM Plex Mono'; text-align:right;}
+  .row-amt{font-family:'IBM Plex Mono'; font-weight:600; text-align:right; white-space:nowrap;}
+  .del{width:26px; height:26px; border-radius:7px; border:1px dashed var(--border); color:var(--rose); background:transparent; cursor:pointer; font-size:14px;}
+  .add-row{margin-top:10px; font-size:12.5px; font-weight:600; color:var(--gold-deep); cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
+  .add-row::before{content:'+'; font-size:15px;}
+
+  .totals{margin-left:auto; max-width:260px; margin-top:18px;}
+  .totals .t-row{display:flex; justify-content:space-between; font-size:13px; padding:6px 0; color:var(--ink-soft);}
+  .totals .t-row span:last-child{font-family:'IBM Plex Mono'; color:var(--ink);}
+  .totals .t-grand{display:flex; justify-content:space-between; padding-top:12px; margin-top:6px; border-top:1.5px solid var(--ink); font-family:'Space Grotesk'; font-weight:700; font-size:17px;}
+  .totals .t-grand span:last-child{font-family:'IBM Plex Mono';}
+
+  .paylater-toggle{display:flex; gap:10px; margin-top:20px;}
+  .pl-opt{flex:1; border:1px solid var(--border); border-radius:10px; padding:14px; cursor:pointer; text-align:center; font-size:13px; font-weight:600;}
+  .pl-opt.checked{border-color:var(--teal); background:var(--teal-soft); color:var(--teal);}
+
+  @media(max-width:700px){ .row-2,.row-3,.role-grid{grid-template-columns:1fr;} .wrap{padding:24px 14px 60px;} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><div class="mark"></div>Khatabook Pro</div>
+  <div class="switch">
+    <button class="active" onclick="showPanel('client', this)">Add Client</button>
+    <button onclick="showPanel('employee', this)">Add Employee</button>
+    <button onclick="showPanel('invoice', this)">New Invoice</button>
+  </div>
+  <div style="width:90px"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ ADD CLIENT ============ -->
+  <div class="panel active" id="panel-client">
+    <div class="card">
+      <div class="card-head">
+        <div><h2>Add a client</h2><p>Used while creating invoices and tracking receivables.</p></div>
+        <div class="eyebrow">Client / Customer</div>
+      </div>
+      <div class="card-body">
+        <div class="row-2">
+          <div class="field"><label>Client / Business name</label><input placeholder="e.g. Verma Store"></div>
+          <div class="field"><label>Contact person <span class="opt">optional</span></label><input placeholder="e.g. Rakesh Verma"></div>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Mobile number</label><input placeholder="+91 98765 43210"></div>
+          <div class="field"><label>Email <span class="opt">optional</span></label><input placeholder="client@business.com"></div>
+        </div>
+        <div class="field"><label>Address</label><textarea rows="2" placeholder="Shop no., street, city, pincode"></textarea></div>
+        <div class="row-2">
+          <div class="field"><label>GSTIN <span class="opt">optional</span></label><input placeholder="22AAAAA0000A1Z5"></div>
+          <div class="field"><label>Opening balance <span class="opt">optional</span></label><input placeholder="₹0"></div>
+        </div>
+        <div class="section-label">Notifications</div>
+        <div class="field"><label>Send invoices via</label>
+          <select><option>WhatsApp + Email</option><option>WhatsApp only</option><option>Email only</option><option>None</option></select>
+        </div>
+      </div>
+      <div class="card-foot">
+        <button class="btn btn-ghost">Cancel</button>
+        <button class="btn btn-gold">Save client</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ADD EMPLOYEE ============ -->
+  <div class="panel" id="panel-employee">
+    <div class="card">
+      <div class="card-head">
+        <div><h2>Add an employee</h2><p>They'll get login access scoped to the role you assign.</p></div>
+        <div class="eyebrow">Staff / Employee</div>
+      </div>
+      <div class="card-body">
+        <div class="avatar-picker">
+          <div class="avatar-circle">+</div>
+          <div><div style="font-size:13px;font-weight:600;">Upload photo</div><div class="hint">Optional, shown on their profile</div></div>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Full name</label><input placeholder="e.g. Anita Sharma"></div>
+          <div class="field"><label>Mobile number</label><input placeholder="+91 98765 43210"></div>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Email <span class="opt">optional</span></label><input placeholder="anita@business.com"></div>
+          <div class="field"><label>Joining date</label><input type="date"></div>
+        </div>
+
+        <div class="section-label">Assign role</div>
+        <div class="role-grid">
+          <label class="role-opt checked"><input type="radio" name="role" checked> Store Manager</label>
+          <label class="role-opt"><input type="radio" name="role"> Cashier</label>
+          <label class="role-opt"><input type="radio" name="role"> Waiter</label>
+          <label class="role-opt"><input type="radio" name="role"> Custom role…</label>
+        </div>
+
+        <div class="section-label">Location <span class="opt" style="margin-left:6px;">for multi-location orgs</span></div>
+        <div class="field"><label style="display:none"></label>
+          <select><option>Main Branch — Sector 14</option><option>Branch 2 — MG Road</option><option>All locations</option></select>
+        </div>
+      </div>
+      <div class="card-foot">
+        <button class="btn btn-ghost">Cancel</button>
+        <button class="btn btn-gold">Add employee</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ NEW INVOICE ============ -->
+  <div class="panel" id="panel-invoice">
+    <div class="card">
+      <div class="card-head">
+        <div><h2>Create invoice</h2><p>Select a client, add products, and generate the bill.</p></div>
+        <div class="eyebrow mono">INV-2026-0418</div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Client</label>
+          <div class="client-pick">
+            <input placeholder="Search client by name or phone…">
+            <button class="btn btn-ghost" style="white-space:nowrap;">+ New client</button>
+          </div>
+          <div class="client-chip">
+            <span class="who">Verma Store</span>
+            <span class="meta">+91 98765 43210 · Outstanding ₹4,560</span>
+          </div>
+        </div>
+
+        <div class="section-label">Items</div>
+        <table class="item-table">
+          <tr><th style="width:38%">Product</th><th>Qty</th><th>Price</th><th>Tax</th><th style="text-align:right">Amount</th><th></th></tr>
+          <tr>
+            <td><input value="Basmati Rice 25kg"></td>
+            <td><input class="qty" value="4"></td>
+            <td><input class="amt" value="1,550"></td>
+            <td><input class="qty" value="5%"></td>
+            <td class="row-amt">₹6,510</td>
+            <td><button class="del">×</button></td>
+          </tr>
+          <tr>
+            <td><input value="Sunflower Oil 15L"></td>
+            <td><input class="qty" value="2"></td>
+            <td><input class="amt" value="1,725"></td>
+            <td><input class="qty" value="5%"></td>
+            <td class="row-amt">₹3,623</td>
+            <td><button class="del">×</button></td>
+          </tr>
+          <tr>
+            <td><input placeholder="Scan barcode or search product…"></td>
+            <td><input class="qty" placeholder="1"></td>
+            <td><input class="amt" placeholder="0"></td>
+            <td><input class="qty" placeholder="0%"></td>
+            <td class="row-amt" style="color:var(--ink-faint)">₹0</td>
+            <td></td>
+          </tr>
+        </table>
+        <div class="add-row">Add another item</div>
+
+        <div class="totals">
+          <div class="t-row"><span>Subtotal</span><span>₹9,650</span></div>
+          <div class="t-row"><span>Discount</span><span>−₹0</span></div>
+          <div class="t-row"><span>GST</span><span>₹483</span></div>
+          <div class="t-grand"><span>Total</span><span>₹10,133</span></div>
+        </div>
+
+        <div class="section-label">Payment</div>
+        <div class="paylater-toggle">
+          <div class="pl-opt checked">Pay Now — Cash / UPI / Card</div>
+          <div class="pl-opt">Pay Later — mark as Due</div>
+        </div>
+      </div>
+      <div class="card-foot">
+        <button class="btn btn-ghost">Save as draft</button>
+        <button class="btn btn-gold">Generate invoice</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showPanel(name, btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelectorAll('.switch button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+document.querySelectorAll('.role-opt input, .biz-opt input').forEach(inp=>{
+  inp.addEventListener('change', ()=>{
+    const group = inp.closest('.role-grid, .biz-type');
+    if(group) group.querySelectorAll('.role-opt,.biz-opt').forEach(o=>o.classList.remove('checked'));
+    inp.closest('label').classList.add('checked');
+  });
+});
+document.querySelectorAll('.pl-opt').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    opt.parentElement.querySelectorAll('.pl-opt').forEach(o=>o.classList.remove('checked'));
+    opt.classList.add('checked');
+  });
+});
+</script>
+
+</body>
+</html>

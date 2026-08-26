@@ -34,8 +34,20 @@ class InvoiceController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Calculate KPI stats for active location
+        $statsBase = Invoice::where('organization_id', auth()->user()->organization_id)
+            ->where('location_id', $locationId)
+            ->get();
+
+        $stats = [
+            'paid_sum' => $statsBase->where('status', 'Paid')->sum('grand_total'),
+            'unpaid_sum' => $statsBase->filter(fn($i) => in_array($i->status, ['Due', 'Partially Paid', 'Overdue']))->sum(fn($i) => $i->amount_due),
+            'overdue_count' => $statsBase->where('status', 'Overdue')->count(),
+            'total_count' => $statsBase->count()
+        ];
+
         $invoices = $query->latest()->paginate(15);
-        return view('organization.invoices.index', compact('invoices'));
+        return view('organization.invoices.index', compact('invoices', 'stats'));
     }
 
     public function create()
@@ -46,7 +58,7 @@ class InvoiceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'client_id' => 'required|exists:clients,id',
+            'client_id' => 'nullable|exists:clients,id',
             'invoice_date' => 'required|date',
             'due_date' => 'nullable|date|after_or_equal:invoice_date',
             'items' => 'required|array|min:1',

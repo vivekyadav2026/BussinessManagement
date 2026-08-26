@@ -26,7 +26,7 @@
             @foreach($order->items as $item)
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-700"><span class="font-bold mr-2">{{ $item->quantity }}x</span> {{ $item->name_snapshot }}</span>
-                    <span class="text-gray-900 font-medium">${{ number_format($item->total, 2) }}</span>
+                    <span class="text-gray-900 font-medium font-mono">₹{{ number_format($item->total, 2) }}</span>
                 </div>
             @endforeach
         </div>
@@ -34,15 +34,15 @@
         <div class="border-t border-gray-100 pt-4 space-y-2">
             <div class="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
-                <span>${{ number_format($order->subtotal, 2) }}</span>
+                <span class="font-mono">₹{{ number_format($order->subtotal, 2) }}</span>
             </div>
             <div class="flex justify-between text-sm text-gray-600">
                 <span>Tax</span>
-                <span>${{ number_format($order->tax, 2) }}</span>
+                <span class="font-mono">₹{{ number_format($order->tax, 2) }}</span>
             </div>
             <div class="flex justify-between font-bold text-lg text-gray-900 pt-2 border-t mt-2">
                 <span>Total</span>
-                <span>${{ number_format($order->total, 2) }}</span>
+                <span class="font-mono">₹{{ number_format($order->total, 2) }}</span>
             </div>
         </div>
     </div>

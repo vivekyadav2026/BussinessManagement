@@ -149,4 +149,26 @@ class PublicOrderController extends Controller
         
         return view('public.menu.track', compact('organization', 'location', 'order'));
     }
+
+    public function updateQuantity(Request $request, Organization $organization, Location $location, $itemId)
+    {
+        $request->validate(['action' => 'required|in:increase,decrease']);
+        
+        $cartKey = 'cart_' . $location->id;
+        $cart = session()->get($cartKey, []);
+
+        if (isset($cart[$itemId])) {
+            if ($request->action === 'increase') {
+                $cart[$itemId]['quantity']++;
+            } elseif ($request->action === 'decrease') {
+                $cart[$itemId]['quantity']--;
+                if ($cart[$itemId]['quantity'] <= 0) {
+                    unset($cart[$itemId]);
+                }
+            }
+            session()->put($cartKey, $cart);
+        }
+
+        return back();
+    }
 }

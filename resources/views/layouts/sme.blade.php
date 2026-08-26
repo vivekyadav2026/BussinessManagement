@@ -7,8 +7,9 @@
     <title>{{ config('app.name', 'Business Management') }}</title>
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Theme Switcher Script -->
     <script>
@@ -19,126 +20,121 @@
     </script>
     <style>
         :root {
-            /* Theme bases */
-            --bg-main: #f3f4f6;
-            --bg-card: #ffffff;
-            --border-color: #f3f4f6;
-            --border-hard: #e5e7eb;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
+            /* Theme bases from Khatabook Pro style guide */
+            --bg-main: #F3F5F3;
+            --bg-card: #FFFFFF;
+            --border-color: #EBECE6;
+            --border-hard: #DFE1DA;
+            --text-main: #17233F;
+            --text-muted: #4B5670;
+            --text-faint: #8991A5;
 
-            /* Sidebar custom */
-            --theme-bg: #ea580c; /* Default Orange Theme */
-            --theme-text: #ffedd5;
-            --theme-active: #ffffff;
-            --theme-active-text: #ea580c;
-            --theme-hover: rgba(255, 255, 255, 0.15);
-            --theme-hover-text: #ffffff;
-        }
-        
-        .theme-navy {
-            --theme-bg: #1c2331;
-            --theme-text: #d1d5db;
-            --theme-active: #f59e0b;
-            --theme-active-text: #111827;
-            --theme-hover: rgba(255, 255, 255, 0.1);
-            --theme-hover-text: #ffffff;
-        }
+            --gold: #D99A2B;
+            --gold-deep: #B87F1B;
+            --teal: #146356;
+            --teal-soft: #E4F0EC;
+            --rose: #AE3B34;
+            --rose-soft: #F5E6E4;
+            --radius: 14px;
+            --shadow: 0 1px 2px rgba(23,35,63,.04), 0 8px 24px rgba(23,35,63,.06);
 
-        .theme-purple { /* GoTRI Purple */
-            --theme-bg: #7c3aed;
-            --theme-text: #ede9fe;
-            --theme-active: #ffffff;
-            --theme-active-text: #7c3aed;
-            --theme-hover: rgba(255, 255, 255, 0.15);
+            /* Sidebar custom variables */
+            --theme-bg: #17233F; /* Deep Navy Ink */
+            --theme-text: #8991A5;
+            --theme-active: #D99A2B; /* Khatabook Gold */
+            --theme-active-text: #17233F;
+            --theme-hover: rgba(217, 154, 43, 0.12);
             --theme-hover-text: #ffffff;
         }
 
-        .theme-emerald {
-            --theme-bg: #064e3b;
-            --theme-text: #d1fae5;
-            --theme-active: #10b981;
-            --theme-active-text: #ffffff;
-            --theme-hover: rgba(255, 255, 255, 0.1);
-            --theme-hover-text: #ffffff;
+        /* Sidebar Item & Text Overrides */
+        nav a {
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-weight: 600 !important;
         }
 
-        .theme-indigo {
-            --theme-bg: #1e1b4b;
-            --theme-text: #e0e7ff;
-            --theme-active: #6366f1;
-            --theme-active-text: #ffffff;
-            --theme-hover: rgba(255, 255, 255, 0.1);
-            --theme-hover-text: #ffffff;
-        }
-
-        .theme-slate {
-            --theme-bg: #0f172a;
-            --theme-text: #e2e8f0;
-            --theme-active: #3b82f6;
-            --theme-active-text: #ffffff;
-            --theme-hover: rgba(255, 255, 255, 0.1);
-            --theme-hover-text: #ffffff;
-        }
-
-        /* True Dark Theme Override */
-        .theme-dark {
-            --bg-main: #0b0f19;
-            --bg-card: #111827;
-            --border-color: #1f2937;
-            --border-hard: #374151;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            
-            --theme-bg: #111827;
-            --theme-text: #9ca3af;
-            --theme-active: #f97316; /* Orange accent in dark theme */
-            --theme-active-text: #ffffff;
-            --theme-hover: rgba(255, 255, 255, 0.05);
-            --theme-hover-text: #ffffff;
-        }
-
-        /* Dynamic overrides for the main layout to apply dark theme without refactoring every view */
-        .theme-dark body, .theme-dark .bg-gray-50, .theme-dark .bg-gray-100 {
+        body {
             background-color: var(--bg-main) !important;
             color: var(--text-main) !important;
+            font-family: 'Inter', sans-serif !important;
         }
-        .theme-dark .bg-white, .theme-dark .panel, .theme-dark .stat-card, .theme-dark .bg-white\/10 {
-            background-color: var(--bg-card) !important;
+
+        h1, h2, h3, h4, .dash-head h1, .display {
+            font-family: 'Space Grotesk', sans-serif !important;
+            letter-spacing: -.01em !important;
             color: var(--text-main) !important;
-            border-color: var(--border-color) !important;
+            font-weight: 700 !important;
         }
-        .theme-dark h1, .theme-dark h2, .theme-dark h3, .theme-dark h4, .theme-dark th, .theme-dark td, .theme-dark .text-gray-900, .theme-dark .text-gray-800, .theme-dark .text-slate-900 {
+
+        .mono, .font-mono, [class*="mono"] {
+            font-family: 'IBM Plex Mono', monospace !important;
+        }
+
+        /* Logo Branding styling */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .logo .mark {
+            width: 24px;
+            height: 24px;
+            background: var(--gold);
+            border-radius: 6px;
+            position: relative;
+        }
+        .logo .mark::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            right: 5px;
+            top: 6px;
+            height: 2px;
+            background: var(--theme-bg);
+            box-shadow: 0 4px 0 var(--theme-bg), 0 8px 0 var(--theme-bg);
+        }
+
+        /* Forms Layout & Labels styling */
+        form label:not(.inline-flex):not(.flex-row),
+        .field label:not(.inline-flex):not(.flex-row) {
+            display: flex !important;
+            justify-content: space-between !important;
+            font-size: 12.5px !important;
+            font-weight: 600 !important;
             color: var(--text-main) !important;
+            margin-bottom: 7px !important;
+            font-family: 'Inter', sans-serif !important;
         }
-        .theme-dark p, .theme-dark .text-gray-500, .theme-dark .text-gray-400, .theme-dark .text-slate-500, .theme-dark .text-slate-400 {
-            color: var(--text-muted) !important;
+
+        form label .opt,
+        .field label .opt {
+            font-weight: 400 !important;
+            color: var(--text-faint) !important;
+            font-family: 'IBM Plex Mono', monospace !important;
+            font-size: 10.5px !important;
         }
-        .theme-dark .border-gray-100, .theme-dark .border-gray-200, .theme-dark .border-slate-100, .theme-dark .border-b, .theme-dark .border-t, .theme-dark .divide-gray-50 > * {
-            border-color: var(--border-color) !important;
-        }
-        .theme-dark .sticky {
-            background-color: var(--bg-card) !important;
-            border-color: var(--border-color) !important;
-        }
-        /* Global inputs & form elements styling overrides for professional SaaS look */
+
+        /* Global inputs & form elements styling overrides for premium look */
         input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="date"], input[type="time"], input[type="search"], select, textarea {
             width: 100% !important;
             border-width: 1px !important;
+            border-style: solid !important;
             border-color: var(--border-hard) !important;
-            border-radius: 0.5rem !important; /* rounded-lg */
-            padding-left: 0.75rem !important;
-            padding-right: 0.75rem !important;
-            padding-top: 0.5rem !important;
-            padding-bottom: 0.5rem !important;
-            font-size: 0.875rem !important; /* text-sm */
-            font-family: inherit !important;
-            outline: 2px solid transparent !important;
-            outline-offset: 2px !important;
+            border-radius: 9px !important;
+            padding-left: 13px !important;
+            padding-right: 13px !important;
+            padding-top: 10px !important;
+            padding-bottom: 10px !important;
+            font-size: 13.5px !important;
+            font-family: 'Inter', sans-serif !important;
+            outline: none !important;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            background-color: #f9fafb !important;
+            background-color: var(--bg-card) !important;
             color: var(--text-main) !important;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; /* shadow-sm */
+            box-shadow: none !important;
         }
         
         .theme-dark input[type="text"], .theme-dark input[type="number"], .theme-dark input[type="email"], .theme-dark input[type="password"], .theme-dark input[type="date"], .theme-dark input[type="time"], .theme-dark input[type="search"], .theme-dark select, .theme-dark textarea {
@@ -146,9 +142,14 @@
         }
 
         input[type="text"]:focus, input[type="number"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="date"]:focus, input[type="time"]:focus, input[type="search"]:focus, select:focus, textarea:focus {
-            border-color: var(--theme-active) !important;
+            border-color: var(--gold) !important;
             background-color: var(--bg-card) !important;
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-active) 20%, transparent) !important;
+            box-shadow: 0 0 0 3px rgba(217, 154, 43, 0.15) !important;
+            outline: none !important;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-faint) !important;
         }
 
         /* Checkbox overrides */
@@ -157,32 +158,147 @@
             height: 1.125rem !important;
             border-radius: 0.375rem !important;
             border-color: var(--border-hard) !important;
-            color: var(--theme-active) !important;
+            color: var(--gold) !important;
+            accent-color: var(--gold) !important;
             cursor: pointer !important;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-            background-color: #f9fafb !important;
+            background-color: var(--bg-card) !important;
         }
         .theme-dark input[type="checkbox"], .theme-dark input[type="radio"] {
             background-color: var(--bg-main) !important;
         }
         input[type="checkbox"]:focus, input[type="radio"]:focus {
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-active) 20%, transparent) !important;
+            box-shadow: 0 0 0 3px rgba(217, 154, 43, 0.15) !important;
+        }
+
+        /* Buttons Overrides */
+        .btn, button.btn {
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 13.5px !important;
+            border-radius: 9px !important;
+            padding: 11px 18px !important;
+            transition: all 0.2s !important;
+        }
+        .btn-gold, button.btn-gold, [class*="btn-gold"] {
+            background-color: var(--gold) !important;
+            color: var(--text-main) !important;
+            border: 1px solid transparent !important;
+        }
+        .btn-gold:hover, button.btn-gold:hover {
+            background-color: var(--gold-deep) !important;
+            color: var(--text-main) !important;
+        }
+        .btn-ghost, button.btn-ghost {
+            border: 1px solid var(--border-hard) !important;
+            background-color: var(--bg-card) !important;
+            color: var(--text-main) !important;
+        }
+        .btn-ghost:hover, button.btn-ghost:hover {
+            background-color: var(--bg-main) !important;
         }
 
         /* Card and Panels rounded overrides */
-        .panel, .bg-white {
-            border-radius: 0.75rem !important; /* rounded-xl */
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
+        .panel, .card {
+            border-radius: var(--radius) !important; /* 14px */
+            border: 1px solid var(--border-color) !important;
+            box-shadow: var(--shadow) !important;
+            background-color: var(--bg-card) !important;
         }
-        .theme-dark .panel, .theme-dark .bg-white {
+        .theme-dark .panel, .theme-dark .card {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3) !important;
         }
+
+        /* Table styles override to match theme */
+        .inv-table th {
+            font-family: 'IBM Plex Mono', monospace !important;
+            font-size: 10.5px !important;
+            text-transform: uppercase !important;
+            color: var(--text-muted) !important;
+            letter-spacing: .04em !important;
+            padding-bottom: 8px !important;
+        }
+        
+        .inv-table td {
+            border-top: 1px solid var(--border-color) !important;
+            padding: 12px 8px !important;
+        }
+
+        /* Roles selection cards in forms */
+        .role-opt {
+            border: 1px solid var(--border-hard) !important;
+            border-radius: 10px !important;
+            padding: 12px 14px !important;
+            cursor: pointer !important;
+            font-size: 12.5px !important;
+            font-weight: 600 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 9px !important;
+            transition: all 0.2s !important;
+            background-color: var(--bg-card) !important;
+            color: var(--text-main) !important;
+        }
+        .role-opt input {
+            accent-color: var(--gold) !important;
+        }
+        .role-opt:has(input:checked), .role-opt.checked {
+            border-color: var(--gold) !important;
+            background-color: #FBF1DD !important;
+            color: var(--text-main) !important;
+        }
+
+        /* Client chip visual preview */
+        .client-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--teal-soft);
+            border: 1px solid #C7E1D8;
+            border-radius: 9px;
+            padding: 9px 12px;
+            margin-top: 10px;
+            font-size: 12.5px;
+        }
+        .client-chip .who {
+            font-weight: 600;
+            color: var(--teal);
+        }
+        .client-chip .meta {
+            color: var(--text-muted);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+        }
+
+        /* Eyebrow badge styling */
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--gold-deep);
+            background: #FBF1DD;
+            border: 1px solid #EFDDAE;
+            padding: 5px 11px;
+            border-radius: 100px;
+        }
+        .eyebrow::before {
+            content: '●';
+            font-size: 7px;
+        }
+
+        /* Restore left padding for inputs that have search icons */
+        input[class*="pl-8"], input.pl-8 { padding-left: 2rem !important; }
+        input[class*="pl-9"], input.pl-9 { padding-left: 2.25rem !important; }
+        input[class*="pl-10"], input.pl-10 { padding-left: 2.5rem !important; }
+        input[class*="pl-12"], input.pl-12 { padding-left: 3rem !important; }
     </style>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 <body class="h-full font-sans antialiased text-gray-900" x-data="{ sidebarOpen: false }">
 
@@ -198,11 +314,9 @@
                     </button>
                 </div>
                 <div class="flex flex-shrink-0 items-center px-4">
-                    <div class="flex items-center gap-2">
-                        <div class="bg-[var(--theme-active)] rounded p-1 text-[var(--theme-active-text)]">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                        </div>
-                        <div class="font-bold text-xl text-white">Business Pro</div>
+                    <div class="logo text-white">
+                        <div class="mark bg-[#D99A2B]"></div>
+                        <span>Khatabook Pro</span>
                     </div>
                 </div>
                 <nav class="mt-5 flex-1 space-y-1 px-2">
@@ -217,11 +331,9 @@
         <div class="flex min-h-0 flex-1 flex-col" style="background-color: var(--theme-bg);">
             <div class="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                 <div class="flex flex-shrink-0 items-center px-4 mb-3">
-                    <div class="flex items-center gap-2">
-                        <div class="bg-[var(--theme-active)] rounded p-1 text-[var(--theme-active-text)]">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                        </div>
-                        <div class="font-bold text-xl text-white tracking-wide">Business Pro</div>
+                    <div class="logo text-white">
+                        <div class="mark bg-[#D99A2B]"></div>
+                        <span>Khatabook Pro</span>
                     </div>
                 </div>
 

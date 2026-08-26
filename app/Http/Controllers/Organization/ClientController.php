@@ -112,4 +112,30 @@ class ClientController extends Controller
             
         return response()->json($clients);
     }
+
+    public function quickStore(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255',
+        ]);
+
+        $client = Client::create([
+            'organization_id' => auth()->user()->organization_id,
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'client' => [
+                'id' => $client->id,
+                'name' => $client->name,
+                'phone' => $client->phone
+            ]
+        ]);
+    }
 }

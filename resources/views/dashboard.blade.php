@@ -3,17 +3,17 @@
 @push('styles')
 <style>
   :root {
-    --ink-faint: #6b7280;
-    --ink-soft: #4b5563;
-    --ink: #111827;
-    --paper: #ffffff;
-    --border-soft: #f3f4f6;
-    --border: #e5e7eb;
-    --radius: 0.75rem;
-    --teal: #0f766e;
-    --rose: #e11d48;
-    --gold: #f59e0b;
-    --gold-deep: #d97706;
+    --ink-faint: var(--text-muted, #8991A5);
+    --ink-soft: var(--text-muted, #4B5670);
+    --ink: var(--text-main, #17233F);
+    --paper: var(--bg-card, #ffffff);
+    --border-soft: var(--border-color, #EBECE6);
+    --border: var(--border-hard, #DFE1DA);
+    --radius: var(--radius, 14px);
+    --teal: #146356;
+    --rose: #AE3B34;
+    --gold: #D99A2B;
+    --gold-deep: #B87F1B;
   }
   .dash-head{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:22px;}
   .dash-head h1{font-size:24px; font-weight:600;}

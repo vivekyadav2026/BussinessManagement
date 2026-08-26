@@ -45,7 +45,7 @@
                             <div class="p-4 flex flex-col flex-grow">
                                 <div class="flex justify-between items-start mb-1">
                                     <h3 class="text-lg font-bold text-gray-900 leading-tight">{{ $item->name }}</h3>
-                                    <span class="text-lg font-bold text-gray-900 ml-3">${{ number_format($item->price, 2) }}</span>
+                                    <span class="text-lg font-bold text-gray-900 ml-3">₹{{ number_format($item->price, 2) }}</span>
                                 </div>
                                 
                                 @if($item->description)

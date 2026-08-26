@@ -2,7 +2,7 @@
 
 @push('styles')
 <style>
-    .cart-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 40px; gap: 10px; align-items: center; }
+    .cart-grid { display: grid; grid-template-columns: 2fr 1.2fr 1.5fr 1.2fr 40px; gap: 10px; align-items: center; }
 </style>
 @endpush
 
@@ -15,13 +15,16 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2">
         <!-- Billing Details -->
-        <div class="panel mb-6">
-            <h3 class="font-bold border-b pb-2 mb-4">Billing Details</h3>
+        <div class="panel mb-6 shadow-sm p-6">
+            <h3 class="font-bold border-b pb-2 mb-4 text-gray-800">Billing Details</h3>
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Select Client</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-bold text-gray-500 uppercase">Select Client</label>
+                        <button type="button" onclick="openQuickClientModal()" class="text-xs text-indigo-600 hover:text-indigo-900 font-semibold">+ Quick Add Client</button>
+                    </div>
                     <div class="relative">
-                        <input type="text" id="clientSearch" placeholder="Search client by name or phone..." class="w-full border-gray-300 rounded-lg text-sm" value="{{ request('client_id') ? \App\Models\Client::find(request('client_id'))->name ?? '' : '' }}" autocomplete="off">
+                        <input type="text" id="clientSearch" placeholder="Search client (or leave blank for Walk-in)..." class="w-full border-gray-300 rounded-lg text-sm" value="{{ request('client_id') ? \App\Models\Client::find(request('client_id'))->name ?? '' : '' }}" autocomplete="off">
                         <input type="hidden" id="clientId" value="{{ request('client_id', '') }}">
                         <div id="clientDropdown" class="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto"></div>
                     </div>
@@ -38,7 +41,7 @@
         </div>
 
         <!-- Items -->
-        <div class="panel">
+        <div class="panel p-6">
             <div class="flex justify-between items-end border-b pb-2 mb-4">
                 <h3 class="font-bold">Invoice Items</h3>
                 <div class="w-64 relative">
@@ -63,47 +66,82 @@
 
     <!-- Summary Sidebar -->
     <div class="lg:col-span-1 space-y-6">
-        <div class="panel bg-gray-50 border-2 border-indigo-50">
-            <h3 class="font-bold border-b pb-2 mb-4 text-indigo-900">Summary</h3>
+        <div class="panel bg-white p-6 shadow-sm border border-gray-100 rounded-xl">
+            <h3 class="font-bold border-b pb-3 mb-4 text-gray-800 text-base">Invoice Summary</h3>
             
-            <div class="flex justify-between mb-2 text-sm text-gray-600">
-                <span>Subtotal</span>
-                <span class="font-bold text-gray-900">₹<span id="sumSubtotal">0.00</span></span>
-            </div>
-            
-            <div class="flex justify-between mb-2 text-sm text-gray-600">
-                <span>Total Tax</span>
-                <span class="font-bold text-gray-900">₹<span id="sumTax">0.00</span></span>
-            </div>
+            <div class="space-y-3 mb-4 text-sm text-gray-600">
+                <div class="flex justify-between">
+                    <span>Subtotal</span>
+                    <span class="font-bold text-gray-900">₹<span id="sumSubtotal">0.00</span></span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span>Total Tax</span>
+                    <span class="font-bold text-gray-900">₹<span id="sumTax">0.00</span></span>
+                </div>
 
-            <div class="flex justify-between items-center mb-4 text-sm text-gray-600 border-b pb-4">
-                <span>Discount (₹)</span>
-                <input type="number" id="sumDiscount" value="0" min="0" step="0.01" class="w-24 text-right border-gray-300 rounded-md text-sm py-1" oninput="calculateTotals()">
-            </div>
-
-            <div class="flex justify-between mb-6 text-lg font-black text-indigo-900">
-                <span>Grand Total</span>
-                <span>₹<span id="sumGrandTotal">0.00</span></span>
+                <div class="flex justify-between items-center pt-1 pb-3 border-b border-gray-100">
+                    <span class="text-gray-600">Discount (₹)</span>
+                    <input type="number" id="sumDiscount" value="0" min="0" step="0.01" class="w-24 text-right border-gray-300 rounded-lg text-sm py-1.5 px-2 bg-gray-50 focus:bg-white" oninput="calculateTotals()">
+                </div>
             </div>
 
-            <hr class="mb-4">
-
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Received (₹)</label>
-                <input type="number" id="sumPaid" value="0" min="0" step="0.01" class="w-full border-gray-300 rounded-lg text-lg font-bold">
+            <div class="flex justify-between items-baseline mb-6">
+                <span class="text-sm font-semibold text-gray-700">Grand Total</span>
+                <span class="text-2xl font-black text-gray-900">₹<span id="sumGrandTotal">0.00</span></span>
             </div>
 
-            <div class="mb-6">
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Save As</label>
-                <select id="invoiceStatus" class="w-full border-gray-300 rounded-lg font-medium">
-                    <option value="Paid">Paid</option>
-                    <option value="Due">Due</option>
-                    <option value="Partially Paid">Partially Paid</option>
-                    <option value="Draft">Draft (Do not deduct stock)</option>
-                </select>
+            <div class="space-y-4 border-t border-gray-100 pt-4 mb-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Received (₹)</label>
+                    <input type="number" id="sumPaid" value="0" min="0" step="0.01" class="w-full border-gray-300 rounded-lg text-lg font-bold bg-gray-50 focus:bg-white text-gray-800">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Save As</label>
+                    <select id="invoiceStatus" class="w-full border-gray-300 rounded-lg font-medium text-sm">
+                        <option value="Paid">Paid</option>
+                        <option value="Due">Due</option>
+                        <option value="Partially Paid">Partially Paid</option>
+                        <option value="Draft">Draft (Do not deduct stock)</option>
+                    </select>
+                </div>
             </div>
 
             <button onclick="submitInvoice()" id="btnSubmit" class="btn btn-gold w-full justify-center py-3 text-base shadow-sm">Complete Invoice</button>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Add Client Modal -->
+<div id="quickClientModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeQuickClientModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4" id="modal-title">Quick Add Client</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Client Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="modalClientName" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm" placeholder="Enter name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                        <input type="text" id="modalClientPhone" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm" placeholder="Enter phone number">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                        <input type="email" id="modalClientEmail" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm" placeholder="Enter email (optional)">
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                <button type="button" onclick="submitQuickClient()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">Save Client</button>
+                <button type="button" onclick="closeQuickClientModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
+            </div>
         </div>
     </div>
 </div>
@@ -227,6 +265,14 @@ function updateQty(id, qty) {
     }
 }
 
+function adjustQty(id, change) {
+    let item = cart.find(i => i.id === id);
+    if(item) {
+        item.qty = Math.max(1, item.qty + change);
+        renderCart();
+    }
+}
+
 function removeCart(id) {
     cart = cart.filter(i => i.id !== id);
     renderCart();
@@ -252,12 +298,14 @@ function renderCart() {
         let total = (item.price + taxAmt) * item.qty;
         
         let row = document.createElement('div');
-        row.className = 'cart-grid border border-gray-100 bg-white rounded-lg p-2 shadow-sm text-sm';
+        row.className = 'cart-grid border border-gray-100 bg-white rounded-lg p-2 shadow-sm text-sm items-center';
         row.innerHTML = `
             <div class="font-medium">${item.name} <span class="text-xs text-red-500 ml-1 ${item.qty > item.maxStock ? '' : 'hidden'}">Low Stock!</span></div>
             <div>₹${item.price.toFixed(2)}</div>
-            <div>
-                <input type="number" min="1" value="${item.qty}" class="w-16 border-gray-300 rounded py-1 px-2 text-center text-sm" onchange="updateQty(${item.id}, this.value)">
+            <div class="flex items-center gap-1">
+                <button type="button" onclick="adjustQty(${item.id}, -1)" class="w-6 h-6 flex items-center justify-center border border-gray-300 rounded bg-gray-50 hover:bg-gray-100 font-bold text-gray-600">-</button>
+                <input type="number" min="1" value="${item.qty}" class="w-12 border-gray-300 rounded py-0.5 px-1 text-center text-sm" onchange="updateQty(${item.id}, this.value)">
+                <button type="button" onclick="adjustQty(${item.id}, 1)" class="w-6 h-6 flex items-center justify-center border border-gray-300 rounded bg-gray-50 hover:bg-gray-100 font-bold text-gray-600">+</button>
             </div>
             <div class="text-right font-bold text-indigo-900">₹${total.toFixed(2)}</div>
             <div class="text-right">
@@ -300,16 +348,69 @@ function calculateTotals() {
 
 document.getElementById('invoiceStatus').addEventListener('change', calculateTotals);
 
+// Quick Add Client Functions
+function openQuickClientModal() {
+    document.getElementById('modalClientName').value = '';
+    document.getElementById('modalClientPhone').value = '';
+    document.getElementById('modalClientEmail').value = '';
+    document.getElementById('quickClientModal').classList.remove('hidden');
+}
+
+function closeQuickClientModal() {
+    document.getElementById('quickClientModal').classList.add('hidden');
+}
+
+function submitQuickClient() {
+    const name = document.getElementById('modalClientName').value.trim();
+    const phone = document.getElementById('modalClientPhone').value.trim();
+    const email = document.getElementById('modalClientEmail').value.trim();
+
+    if(!name) {
+        alert("Client Name is required.");
+        return;
+    }
+
+    fetch('{{ route("organization.clients.quick-store") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ name, phone, email })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            clientId.value = data.client.id;
+            clientSearch.value = data.client.name;
+            closeQuickClientModal();
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(err => {
+        alert("An error occurred saving the client.");
+        console.error(err);
+    });
+}
+
 function submitInvoice() {
-    if(!clientId.value) { alert("Please select a client."); return; }
     if(cart.length === 0) { alert("Please add at least one item."); return; }
+    
+    const clientVal = clientId.value;
+    if(!clientVal) {
+        if(!confirm("No client selected. Create this invoice as a 'Walk-in Client'?")) {
+            return;
+        }
+    }
     
     const btn = document.getElementById('btnSubmit');
     btn.disabled = true;
     btn.textContent = 'Processing...';
     
     const payload = {
-        client_id: clientId.value,
+        client_id: clientVal || null,
         invoice_date: document.getElementById('invoiceDate').value,
         notes: document.getElementById('invoiceNotes').value,
         discount: parseFloat(document.getElementById('sumDiscount').value) || 0,

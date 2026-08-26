@@ -66,4 +66,9 @@ trait HasCustomRoles
 
         return false;
     }
+
+    public function hasPermissionTo($permissionName)
+    {
+        return $this->hasPermission($permissionName);
+    }
 }

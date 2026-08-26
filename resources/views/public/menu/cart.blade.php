@@ -21,26 +21,39 @@
             </a>
         </div>
     @else
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
             @php $subtotal = 0; @endphp
             @foreach($cart as $id => $item)
                 @php $subtotal += $item['price'] * $item['quantity']; @endphp
-                <div class="p-4 border-b border-gray-100 flex items-center justify-between last:border-0">
+                <div class="p-4 border-b border-gray-100 flex items-center justify-between last:border-0 gap-4">
                     <div class="flex-grow">
-                        <h3 class="font-bold text-gray-900">{{ $item['name'] }}</h3>
-                        <p class="text-sm text-gray-500">${{ number_format($item['price'], 2) }} each</p>
+                        <h3 class="font-bold text-gray-900 text-sm md:text-base">{{ $item['name'] }}</h3>
+                        <p class="text-xs text-gray-500 font-mono">₹{{ number_format($item['price'], 2) }} each</p>
                     </div>
                     
-                    <div class="flex items-center gap-4">
-                        <div class="font-bold text-gray-900">
-                            {{ $item['quantity'] }}x
+                    <div class="flex items-center gap-4 shrink-0">
+                        <!-- Quantity Controls (+ / -) -->
+                        <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                            <form action="{{ route('public.order.update-quantity', [$organization->id, $location->id, $id]) }}" method="POST" class="inline m-0 p-0">
+                                @csrf
+                                <input type="hidden" name="action" value="decrease">
+                                <button type="submit" class="px-2.5 py-1 text-gray-600 hover:bg-gray-200 font-bold transition text-sm">&minus;</button>
+                            </form>
+                            <span class="px-3 font-bold text-gray-900 text-sm font-mono">{{ $item['quantity'] }}</span>
+                            <form action="{{ route('public.order.update-quantity', [$organization->id, $location->id, $id]) }}" method="POST" class="inline m-0 p-0">
+                                @csrf
+                                <input type="hidden" name="action" value="increase">
+                                <button type="submit" class="px-2.5 py-1 text-gray-600 hover:bg-gray-200 font-bold transition text-sm">+</button>
+                            </form>
                         </div>
-                        <div class="font-bold text-gray-900 w-16 text-right">
-                            ${{ number_format($item['price'] * $item['quantity'], 2) }}
+
+                        <div class="font-bold text-gray-900 w-20 text-right font-mono text-sm md:text-base">
+                            ₹{{ number_format($item['price'] * $item['quantity'], 2) }}
                         </div>
-                        <form action="{{ route('public.order.remove', [$organization->id, $location->id, $id]) }}" method="POST">
+                        
+                        <form action="{{ route('public.order.remove', [$organization->id, $location->id, $id]) }}" method="POST" class="m-0 p-0">
                             @csrf
-                            <button type="submit" class="text-red-500 hover:bg-red-50 p-1.5 rounded-full transition">
+                            <button type="submit" class="text-red-500 hover:bg-red-50 p-1.5 rounded-full transition" title="Remove item">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </form>
@@ -49,22 +62,22 @@
             @endforeach
         </div>
 
-        <div class="bg-gray-100 rounded-xl p-4 mb-8">
-            <div class="flex justify-between mb-2 text-sm text-gray-600">
+        <div class="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-8">
+            <div class="flex justify-between mb-2.5 text-sm text-gray-600">
                 <span>Subtotal</span>
-                <span>${{ number_format($subtotal, 2) }}</span>
+                <span class="font-mono">₹{{ number_format($subtotal, 2) }}</span>
             </div>
             <div class="flex justify-between mb-4 text-sm text-gray-600">
                 <span>Tax (Estimated 5%)</span>
-                <span>${{ number_format($subtotal * 0.05, 2) }}</span>
+                <span class="font-mono">₹{{ number_format($subtotal * 0.05, 2) }}</span>
             </div>
             <div class="flex justify-between border-t border-gray-300 pt-3 font-bold text-lg text-gray-900">
                 <span>Total</span>
-                <span>${{ number_format($subtotal * 1.05, 2) }}</span>
+                <span class="font-mono">₹{{ number_format($subtotal * 1.05, 2) }}</span>
             </div>
         </div>
 
-        <a href="{{ route('public.order.checkout', [$organization->id, $location->id]) }}" class="block w-full text-center bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-blue-700 transition transform active:scale-95">
+        <a href="{{ route('public.order.checkout', [$organization->id, $location->id]) }}" class="block w-full text-center bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-95 text-lg">
             Proceed to Checkout
         </a>
     @endif

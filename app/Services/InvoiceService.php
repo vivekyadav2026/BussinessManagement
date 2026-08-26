@@ -88,7 +88,7 @@ class InvoiceService
             $invoice = Invoice::create([
                 'organization_id' => $organizationId,
                 'location_id' => $locationId,
-                'client_id' => $data['client_id'],
+                'client_id' => $data['client_id'] ?? null,
                 'invoice_number' => $invoiceNumber,
                 'invoice_date' => $data['invoice_date'] ?? now()->toDateString(),
                 'due_date' => $data['due_date'] ?? now()->addDays(7)->toDateString(),

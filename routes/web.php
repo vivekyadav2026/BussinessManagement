@@ -109,6 +109,7 @@ Route::middleware(['auth', 'permission:products.view'])->prefix('organization')-
 
 Route::middleware(['auth', 'permission:clients.view'])->prefix('organization')->name('organization.')->group(function () {
     Route::get('clients/search', [\App\Http\Controllers\Organization\ClientController::class, 'apiSearch'])->name('clients.search');
+    Route::post('clients/quick-store', [\App\Http\Controllers\Organization\ClientController::class, 'quickStore'])->name('clients.quick-store');
     Route::resource('clients', \App\Http\Controllers\Organization\ClientController::class)->except(['destroy']);
 });
 
@@ -200,6 +201,7 @@ Route::prefix('menu/{organization}/{location}')->name('public.order.')->group(fu
     Route::post('/add', [\App\Http\Controllers\PublicOrderController::class, 'addToCart'])->name('add');
     Route::get('/cart', [\App\Http\Controllers\PublicOrderController::class, 'cart'])->name('cart');
     Route::post('/cart/{item}/remove', [\App\Http\Controllers\PublicOrderController::class, 'removeFromCart'])->name('remove');
+    Route::post('/cart/{item}/update', [\App\Http\Controllers\PublicOrderController::class, 'updateQuantity'])->name('update-quantity');
     Route::get('/checkout', [\App\Http\Controllers\PublicOrderController::class, 'checkout'])->name('checkout');
     Route::post('/checkout', [\App\Http\Controllers\PublicOrderController::class, 'placeOrder'])->name('place');
     Route::get('/track/{order}', [\App\Http\Controllers\PublicOrderController::class, 'track'])->name('track');

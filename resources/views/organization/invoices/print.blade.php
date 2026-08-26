@@ -57,11 +57,15 @@
             <tr>
                 <td class="client-info">
                     <span style="color:#777; text-transform:uppercase; font-size:12px;">Bill To:</span><br>
-                    <strong>{{ $invoice->client->name }}</strong><br>
-                    @if($invoice->client->address){{ $invoice->client->address }}<br>@endif
-                    @if($invoice->client->phone)Phone: {{ $invoice->client->phone }}<br>@endif
-                    @if($invoice->client->email)Email: {{ $invoice->client->email }}<br>@endif
-                    @if($invoice->client->gst_number)GST: {{ $invoice->client->gst_number }}<br>@endif
+                    @if($invoice->client)
+                        <strong>{{ $invoice->client->name }}</strong><br>
+                        @if($invoice->client->address){{ $invoice->client->address }}<br>@endif
+                        @if($invoice->client->phone)Phone: {{ $invoice->client->phone }}<br>@endif
+                        @if($invoice->client->email)Email: {{ $invoice->client->email }}<br>@endif
+                        @if($invoice->client->gst_number)GST: {{ $invoice->client->gst_number }}<br>@endif
+                    @else
+                        <strong>Walk-in Client / General Customer</strong>
+                    @endif
                 </td>
                 <td style="text-align:right;">
                     <span style="color:#777; text-transform:uppercase; font-size:12px;">Status:</span><br>
