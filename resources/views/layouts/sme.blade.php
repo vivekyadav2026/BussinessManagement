@@ -10,6 +10,41 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
 
+    <!-- Theme Switcher Script -->
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme-color') || 'navy';
+            document.documentElement.className = 'h-full bg-gray-50 theme-' + theme;
+        })();
+    </script>
+    <style>
+        :root {
+            --theme-bg: #1c2331;
+            --theme-active: #f59e0b;
+            --theme-active-text: #111827;
+        }
+        .theme-emerald {
+            --theme-bg: #064e3b;
+            --theme-active: #10b981;
+            --theme-active-text: #ffffff;
+        }
+        .theme-indigo {
+            --theme-bg: #1e1b4b;
+            --theme-active: #6366f1;
+            --theme-active-text: #ffffff;
+        }
+        .theme-slate {
+            --theme-bg: #0f172a;
+            --theme-active: #3b82f6;
+            --theme-active-text: #ffffff;
+        }
+        .theme-rose {
+            --theme-bg: #4c0519;
+            --theme-active: #f43f5e;
+            --theme-active-text: #ffffff;
+        }
+    </style>
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -19,7 +54,7 @@
     <div x-show="sidebarOpen" class="relative z-40 md:hidden" role="dialog" aria-modal="true" style="display: none;">
         <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-600 bg-opacity-75"></div>
         <div class="fixed inset-0 z-40 flex">
-            <div x-show="sidebarOpen" x-transition:enter="transition ease-in-out duration-300 transform" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in-out duration-300 transform" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="relative flex w-full max-w-xs flex-1 flex-col bg-[#1c2331] pt-5 pb-4">
+            <div x-show="sidebarOpen" x-transition:enter="transition ease-in-out duration-300 transform" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in-out duration-300 transform" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="relative flex w-full max-w-xs flex-1 flex-col pt-5 pb-4" style="background-color: var(--theme-bg);">
                 <div class="absolute top-0 right-0 -mr-12 pt-2">
                     <button type="button" @click="sidebarOpen = false" class="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
                         <span class="sr-only">Close sidebar</span>
@@ -28,8 +63,8 @@
                 </div>
                 <div class="flex flex-shrink-0 items-center px-4">
                     <div class="flex items-center gap-2">
-                        <div class="bg-yellow-500 rounded p-1">
-                            <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                        <div class="bg-[var(--theme-active)] rounded p-1 text-[var(--theme-active-text)]">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                         </div>
                         <div class="font-bold text-xl text-white">Business Pro</div>
                     </div>
@@ -43,38 +78,38 @@
 
     <!-- Static sidebar for desktop -->
     <div class="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
-        <div class="flex min-h-0 flex-1 flex-col bg-[#1c2331]">
+        <div class="flex min-h-0 flex-1 flex-col" style="background-color: var(--theme-bg);">
             <div class="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
-                <div class="flex flex-shrink-0 items-center px-4 mb-4">
+                <div class="flex flex-shrink-0 items-center px-4 mb-3">
                     <div class="flex items-center gap-2">
-                        <div class="bg-yellow-500 rounded p-1">
-                            <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                        <div class="bg-[var(--theme-active)] rounded p-1 text-[var(--theme-active-text)]">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                         </div>
                         <div class="font-bold text-xl text-white tracking-wide">Business Pro</div>
                     </div>
                 </div>
-                <nav class="mt-2 flex-1 space-y-1 px-3">
-                    @include('layouts.partials.sidebar-links')
-                </nav>
-            </div>
-            <div class="flex flex-shrink-0 border-t border-gray-700/50 p-4">
-                <div class="group block w-full flex-shrink-0">
-                    <div class="flex items-center">
-                        <div>
-                            <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-yellow-500 text-gray-900 font-bold">
-                                {{ substr(auth()->user()->name, 0, 1) }}
-                            </div>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-white group-hover:text-gray-200">{{ auth()->user()->organization->name ?? 'Organization' }}</p>
-                            <p class="text-xs font-medium text-gray-400 group-hover:text-gray-300">Organization Admin</p>
-                            <form method="POST" action="{{ route('logout') }}" class="mt-1">
+
+                <!-- Top-Left Profile Widget -->
+                <div class="px-4 py-3 mb-4 bg-black/25 rounded-lg mx-3 flex items-center gap-3">
+                    <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold flex-shrink-0">
+                        {{ substr(auth()->user()->name, 0, 1) }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</div>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <a href="{{ route('profile.edit') }}" class="text-[11px] text-gray-300 hover:text-white underline">Settings</a>
+                            <span class="text-gray-500 text-[10px]">&bull;</span>
+                            <form method="POST" action="{{ route('logout') }}" class="inline">
                                 @csrf
-                                <button type="submit" class="text-xs font-medium text-gray-500 hover:text-white transition-colors">Sign out</button>
+                                <button type="submit" class="text-[11px] text-gray-300 hover:text-white underline">Sign out</button>
                             </form>
                         </div>
                     </div>
                 </div>
+
+                <nav class="mt-2 flex-1 space-y-1 px-3">
+                    @include('layouts.partials.sidebar-links')
+                </nav>
             </div>
         </div>
     </div>
@@ -128,8 +163,62 @@
                 </div>
 
                 <div class="ml-4 flex items-center md:ml-6 gap-3">
-                    <a href="#" class="px-4 py-1.5 text-sm font-medium rounded-full bg-[#1c2331] text-white hover:bg-slate-800 transition-colors">Website</a>
-                    <a href="{{ route('dashboard') }}" class="px-4 py-1.5 text-sm font-semibold rounded-full bg-yellow-500 text-gray-900 hover:bg-yellow-400 transition-colors">Dashboard</a>
+                    <!-- Theme Switcher Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition-colors">
+                            <span class="sr-only">Choose theme</span>
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
+                        </button>
+                        <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30" style="display: none;">
+                            <button @click="localStorage.setItem('theme-color', 'navy'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#1c2331] inline-block border border-gray-300"></span> Dark Navy
+                            </button>
+                            <button @click="localStorage.setItem('theme-color', 'indigo'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#1e1b4b] inline-block border border-gray-300"></span> Royal Indigo
+                            </button>
+                            <button @click="localStorage.setItem('theme-color', 'emerald'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#064e3b] inline-block border border-gray-300"></span> Emerald Forest
+                            </button>
+                            <button @click="localStorage.setItem('theme-color', 'slate'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#0f172a] inline-block border border-gray-300"></span> Midnight Slate
+                            </button>
+                            <button @click="localStorage.setItem('theme-color', 'rose'); window.location.reload()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <span class="w-3.5 h-3.5 rounded-full bg-[#4c0519] inline-block border border-gray-300"></span> Velvet Rose
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Notifications Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none relative transition-colors">
+                            <span class="sr-only">View notifications</span>
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.07 6.07 0 00-1-3.5M9 17v1a3 3 0 006 0v-1m-6 0H9m0 0a3 3 0 01-3-3v-3.5M9 17h6" /></svg>
+                            <span class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
+                        </button>
+                        <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-80 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30" style="display: none;">
+                            <div class="px-4 py-2 text-sm font-semibold border-b border-gray-100 text-gray-800">Notifications</div>
+                            <div class="divide-y divide-gray-50 max-h-64 overflow-y-auto">
+                                <div class="px-4 py-3 hover:bg-gray-50 text-xs">
+                                    <p class="font-medium text-gray-900">Payment Received</p>
+                                    <p class="text-gray-500 mt-0.5">Sharma Traders paid ₹10,132</p>
+                                    <p class="text-gray-400 text-[10px] mt-1">2 mins ago</p>
+                                </div>
+                                <div class="px-4 py-3 hover:bg-gray-50 text-xs">
+                                    <p class="font-medium text-gray-900">New KOT Order</p>
+                                    <p class="text-gray-500 mt-0.5">Table 07 ordered Butter Chicken</p>
+                                    <p class="text-gray-400 text-[10px] mt-1">10 mins ago</p>
+                                </div>
+                                <div class="px-4 py-3 hover:bg-gray-50 text-xs">
+                                    <p class="font-medium text-gray-900">Low Stock Warning</p>
+                                    <p class="text-gray-500 mt-0.5">Basmati Rice (25kg) is below 5 units</p>
+                                    <p class="text-gray-400 text-[10px] mt-1">1 hour ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="/" class="px-4 py-1.5 text-sm font-medium rounded-full bg-[#1c2331] text-white hover:bg-slate-800 transition-colors" style="background-color: var(--theme-bg);">Website</a>
+                    <a href="{{ route('dashboard') }}" class="px-4 py-1.5 text-sm font-semibold rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] hover:opacity-90 transition-colors">Dashboard</a>
                 </div>
             </div>
         </div>

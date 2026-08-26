@@ -78,21 +78,40 @@
 
 <div class="grid-2">
   <div class="panel">
-    <div class="panel-head"><h3>Recent invoices</h3><a>View all</a></div>
+    <div class="panel-head"><h3>Sales Performance</h3></div>
+    <div style="height: 220px; position: relative;">
+        <canvas id="salesChart"></canvas>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h3>Expenses Breakdown</h3></div>
+    <div style="height: 220px; position: relative; display: flex; justify-content: center;">
+        <canvas id="expensesChart" style="max-width: 220px; max-height: 220px;"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2" style="grid-template-columns: 1.4fr 1fr;">
+  <div class="panel">
+    <div class="panel-head"><h3>Recent Invoices</h3><a>View all</a></div>
     <table class="inv-table">
-      <tr><th>Invoice</th><th>Client</th><th>Amount</th><th>Status</th></tr>
-      <tr><td colspan="4" style="text-align:center; padding: 20px; color: var(--ink-faint);">No invoices found</td></tr>
+      <thead>
+        <tr><th>Invoice</th><th>Client</th><th>Amount</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="4" style="text-align:center; padding: 20px; color: var(--ink-faint);">No invoices found</td></tr>
+      </tbody>
     </table>
   </div>
   <div class="panel">
-    <div class="panel-head"><h3>Business health</h3></div>
+    <div class="panel-head"><h3>Business Health Meter</h3></div>
     <div class="health-gauge">
-      <div class="health-num">100<span>/100</span></div>
+      <div class="health-num">98<span>/100</span></div>
       <div class="health-bars">
-        <div class="hbar-row"><span class="l">Sales</span><div class="hbar-track"><div class="hbar-fill" style="width:100%"></div></div></div>
-        <div class="hbar-row"><span class="l">Profit</span><div class="hbar-track"><div class="hbar-fill" style="width:100%"></div></div></div>
-        <div class="hbar-row"><span class="l">Stock</span><div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--gold)"></div></div></div>
-        <div class="hbar-row"><span class="l">Receivables</span><div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--rose)"></div></div></div>
+        <div class="hbar-row"><span class="l">Sales</span><div class="hbar-track"><div class="hbar-fill" style="width:95%"></div></div></div>
+        <div class="hbar-row"><span class="l">Profit</span><div class="hbar-track"><div class="hbar-fill" style="width:90%"></div></div></div>
+        <div class="hbar-row"><span class="l">Stock</span><div class="hbar-track"><div class="hbar-fill" style="width:85%;background:var(--gold)"></div></div></div>
+        <div class="hbar-row"><span class="l">Receivables</span><div class="hbar-track"><div class="hbar-fill" style="width:98%;background:var(--rose)"></div></div></div>
       </div>
     </div>
   </div>
@@ -108,3 +127,62 @@
   </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Sales Line Chart
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    new Chart(salesCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Monthly Sales (₹)',
+          data: [25000, 39000, 48000, 62000, 58000, 75000],
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.05)',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    // Expenses Doughnut Chart
+    const expCtx = document.getElementById('expensesChart').getContext('2d');
+    new Chart(expCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Salary', 'Inventory', 'Rent', 'Marketing'],
+        datasets: [{
+          data: [40, 25, 20, 15],
+          backgroundColor: [
+            '#3b82f6',
+            '#10b981',
+            '#f59e0b',
+            '#ef4444'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+        }
+      }
+    });
+  });
+</script>
+@endpush
