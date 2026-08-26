@@ -55,7 +55,7 @@ Route::middleware(['auth', 'role:Super Admin'])->prefix('super-admin')->name('su
     
     Route::resource('plans', \App\Http\Controllers\SuperAdmin\PlanController::class)->except(['show', 'destroy']);
     
-    Route::get('/subscriptions', function(){ return "Subscriptions"; })->name('subscriptions.index');
+    Route::resource('subscriptions', \App\Http\Controllers\SuperAdmin\SubscriptionController::class)->except(['create', 'store', 'show', 'destroy']);
     Route::get('/profile', function(){ return "Profile"; })->name('profile.edit');
 });
 
