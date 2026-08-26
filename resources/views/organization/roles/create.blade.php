@@ -1,45 +1,57 @@
 @extends('layouts.sme')
 
 @section('content')
-<div class="dash-head mb-6">
-  <a href="{{ route('organization.roles.index') }}" class="text-sm text-gray-500 hover:text-indigo-600 mb-2 inline-block">&larr; Back to Roles</a>
-  <h1 class="text-2xl font-bold text-gray-900">Create New Role</h1>
-</div>
-
-<form action="{{ route('organization.roles.store') }}" method="POST">
-    @csrf
-    
-    <div class="panel mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Role Name *</label>
-        <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Store Manager, Cashier" class="w-full max-w-md border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
-        @error('name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+<div class="p-6 max-w-5xl space-y-6">
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+        <a href="{{ route('organization.roles.index') }}" class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:bg-gray-50 shadow-sm transition">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Create New Role</h1>
+            <p class="text-sm text-gray-500 mt-0.5">Establish a new custom authorization role and configure its permission ruleset.</p>
+        </div>
     </div>
 
-    <div class="panel">
-        <h3 class="text-lg font-bold mb-4 pb-2 border-b">Assign Permissions</h3>
+    <!-- Form -->
+    <form action="{{ route('organization.roles.store') }}" method="POST" class="space-y-6">
+        @csrf
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            @foreach($groupedPermissions as $module => $permissions)
-            <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                <h4 class="font-bold text-gray-900 mb-3">{{ $module }}</h4>
-                <div class="space-y-2">
-                    @foreach($permissions as $permission)
-                    <label class="flex items-start gap-2 cursor-pointer">
-                        <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" 
-                               {{ is_array(old('permissions')) && in_array($permission->id, old('permissions')) ? 'checked' : '' }}
-                               class="mt-1 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300">
-                        <span class="text-sm text-gray-700">{{ $permission->label }}</span>
-                    </label>
-                    @endforeach
+        <!-- Role Name Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Role Name *</label>
+            <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Store Manager, Cashier" class="w-full max-w-md border border-gray-200 focus:border-[var(--theme-active)] focus:ring-2 focus:ring-[var(--theme-active)]/20 rounded-xl px-4 py-2.5 text-sm outline-none transition @error('name') border-red-300 @enderror">
+            @error('name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+        </div>
+
+        <!-- Permissions Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
+            <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-50 pb-3">Assign Permissions</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach($groupedPermissions as $module => $permissions)
+                <div class="bg-gray-50/50 rounded-xl p-4 border border-gray-100 space-y-3">
+                    <h4 class="font-bold text-gray-800 text-xs uppercase tracking-wider border-b border-gray-100 pb-2 mb-2">{{ $module }}</h4>
+                    <div class="space-y-3">
+                        @foreach($permissions as $permission)
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" 
+                                   {{ is_array(old('permissions')) && in_array($permission->id, old('permissions')) ? 'checked' : '' }}
+                                   class="mt-1 rounded text-[var(--theme-active)] focus:ring-[var(--theme-active)] border-gray-300">
+                            <span class="text-sm text-gray-700 font-medium leading-none">{{ $permission->label }}</span>
+                        </label>
+                        @endforeach
+                    </div>
                 </div>
+                @endforeach
             </div>
-            @endforeach
+            
+            <!-- Submit Buttons -->
+            <div class="mt-8 pt-6 border-t border-gray-100 flex justify-end gap-3">
+                <a href="{{ route('organization.roles.index') }}" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-50 transition">Cancel</a>
+                <button type="submit" class="px-5 py-2.5 bg-[var(--theme-active)] text-[var(--theme-active-text)] rounded-xl font-semibold text-sm hover:opacity-95 shadow-sm transition">Save Role</button>
+            </div>
         </div>
-        
-        <div class="mt-8 pt-4 border-t flex justify-end gap-3">
-            <a href="{{ route('organization.roles.index') }}" class="btn bg-white border border-gray-300 text-gray-700">Cancel</a>
-            <button type="submit" class="btn btn-gold">Save Role</button>
-        </div>
-    </div>
-</form>
+    </form>
+</div>
 @endsection
