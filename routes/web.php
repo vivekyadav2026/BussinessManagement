@@ -243,3 +243,8 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
+Route::get('/handover-pdf', function () {
+    $pdf = Barryvdh\DomPDF\Facade\Pdf::loadView('documents.handover');
+    return $pdf->download('Vyapaargo_Handover_Documentation.pdf');
+})->name('handover.pdf');
+
