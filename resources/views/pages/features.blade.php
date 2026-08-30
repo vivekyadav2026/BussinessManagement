@@ -4,28 +4,33 @@
 <section class="hero" style="padding-bottom: 20px;">
     <div class="wrap text-center" style="text-align: center; max-width: 700px; margin: 0 auto;">
         <div class="eyebrow">Enterprise Features</div>
-        <h1 style="font-size: 42px; margin-bottom: 24px;">Everything you need to <br><em>grow your business</em>.</h1>
-        <p class="lead" style="margin: 0 auto;">Discover powerful tools designed to simplify your operations, manage employees, and scale seamlessly.</p>
+        <h1 class="page-title">Everything you need to <br><em>grow your business</em>.</h1>
+        <p class="page-lead" style="max-width: 600px;">Discover powerful tools designed to simplify your operations, manage employees, and scale seamlessly.</p>
     </div>
 </section>
 
-<section class="features">
+<section class="features" style="padding-top: 10px;">
     <div class="wrap">
-        <div class="feat-grid">
-            <div class="feat-card">
-                <div class="feat-icon"><svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
-                <h3>Smart Invoicing</h3>
-                <p>Create GST-compliant invoices in seconds. Auto-calculate taxes and share via PDF.</p>
+        <div class="grid-2">
+            <div class="side-cards-list">
+                <div class="feat-card">
+                    <div class="feat-icon"><svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+                    <h3>Smart Invoicing</h3>
+                    <p>Create GST-compliant invoices in seconds. Auto-calculate taxes and share via PDF.</p>
+                </div>
+                <div class="feat-card">
+                    <div class="feat-icon"><svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
+                    <h3>Inventory Control</h3>
+                    <p>Track stock levels in real-time, get low-stock alerts, and manage product variants.</p>
+                </div>
+                <div class="feat-card">
+                    <div class="feat-icon"><svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg></div>
+                    <h3>Employee Payroll</h3>
+                    <p>Automate attendance, calculate salaries, and generate payslips automatically.</p>
+                </div>
             </div>
-            <div class="feat-card">
-                <div class="feat-icon"><svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
-                <h3>Inventory Control</h3>
-                <p>Track stock levels in real-time, get low-stock alerts, and manage product variants.</p>
-            </div>
-            <div class="feat-card">
-                <div class="feat-icon"><svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg></div>
-                <h3>Employee Payroll</h3>
-                <p>Automate attendance, calculate salaries, and generate payslips automatically.</p>
+            <div>
+                <img src="{{ asset('images/features_preview.jpg') }}" alt="Vyapaargo Barcode Inventory" class="illust-img">
             </div>
         </div>
     </div>

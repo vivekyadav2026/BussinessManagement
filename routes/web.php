@@ -6,11 +6,19 @@ use App\Services\DocumentService;
 use App\Models\Invoice;
 use App\Models\Payroll;
 
-Route::view('/', 'welcome')->name('welcome');
+Route::get('/', function () {
+    $plans = \App\Models\Plan::where('is_active', true)->with('features')->get();
+    return view('welcome', compact('plans'));
+})->name('welcome');
+
 Route::view('/features', 'pages.features')->name('public.features');
 Route::view('/restaurant', 'pages.restaurant')->name('public.restaurant');
 Route::view('/payments', 'pages.payments')->name('public.payments');
-Route::view('/pricing', 'pages.pricing')->name('public.pricing');
+
+Route::get('/pricing', function () {
+    $plans = \App\Models\Plan::where('is_active', true)->with('features')->get();
+    return view('pages.pricing', compact('plans'));
+})->name('public.pricing');
 
 // Public Document Endpoints
 Route::get('/document/invoice/{invoice}/download', function (Invoice $invoice) {
@@ -62,9 +70,9 @@ Route::middleware(['auth', 'role:Super Admin'])->prefix('super-admin')->name('su
     Route::resource('organizations', \App\Http\Controllers\SuperAdmin\OrganizationController::class);
     Route::patch('organizations/{organization}/toggle-status', [\App\Http\Controllers\SuperAdmin\OrganizationController::class, 'toggleStatus'])->name('organizations.toggle-status');
     
-    Route::resource('plans', \App\Http\Controllers\SuperAdmin\PlanController::class)->except(['show', 'destroy']);
+    Route::resource('plans', \App\Http\Controllers\SuperAdmin\PlanController::class);
     
-    Route::resource('subscriptions', \App\Http\Controllers\SuperAdmin\SubscriptionController::class)->except(['create', 'store', 'show', 'destroy']);
+    Route::resource('subscriptions', \App\Http\Controllers\SuperAdmin\SubscriptionController::class);
     Route::get('/profile', function(){ return "Profile"; })->name('profile.edit');
 });
 
@@ -73,12 +81,12 @@ Route::middleware(['auth', 'role:Super Admin'])->prefix('super-admin')->name('su
 Route::middleware(['auth', 'role:Organization Admin'])->prefix('organization')->name('organization.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Organization\DashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('roles', \App\Http\Controllers\Organization\RoleController::class)->except(['show', 'destroy']);
+    Route::resource('roles', \App\Http\Controllers\Organization\RoleController::class);
     
     Route::resource('employees', \App\Http\Controllers\Organization\EmployeeController::class);
     Route::patch('employees/{employee}/toggle-status', [\App\Http\Controllers\Organization\EmployeeController::class, 'toggleStatus'])->name('employees.toggle-status');
     
-    Route::resource('locations', \App\Http\Controllers\Organization\LocationController::class)->except(['show', 'destroy']);
+    Route::resource('locations', \App\Http\Controllers\Organization\LocationController::class);
     Route::patch('locations/{location}/toggle-status', [\App\Http\Controllers\Organization\LocationController::class, 'toggleStatus'])->name('locations.toggle-status');
     
     // Subscription Management
@@ -112,14 +120,14 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'plan.fe
 });
 
 Route::middleware(['auth', 'permission:products.view'])->prefix('organization')->name('organization.')->group(function () {
-    Route::resource('categories', \App\Http\Controllers\Organization\CategoryController::class)->except(['create', 'show', 'edit', 'destroy']);
-    Route::resource('products', \App\Http\Controllers\Organization\ProductController::class)->except(['show', 'destroy']);
+    Route::resource('categories', \App\Http\Controllers\Organization\CategoryController::class)->except(['create', 'show', 'edit']);
+    Route::resource('products', \App\Http\Controllers\Organization\ProductController::class);
 });
 
 Route::middleware(['auth', 'permission:clients.view'])->prefix('organization')->name('organization.')->group(function () {
     Route::get('clients/search', [\App\Http\Controllers\Organization\ClientController::class, 'apiSearch'])->name('clients.search');
     Route::post('clients/quick-store', [\App\Http\Controllers\Organization\ClientController::class, 'quickStore'])->name('clients.quick-store');
-    Route::resource('clients', \App\Http\Controllers\Organization\ClientController::class)->except(['destroy']);
+    Route::resource('clients', \App\Http\Controllers\Organization\ClientController::class);
 });
 
 Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'permission:inventory.view'])->prefix('organization/inventory')->name('organization.inventory.')->group(function () {

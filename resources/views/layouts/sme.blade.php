@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Business Management') }}</title>
+    <title>{{ config('app.name', 'Vyapaargo') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@
     </script>
     <style>
         :root {
-            /* Theme bases from Khatabook Pro style guide */
+            /* Theme bases from Vyapaargo style guide */
             --bg-main: #F3F5F3;
             --bg-card: #FFFFFF;
             --border-color: #EBECE6;
@@ -313,10 +313,9 @@
                         <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <div class="flex flex-shrink-0 items-center px-4">
                     <div class="logo text-white">
                         <div class="mark bg-[#D99A2B]"></div>
-                        <span>Khatabook Pro</span>
+                        <span>Vyapaargo</span>
                     </div>
                 </div>
                 <nav class="mt-5 flex-1 space-y-1 px-2">
@@ -333,7 +332,7 @@
                 <div class="flex flex-shrink-0 items-center px-4 mb-3">
                     <div class="logo text-white">
                         <div class="mark bg-[#D99A2B]"></div>
-                        <span>Khatabook Pro</span>
+                        <span>Vyapaargo</span>
                     </div>
                 </div>
 

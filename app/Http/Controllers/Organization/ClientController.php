@@ -138,4 +138,14 @@ class ClientController extends Controller
             ]
         ]);
     }
+
+    public function destroy(Client $client)
+    {
+        abort_if($client->organization_id !== auth()->user()->organization_id, 403);
+        if ($client->invoices()->count() > 0) {
+            return redirect()->route('organization.clients.index')->with('error', 'Cannot delete client who has associated invoices.');
+        }
+        $client->delete();
+        return redirect()->route('organization.clients.index')->with('success', 'Client deleted successfully.');
+    }
 }

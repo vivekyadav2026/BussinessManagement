@@ -42,14 +42,22 @@
         </td>
         <td class="text-right">
             <div class="flex items-center justify-end gap-3">
+                <a href="{{ route('organization.locations.show', $loc) }}" class="text-green-600 hover:text-green-900 font-medium text-xs">View</a>
                 <a href="{{ route('organization.locations.edit', $loc) }}" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">Edit</a>
-                <form action="{{ route('organization.locations.toggle-status', $loc) }}" method="POST" onsubmit="return confirm('Toggle this location\'s status?');">
+                <form action="{{ route('organization.locations.toggle-status', $loc) }}" method="POST" onsubmit="return confirm('Toggle this location\'s status?');" style="display:inline-block; margin:0;">
                     @csrf
                     @method('PATCH')
-                    <button type="submit" class="text-xs font-medium {{ $loc->is_active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900' }}">
+                    <button type="submit" class="text-xs font-medium {{ $loc->is_active ? 'text-orange-655' : 'text-teal-655' }}">
                         {{ $loc->is_active ? 'Deactivate' : 'Activate' }}
                     </button>
                 </form>
+                @if($loc->employees()->count() === 0)
+                    <form action="{{ route('organization.locations.destroy', $loc) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this location?');" style="display:inline-block; margin:0;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-red-600 hover:text-red-900 font-medium text-xs">Delete</button>
+                    </form>
+                @endif
             </div>
         </td>
       </tr>

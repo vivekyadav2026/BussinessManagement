@@ -65,4 +65,22 @@ class RoleController extends Controller
 
         return redirect()->route('organization.roles.index')->with('success', 'Role updated successfully.');
     }
+
+    public function show(Role $role)
+    {
+        abort_if($role->organization_id !== auth()->user()->organization_id, 403);
+        $role->load('permissions');
+        return view('organization.roles.show', compact('role'));
+    }
+
+    public function destroy(Role $role)
+    {
+        abort_if($role->organization_id !== auth()->user()->organization_id, 403);
+        if ($role->users()->count() > 0) {
+            return redirect()->route('organization.roles.index')->with('error', 'Cannot delete role assigned to users.');
+        }
+        $role->permissions()->detach();
+        $role->delete();
+        return redirect()->route('organization.roles.index')->with('success', 'Role deleted successfully.');
+    }
 }

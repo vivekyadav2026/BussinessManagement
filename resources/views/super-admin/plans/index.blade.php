@@ -39,8 +39,16 @@
                                         {{ $plan->is_active ? 'Active' : 'Inactive' }}
                                     </span>
                                 </td>
-                                <td class="p-3 text-right">
+                                <td class="p-3 text-right flex justify-end gap-3 items-center">
+                                    <a href="{{ route('super-admin.plans.show', $plan) }}" class="text-green-600 hover:underline">View</a>
                                     <a href="{{ route('super-admin.plans.edit', $plan) }}" class="text-blue-600 hover:underline">Edit</a>
+                                    @if($plan->subscriptions()->count() === 0)
+                                        <form action="{{ route('super-admin.plans.destroy', $plan) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this plan?');" style="display:inline-block; margin:0;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

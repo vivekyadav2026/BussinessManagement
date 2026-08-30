@@ -6,6 +6,7 @@
         <h1 class="text-2xl font-bold text-gray-900">Subscriptions</h1>
         <p class="text-gray-500 mt-1">Manage tenant billing plans and active subscriptions.</p>
     </div>
+    <a href="{{ route('super-admin.subscriptions.create') }}" class="bg-blue-655 text-white px-4 py-2 rounded shadow hover:bg-blue-700 font-semibold text-sm">Add Subscription</a>
 </div>
 
 @if(session('success'))
@@ -50,8 +51,14 @@
                     </td>
                     <td class="px-6 py-4">{{ $sub->starts_at ? $sub->starts_at->format('M d, Y') : '-' }}</td>
                     <td class="px-6 py-4">{{ $sub->ends_at ? $sub->ends_at->format('M d, Y') : 'Lifetime' }}</td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-6 py-4 text-right flex justify-end gap-3 items-center">
+                        <a href="{{ route('super-admin.subscriptions.show', $sub->id) }}" class="text-green-600 hover:text-green-900 font-medium text-xs">View</a>
                         <a href="{{ route('super-admin.subscriptions.edit', $sub->id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">Edit</a>
+                        <form action="{{ route('super-admin.subscriptions.destroy', $sub->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this subscription?');" style="display:inline-block; margin:0;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-red-600 hover:text-red-900 font-medium text-xs">Delete</button>
+                        </form>
                     </td>
                 </tr>
                 @empty

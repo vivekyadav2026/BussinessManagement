@@ -14,4 +14,9 @@ class Location extends Model
     {
         return $this->belongsToMany(User::class, 'user_locations');
     }
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class);
+    }
 }

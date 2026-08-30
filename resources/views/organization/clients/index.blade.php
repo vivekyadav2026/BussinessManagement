@@ -72,9 +72,17 @@
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-3">
-                                <a href="{{ route('organization.clients.show', $client) }}" class="text-indigo-650 hover:text-indigo-900 font-bold text-xs">View Ledger</a>
-                                <span class="text-gray-300">|</span>
-                                <a href="{{ route('organization.clients.edit', $client) }}" class="text-gray-400 hover:text-gray-700 font-bold text-xs">Edit</a>
+                                <a href="{{ route('organization.clients.show', $client) }}" class="text-green-600 hover:text-green-900 font-bold text-xs">View</a>
+                                <span class="text-gray-250">|</span>
+                                <a href="{{ route('organization.clients.edit', $client) }}" class="text-indigo-600 hover:text-indigo-950 font-bold text-xs">Edit</a>
+                                @if($client->invoices()->count() === 0)
+                                    <span class="text-gray-250">|</span>
+                                    <form action="{{ route('organization.clients.destroy', $client) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this client?');" style="display:inline-block; margin:0;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-655 hover:text-red-900 font-bold text-xs">Delete</button>
+                                    </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

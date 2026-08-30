@@ -41,9 +41,17 @@
                         <td class="px-6 py-4 text-gray-400 font-medium">
                             {{ $role->created_at->format('M d, Y') }}
                         </td>
-                        <td class="px-6 py-4 text-right">
+                        <td class="px-6 py-4 text-right flex justify-end gap-3 items-center">
+                            <a href="{{ route('organization.roles.show', $role) }}" class="text-green-600 hover:text-green-900 font-bold text-xs">View</a>
                             @if($role->name !== 'Organization Admin')
-                                <a href="{{ route('organization.roles.edit', $role) }}" class="text-indigo-650 hover:text-indigo-900 font-bold text-xs">Edit Permissions</a>
+                                <a href="{{ route('organization.roles.edit', $role) }}" class="text-indigo-650 hover:text-indigo-900 font-bold text-xs">Edit</a>
+                                @if($role->users_count === 0)
+                                    <form action="{{ route('organization.roles.destroy', $role) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this role?');" style="display:inline-block; margin:0;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900 font-bold text-xs">Delete</button>
+                                    </form>
+                                @endif
                             @else
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-50 text-gray-500 border border-gray-150">
                                     System Admin (Full Access)

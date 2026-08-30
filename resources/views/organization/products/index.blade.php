@@ -79,8 +79,14 @@
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Inactive</span>
             @endif
         </td>
-        <td class="text-right">
+        <td class="text-right flex justify-end gap-3 items-center">
+            <a href="{{ route('organization.products.show', $product) }}" class="text-green-600 hover:text-green-900 font-medium text-xs">View</a>
             <a href="{{ route('organization.products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">Edit</a>
+            <form action="{{ route('organization.products.destroy', $product) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?');" style="display:inline-block; margin:0;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="text-red-600 hover:text-red-900 font-medium text-xs">Delete</button>
+            </form>
         </td>
       </tr>
       @empty

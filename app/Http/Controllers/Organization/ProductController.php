@@ -123,4 +123,21 @@ class ProductController extends Controller
 
         return redirect()->route('organization.products.index')->with('success', 'Product updated successfully.');
     }
+
+    public function show(Product $product)
+    {
+        abort_if($product->organization_id !== auth()->user()->organization_id, 403);
+        $product->load('category');
+        return view('organization.products.show', compact('product'));
+    }
+
+    public function destroy(Product $product)
+    {
+        abort_if($product->organization_id !== auth()->user()->organization_id, 403);
+        if ($product->image_path) {
+            Storage::disk('public')->delete($product->image_path);
+        }
+        $product->delete();
+        return redirect()->route('organization.products.index')->with('success', 'Product deleted successfully.');
+    }
 }

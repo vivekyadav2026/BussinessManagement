@@ -81,4 +81,20 @@ class PlanController extends Controller
 
         return redirect()->route('super-admin.plans.index')->with('success', 'Plan updated successfully.');
     }
+
+    public function show(Plan $plan)
+    {
+        $plan->load('features');
+        return view('super-admin.plans.show', compact('plan'));
+    }
+
+    public function destroy(Plan $plan)
+    {
+        if ($plan->subscriptions()->count() > 0) {
+            return redirect()->route('super-admin.plans.index')->with('error', 'Cannot delete plan that has active subscriptions.');
+        }
+        $plan->features()->delete();
+        $plan->delete();
+        return redirect()->route('super-admin.plans.index')->with('success', 'Plan deleted successfully.');
+    }
 }

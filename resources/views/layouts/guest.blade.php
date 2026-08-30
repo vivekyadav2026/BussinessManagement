@@ -1,32 +1,75 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-gray-50">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Business Management') }}</title>
+    <title>{{ config('app.name', 'Vyapaargo') }}</title>
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <style>
+        /* Gold & Ink Branding Style Overrides */
+        :root {
+            --gold: #D99A2B;
+            --gold-deep: #B87F1B;
+            --ink: #17233F;
+            --ink-soft: #4B5670;
+            --bg: #F3F5F3;
+        }
+        body {
+            background-color: var(--bg) !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+        h2 {
+            font-family: 'Space Grotesk', sans-serif !important;
+        }
+        /* Override default Tailwind indigo classes to match brand color */
+        .text-indigo-600 {
+            color: var(--gold-deep) !important;
+        }
+        .text-indigo-600:hover {
+            color: var(--gold) !important;
+        }
+        .bg-indigo-600 {
+            background-color: var(--ink) !important;
+            color: #ffffff !important;
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-weight: 600 !important;
+            transition: background-color 0.15s ease !important;
+        }
+        .bg-indigo-600:hover {
+            background-color: var(--gold-deep) !important;
+            color: var(--ink) !important;
+        }
+        .focus\:ring-indigo-500:focus {
+            --tw-ring-color: var(--gold) !important;
+        }
+        .focus\:border-indigo-500:focus {
+            border-color: var(--gold) !important;
+        }
+    </style>
 </head>
-<body class="h-full font-sans antialiased text-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
+<body class="h-full font-sans antialiased text-gray-900 flex flex-col justify-center py-6 sm:px-6 lg:px-8">
     @php
         $maxWidthClass = $maxWidth ?? 'sm:max-w-md';
     @endphp
 
     <div class="sm:mx-auto sm:w-full {{ $maxWidthClass }}">
         <div class="flex justify-center">
-            <!-- Modern Logo Icon -->
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-600">
-                <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
-                </svg>
-            </div>
+            <!-- Vyapaargo Logo Icon -->
+            <a href="{{ route('welcome') }}" style="display:flex; align-items:center; gap:9px; font-family:'Space Grotesk'; font-weight:700; font-size:22px; color:#17233F; text-decoration:none;">
+                <div style="width:28px; height:28px; background:#17233F; border-radius:6px; position:relative;">
+                    <div style="position:absolute; left:6px; right:6px; top:7px; height:2px; background:#D99A2B; box-shadow:0 5px 0 #D99A2B, 0 10px 0 #D99A2B;"></div>
+                </div>
+                Vyapaargo
+            </a>
         </div>
         
         @if(isset($header))
@@ -34,8 +77,8 @@
         @endif
     </div>
 
-    <div class="mt-8 sm:mx-auto sm:w-full {{ $maxWidthClass }}">
-        <div class="bg-white py-8 px-4 shadow-xl sm:rounded-xl sm:px-10 border border-gray-100">
+    <div class="mt-4 sm:mx-auto sm:w-full {{ $maxWidthClass }}">
+        <div class="bg-white py-6 px-4 shadow-xl sm:rounded-xl sm:px-10 border border-gray-100">
             {{ $slot }}
         </div>
     </div>

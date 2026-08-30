@@ -35,4 +35,38 @@ class SubscriptionController extends Controller
 
         return redirect()->route('super-admin.subscriptions.index')->with('success', 'Subscription updated successfully.');
     }
+
+    public function create()
+    {
+        $organizations = \App\Models\Organization::all();
+        $plans = Plan::where('is_active', true)->get();
+        return view('super-admin.subscriptions.create', compact('organizations', 'plans'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'organization_id' => 'required|exists:organizations,id',
+            'plan_id' => 'required|exists:plans,id',
+            'status' => 'required|in:Active,Trial,Expired,Cancelled',
+            'starts_at' => 'required|date',
+            'ends_at' => 'nullable|date|after_or_equal:starts_at',
+        ]);
+
+        OrganizationSubscription::create($validated);
+
+        return redirect()->route('super-admin.subscriptions.index')->with('success', 'Subscription created successfully.');
+    }
+
+    public function show(OrganizationSubscription $subscription)
+    {
+        $subscription->load(['organization', 'plan']);
+        return view('super-admin.subscriptions.show', compact('subscription'));
+    }
+
+    public function destroy(OrganizationSubscription $subscription)
+    {
+        $subscription->delete();
+        return redirect()->route('super-admin.subscriptions.index')->with('success', 'Subscription deleted successfully.');
+    }
 }

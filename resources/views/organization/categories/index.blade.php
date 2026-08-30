@@ -31,8 +31,15 @@
         <td class="font-bold">{{ $category->name }}</td>
         <td class="text-gray-500">{{ $category->slug }}</td>
         <td>{{ $category->products()->count() }}</td>
-        <td class="text-right">
+        <td class="text-right flex justify-end gap-3 items-center">
             <button onclick="editCategory({{ $category->id }}, '{{ $category->name }}')" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">Edit</button>
+            @if($category->products()->count() === 0)
+                <form action="{{ route('organization.categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this category?');" style="display:inline-block; margin:0;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-red-600 hover:text-red-900 font-medium text-xs">Delete</button>
+                </form>
+            @endif
         </td>
       </tr>
       @empty

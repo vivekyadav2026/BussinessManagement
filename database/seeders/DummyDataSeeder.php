@@ -40,13 +40,44 @@ class DummyDataSeeder extends Seeder
         if(!$superAdmin->roles->contains($roleSuper->id)) $superAdmin->roles()->attach($roleSuper);
 
         // Ensure Plans Exist
+        $freePlan = Plan::firstOrCreate(
+            ['name' => 'Free'],
+            ['price_monthly' => 0, 'price_yearly' => 0, 'is_active' => true, 'description' => 'Great for beginners']
+        );
+        $freeFeatures = ['1 User', 'Unlimited Products', 'Up to 50 Invoices/mo', 'Basic Reports'];
+        foreach($freeFeatures as $feat) {
+            PlanFeature::firstOrCreate(['plan_id' => $freePlan->id, 'feature_code' => $feat], ['feature_value' => 'true']);
+        }
+
         $proPlan = Plan::firstOrCreate(
             ['name' => 'Pro Plan'],
-            ['price_monthly' => 999, 'price_yearly' => 9990, 'is_active' => true]
+            ['price_monthly' => 499, 'price_yearly' => 4990, 'is_active' => true, 'description' => 'Best for growing businesses']
         );
-        $features = ['max_employees' => '50', 'module_payroll' => 'true', 'module_restaurant' => 'true'];
-        foreach($features as $code => $value) {
+        $oldFeatures = ['max_employees' => '50', 'module_payroll' => 'true', 'module_restaurant' => 'true'];
+        foreach($oldFeatures as $code => $value) {
             PlanFeature::firstOrCreate(['plan_id' => $proPlan->id, 'feature_code' => $code], ['feature_value' => $value]);
+        }
+        $proFeaturesList = ['5 Users', 'Unlimited Invoices', 'Employee Payroll', 'Payment Gateway (Razorpay)'];
+        foreach($proFeaturesList as $feat) {
+            PlanFeature::firstOrCreate(['plan_id' => $proPlan->id, 'feature_code' => $feat], ['feature_value' => 'true']);
+        }
+
+        $restPlan = Plan::firstOrCreate(
+            ['name' => 'Restaurant'],
+            ['price_monthly' => 999, 'price_yearly' => 9990, 'is_active' => true, 'description' => 'Tailored for food joints']
+        );
+        $restFeatures = ['Everything in Pro', 'Digital QR Menu', 'Kitchen Display System', 'Table Management'];
+        foreach($restFeatures as $feat) {
+            PlanFeature::firstOrCreate(['plan_id' => $restPlan->id, 'feature_code' => $feat], ['feature_value' => 'true']);
+        }
+
+        $entPlan = Plan::firstOrCreate(
+            ['name' => 'Enterprise'],
+            ['price_monthly' => 0, 'price_yearly' => 0, 'is_active' => true, 'description' => 'Custom solutions']
+        );
+        $entFeatures = ['Unlimited Users', 'Multiple Locations', 'Priority Support', 'Custom Integrations'];
+        foreach($entFeatures as $feat) {
+            PlanFeature::firstOrCreate(['plan_id' => $entPlan->id, 'feature_code' => $feat], ['feature_value' => 'true']);
         }
 
         // 2. Retail/ERP Organization

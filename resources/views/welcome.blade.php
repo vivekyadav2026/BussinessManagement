@@ -21,7 +21,7 @@
         <div class="inv-top">
           <div>
             <div class="who">Sharma Traders</div>
-            <div class="num">INV-2026-0417 · 25 Aug</div>
+            <div class="num">INV-{{ date('Y') }}-0417 · {{ date('d M') }}</div>
           </div>
           <div class="stamp">PAID</div>
         </div>
@@ -49,6 +49,20 @@
       <div>Multi-location ready</div>
     </div>
   </div>
+
+  <!-- Dashboard Overview Section -->
+  <section style="background: var(--paper); border-bottom: 1px solid var(--border-soft); padding: 32px 0;">
+    <div class="wrap" style="text-align: center;">
+      <div class="sec-head" style="margin: 0 auto 24px; text-align: center;">
+        <div class="eyebrow">Real-time Analytics</div>
+        <h2>Powerful Business Dashboard</h2>
+        <p>Monitor your entire business health from a single dashboard. Sales trends, stock level status, and active invoice tracking - all updated in real-time.</p>
+      </div>
+      <div style="max-width: 900px; margin: 0 auto;">
+        <img src="{{ asset('images/dashboard_preview.jpg') }}" alt="Vyapaargo Dashboard" class="illust-img">
+      </div>
+    </div>
+  </section>
 
   <section id="features">
     <div class="wrap">
@@ -101,19 +115,11 @@
         <p>Manage tables, send orders directly to the kitchen, and let customers order via QR codes seamlessly.</p>
       </div>
       <div class="rest-split">
-        <div class="phone">
-          <div class="phone-screen">
-            <div style="font-family:'Space Grotesk'; font-weight:700; text-align:center; margin-bottom:12px;">Spice Kitchen</div>
-            <div class="qr-chip" style="justify-content:center;">Table 07 &middot; Dine-in</div>
-            <div class="menu-cat">Starters</div>
-            <div class="menu-item"><div>Paneer Tikka</div><div style="display:flex; gap:10px; align-items:center;"><span class="price">₹220</span><div class="add">+</div></div></div>
-            <div class="menu-item"><div>Spring Rolls</div><div style="display:flex; gap:10px; align-items:center;"><span class="price">₹180</span><div class="add">+</div></div></div>
-            <div class="menu-cat" style="margin-top:16px;">Main Course</div>
-            <div class="menu-item" style="border:none;"><div>Butter Chicken</div><div style="display:flex; gap:10px; align-items:center;"><span class="price">₹350</span><div class="add">+</div></div></div>
-          </div>
+        <div>
+          <img src="{{ asset('images/restaurant_preview.jpg') }}" alt="Restaurant QR Menu Ordering" class="illust-img">
         </div>
         <div>
-          <h2 style="font-size:32px; font-weight:600; margin-bottom:24px;">Smart QR Ordering</h2>
+          <h2 class="section-title">Smart QR Ordering</h2>
           <ul class="rest-list">
             <li>
               <div class="rest-num">01</div>
@@ -137,23 +143,26 @@
 
   <!-- Payments Section -->
   <section id="payments">
-    <div class="wrap text-center" style="max-width:700px; margin:0 auto; margin-bottom:50px;">
+    <div class="wrap text-center" style="max-width:700px; margin:0 auto; margin-bottom:32px;">
       <div class="eyebrow">Razorpay Integration</div>
       <h2>Accept payments instantly.</h2>
       <p style="color:var(--ink-soft); font-size:15.5px; line-height:1.6;">Send payment links with invoices and let clients pay via UPI, cards, and net banking with automatic reconciliation.</p>
     </div>
-    <div class="wrap">
-      <div class="flow-card" style="max-width:800px; margin:0 auto; text-align:center;">
-        <div class="flow-title" style="margin-bottom:32px;">Seamless Payment Flow</div>
-        <div class="flow-row" style="justify-content:center;">
-          <div class="flow-step">1. Generate Invoice</div>
-          <div class="flow-arrow">➔</div>
-          <div class="flow-step">2. Send Payment Link</div>
-          <div class="flow-arrow">➔</div>
-          <div class="flow-step">3. Client Pays via UPI</div>
-          <div class="flow-arrow">➔</div>
-          <div class="flow-step">4. Auto-Reconciled</div>
+    <div class="wrap payment-grid">
+      <div class="flow-card" style="text-align:center; width: 100%;">
+        <div class="flow-title" style="margin-bottom:20px;">Seamless Payment Flow</div>
+        <div class="flow-row" style="justify-content:center; flex-direction: column; gap: 8px;">
+          <div class="flow-step" style="width: 100%;">1. Generate Invoice</div>
+          <div class="flow-arrow" style="transform: rotate(90deg); margin: 2px 0; display: inline-block;">➔</div>
+          <div class="flow-step" style="width: 100%;">2. Send Payment Link</div>
+          <div class="flow-arrow" style="transform: rotate(90deg); margin: 2px 0; display: inline-block;">➔</div>
+          <div class="flow-step" style="width: 100%;">3. Client Pays via UPI</div>
+          <div class="flow-arrow" style="transform: rotate(90deg); margin: 2px 0; display: inline-block;">➔</div>
+          <div class="flow-step" style="width: 100%;">4. Auto-Reconciled</div>
         </div>
+      </div>
+      <div>
+        <img src="{{ asset('images/payments_preview.jpg') }}" alt="UPI Payment Success" class="illust-img">
       </div>
     </div>
   </section>
@@ -165,51 +174,119 @@
       <h2>Simple pricing, no hidden fees.</h2>
       <p style="color:var(--ink-soft); font-size:15.5px; line-height:1.6;">Start for free and upgrade as your business grows. Cancel anytime.</p>
     </div>
-    <div class="wrap plans">
-      <div class="plan-card">
-        <div class="plan-name">Free</div>
-        <div class="plan-price">₹0<span> / forever</span></div>
-        <ul class="plan-feats">
-          <li>1 User</li>
-          <li>Unlimited Products</li>
-          <li>Up to 50 Invoices/mo</li>
-          <li>Basic Reports</li>
-        </ul>
-        <a class="btn btn-ghost" href="{{ route('register') }}" style="width:100%; justify-content:center;">Get Started</a>
+    <div class="wrap plans-container">
+      <div class="plans" id="plans-slider">
+        @foreach($plans as $plan)
+          @php
+            $isFeat = ($plan->name === 'Pro Plan');
+            $isEnterprise = ($plan->name === 'Enterprise');
+            $displayFeatures = $plan->features->filter(function($f) {
+                return !in_array($f->feature_code, ['max_employees', 'module_payroll', 'module_restaurant']);
+            });
+          @endphp
+          <div class="plan-card {{ $isFeat ? 'feat' : '' }}">
+            @if($isFeat)
+              <div class="plan-tag">MOST POPULAR</div>
+            @endif
+            <div class="plan-name">{{ $plan->name }}</div>
+            <div class="plan-price">
+              @if($isEnterprise)
+                Custom
+              @else
+                ₹{{ number_format($plan->price_monthly, 0) }}<span> / {{ $plan->name === 'Free' ? 'forever' : 'mo' }}</span>
+              @endif
+            </div>
+            <ul class="plan-feats">
+              @foreach($displayFeatures as $feature)
+                <li>{{ $feature->feature_code }}</li>
+              @endforeach
+            </ul>
+            @if($isEnterprise)
+              <a class="btn btn-ghost" href="{{ route('register') }}" style="width:100%; justify-content:center;">Contact Us</a>
+            @else
+              <a class="btn {{ $isFeat ? 'btn-gold' : 'btn-ghost' }}" href="{{ route('register') }}" style="width:100%; justify-content:center;">
+                {{ $plan->name === 'Free' ? 'Get Started' : 'Start Free Trial' }}
+              </a>
+            @endif
+          </div>
+        @endforeach
       </div>
-      <div class="plan-card feat">
-        <div class="plan-tag">MOST POPULAR</div>
-        <div class="plan-name">Pro</div>
-        <div class="plan-price">₹499<span> / mo</span></div>
-        <ul class="plan-feats">
-          <li>5 Users</li>
-          <li>Unlimited Invoices</li>
-          <li>Employee Payroll</li>
-          <li>Payment Gateway (Razorpay)</li>
-        </ul>
-        <a class="btn btn-gold" href="{{ route('register') }}" style="width:100%; justify-content:center;">Start Free Trial</a>
+      <div class="slider-dots" id="plans-dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
       </div>
-      <div class="plan-card">
-        <div class="plan-name">Restaurant</div>
-        <div class="plan-price">₹999<span> / mo</span></div>
-        <ul class="plan-feats">
-          <li>Everything in Pro</li>
-          <li>Digital QR Menu</li>
-          <li>Kitchen Display System</li>
-          <li>Table Management</li>
-        </ul>
-        <a class="btn btn-ghost" href="{{ route('register') }}" style="width:100%; justify-content:center;">Start Free Trial</a>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section style="background: var(--paper); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft);">
+    <div class="wrap">
+      <div class="sec-head" style="margin: 0 auto 24px; text-align: center; max-width: 600px;">
+        <div class="eyebrow">User Stories</div>
+        <h2>Loved by Indian business owners.</h2>
+        <p>See how local merchants are saving hours of manual billing and inventory tracking every single day.</p>
       </div>
-      <div class="plan-card">
-        <div class="plan-name">Enterprise</div>
-        <div class="plan-price">Custom</div>
-        <ul class="plan-feats">
-          <li>Unlimited Users</li>
-          <li>Multiple Locations</li>
-          <li>Priority Support</li>
-          <li>Custom Integrations</li>
-        </ul>
-        <a class="btn btn-ghost" href="{{ route('register') }}" style="width:100%; justify-content:center;">Contact Us</a>
+    <div class="wrap plans-container">
+      <div class="reviews-slider" id="reviews-slider">
+        <div class="feat-card" style="padding: 20px;">
+          <div style="color: var(--gold); font-size: 16px; margin-bottom: 8px;">★★★★★</div>
+          <p style="font-style: italic; font-size: 13px; color: var(--ink-soft); margin-bottom: 12px; line-height: 1.4;">"Pehle invoice WhatsApp par bhejna aur receivables track karna sir dard tha. Ab ek click me direct UPI payment link chala jata hai."</p>
+          <div style="font-weight: 700; font-size: 12.5px;">- Rajesh Kumar</div>
+          <div style="font-size: 11px; color: var(--ink-faint); font-family: 'IBM Plex Mono';">Kirana Store, New Delhi</div>
+        </div>
+        <div class="feat-card" style="padding: 20px;">
+          <div style="color: var(--gold); font-size: 16px; margin-bottom: 8px;">★★★★★</div>
+          <p style="font-style: italic; font-size: 13px; color: var(--ink-soft); margin-bottom: 12px; line-height: 1.4;">"Humare cafe me QR order seedha kitchen screen par jata hai. Kot print karne ka jhanjhat khatam ho gaya. Billing automatically track hoti hai."</p>
+          <div style="font-weight: 700; font-size: 12.5px;">- Priya Sharma</div>
+          <div style="font-size: 11px; color: var(--ink-faint); font-family: 'IBM Plex Mono';">The Coffee Nook, Pune</div>
+        </div>
+        <div class="feat-card" style="padding: 20px;">
+          <div style="color: var(--gold); font-size: 16px; margin-bottom: 8px;">★★★★★</div>
+          <p style="font-style: italic; font-size: 13px; color: var(--ink-soft); margin-bottom: 12px; line-height: 1.4;">"Multi-location feature se main apni Delhi aur Gurugram dono branches ka stock aur attendance ek hi admin account se control karta hoon."</p>
+          <div style="font-weight: 700; font-size: 12.5px;">- Amit Verma</div>
+          <div style="font-size: 11px; color: var(--ink-faint); font-family: 'IBM Plex Mono';">Verma Electronics, Gurugram</div>
+        </div>
+      </div>
+      <div class="slider-dots" id="reviews-dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section style="background: var(--bg); border-bottom: 1px solid var(--border-soft);">
+    <div class="wrap" style="max-width: 800px;">
+      <div class="sec-head" style="margin-bottom: 24px; text-align: center; margin-left: auto; margin-right: auto;">
+        <div class="eyebrow">FAQs</div>
+        <h2>Frequently Asked Questions</h2>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <details class="feat-card" style="padding: 14px 18px; cursor: pointer;">
+          <summary style="font-weight: 600; font-size: 14.5px; font-family: 'Space Grotesk'; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            <span>Vyapaargo setup karne me kitna samay lagta hai?</span>
+            <span style="color: var(--gold); font-weight: bold;">+</span>
+          </summary>
+          <p style="font-size: 13px; color: var(--ink-soft); margin-top: 10px; line-height: 1.5; cursor: default;">Setup bilkul aasan hai. Aap 5 minutes me register karke products add kar sakte hain aur billing shuru kar sakte hain.</p>
+        </details>
+        <details class="feat-card" style="padding: 14px 18px; cursor: pointer;">
+          <summary style="font-weight: 600; font-size: 14.5px; font-family: 'Space Grotesk'; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            <span>Kya online payments automatic reconcile hoti hain?</span>
+            <span style="color: var(--gold); font-weight: bold;">+</span>
+          </summary>
+          <p style="font-size: 13px; color: var(--ink-soft); margin-top: 10px; line-height: 1.5; cursor: default;">Haan, Razorpay verified webhooks ke zariye jab bhi koi customer UPI ya card se pay karta hai, invoice automatically status 'Paid' me update ho jata hai.</p>
+        </details>
+        <details class="feat-card" style="padding: 14px 18px; cursor: pointer;">
+          <summary style="font-weight: 600; font-size: 14.5px; font-family: 'Space Grotesk'; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            <span>Kya main ek account me multiple locations manage kar sakta hoon?</span>
+            <span style="color: var(--gold); font-weight: bold;">+</span>
+          </summary>
+          <p style="font-size: 13px; color: var(--ink-soft); margin-top: 10px; line-height: 1.5; cursor: default;">Haan, Enterprise aur Pro plans me multi-location support hai. Har branch ka stock, sales aur staff attendance separate scope hota hai jo owner ek dashboard se dekh sakta hai.</p>
+        </details>
       </div>
     </div>
   </section>

@@ -40,4 +40,14 @@ class CategoryController extends Controller
 
         return back()->with('success', 'Category updated successfully.');
     }
+
+    public function destroy(Category $category)
+    {
+        abort_if($category->organization_id !== auth()->user()->organization_id, 403);
+        if ($category->products()->count() > 0) {
+            return back()->with('error', 'Cannot delete category with active products.');
+        }
+        $category->delete();
+        return back()->with('success', 'Category deleted successfully.');
+    }
 }
