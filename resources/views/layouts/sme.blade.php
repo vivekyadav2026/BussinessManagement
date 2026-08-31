@@ -212,6 +212,7 @@
             border: 1px solid var(--border-color) !important;
             box-shadow: var(--shadow) !important;
             background-color: var(--bg-card) !important;
+            padding: 1.5rem !important; /* Added global 24px padding to panels */
         }
         .theme-dark .panel, .theme-dark .card {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3) !important;

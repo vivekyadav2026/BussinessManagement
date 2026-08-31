@@ -1,65 +1,88 @@
 @extends('layouts.sme')
 
 @section('content')
-<div class="dash-head flex justify-between items-end mb-6">
-  <div>
-      <h1 class="text-2xl font-bold text-gray-900">Role Details</h1>
-      <p class="text-gray-500 mt-1">Role name: {{ $role->name }}</p>
-  </div>
-  <div class="flex gap-2">
-      <a class="btn bg-gray-100 text-gray-700 btn-sm" href="{{ route('organization.roles.index') }}">Back to Roles</a>
-      <a class="btn btn-gold btn-sm" href="{{ route('organization.roles.edit', $role) }}">Edit Role</a>
-  </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2">
-        <div class="panel mb-6">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">Permissions Assigned</h3>
-            @php
-                $groupedPermissions = $role->permissions->groupBy('module');
-            @endphp
-            
-            @forelse($groupedPermissions as $module => $permissions)
-                <div class="mb-4">
-                    <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-2 border-b pb-1">{{ $module }}</h4>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach($permissions as $permission)
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-800">
-                                {{ str_replace('_', ' ', $permission->name) }}
-                            </span>
-                        @endforeach
-                    </div>
-                </div>
-            @empty
-                <p class="text-gray-500 text-sm">No permissions assigned to this role.</p>
-            @endforelse
+<div class="max-w-6xl mx-auto px-4 py-2 space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-150">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('organization.roles.index') }}" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-gray-900 hover:bg-gray-50 shadow-sm transition">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            </a>
+            <div>
+                <h1 class="text-lg font-bold text-gray-900 tracking-tight">Role Details</h1>
+                <p class="text-xs text-gray-500">Role name: <span class="font-semibold text-gray-800">{{ $role->name }}</span></p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <a class="px-3.5 py-1.5 border border-gray-300 text-gray-700 bg-white rounded-lg font-semibold text-xs hover:bg-gray-50 shadow-sm transition" href="{{ route('organization.roles.index') }}">Back to Roles</a>
+            <a class="px-3.5 py-1.5 bg-[var(--theme-active)] text-[var(--theme-active-text)] rounded-lg font-semibold text-xs hover:opacity-90 shadow-sm transition" href="{{ route('organization.roles.edit', $role) }}">Edit Role</a>
         </div>
     </div>
-    
-    <div>
-        <div class="panel">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">Summary</h3>
-            <div class="mb-4">
-                <label class="block text-xs font-semibold text-gray-400 uppercase">Role Name</label>
-                <div class="text-sm font-bold text-gray-900 mt-1">{{ $role->name }}</div>
-            </div>
-            <div class="mb-4">
-                <label class="block text-xs font-semibold text-gray-400 uppercase">Users Assigned</label>
-                <div class="text-sm font-bold text-gray-900 mt-1">{{ $role->users()->count() }} users</div>
-            </div>
-            
-            @if($role->users()->count() === 0)
-                <div class="mt-6 pt-4 border-t border-gray-100">
-                    <form action="{{ route('organization.roles.destroy', $role) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this role?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="w-full text-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none">
-                            Delete Role
-                        </button>
-                    </form>
+
+    <!-- Grid Details -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left panel: Permissions Assigned -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
+                <div class="flex items-center gap-2 pb-2 border-b border-gray-100">
+                    <span class="w-1 h-3.5 bg-[var(--theme-active)] rounded-full"></span>
+                    <h2 class="text-sm font-semibold text-gray-800">Permissions Assigned</h2>
                 </div>
-            @endif
+                
+                @php
+                    $groupedPermissions = $role->permissions->groupBy('module');
+                @endphp
+                
+                <div class="space-y-4">
+                    @forelse($groupedPermissions as $module => $permissions)
+                        <div class="space-y-2">
+                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ $module }}</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach($permissions as $permission)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-medium bg-indigo-50 text-indigo-750 border border-indigo-100/80">
+                                        {{ str_replace('_', ' ', $permission->name) }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-gray-400 text-xs py-2">No permissions assigned to this role.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right panel: Summary -->
+        <div>
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
+                <div class="flex items-center gap-2 pb-2 border-b border-gray-100">
+                    <span class="w-1 h-3.5 bg-[var(--theme-active)] rounded-full"></span>
+                    <h2 class="text-sm font-semibold text-gray-800">Summary</h2>
+                </div>
+                
+                <div class="space-y-3.5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Role Name</label>
+                        <div class="text-sm font-semibold text-gray-900 mt-0.5">{{ $role->name }}</div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Users Assigned</label>
+                        <div class="text-sm font-semibold text-gray-900 mt-0.5">{{ $role->users()->count() }} users</div>
+                    </div>
+                </div>
+                
+                @if($role->users()->count() === 0)
+                    <div class="pt-4 border-t border-gray-100">
+                        <form action="{{ route('organization.roles.destroy', $role) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this role?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-full text-center px-4 py-2 border border-red-300 text-xs font-semibold rounded-lg text-red-650 bg-white hover:bg-red-50 focus:outline-none transition shadow-sm">
+                                Delete Role
+                            </button>
+                        </form>
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 </div>
