@@ -296,7 +296,8 @@
         input[class*="pl-12"], input.pl-12 { padding-left: 3rem !important; }
     </style>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script src="{{ asset('js/app.js') }}" defer></script>
     @stack('styles')
 </head>
 <body class="h-full font-sans antialiased text-gray-900" x-data="{ sidebarOpen: false }">

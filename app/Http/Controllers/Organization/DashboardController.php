@@ -24,7 +24,7 @@ class DashboardController extends Controller
         $invoiceStatuses = AnalyticsService::getInvoiceStatusDistribution($orgId, $locationId);
         $dailySales = AnalyticsService::getDailySalesChart($orgId, $locationId);
         
-        $health = BusinessHealthService::calculateScore($orgId, $locationId);
+        $health = BusinessHealthService::calculateScore($orgId, $locationId, $sales, $inventory, $receivables, $customers);
 
         return view('organization.dashboard', compact(
             'sales', 'inventory', 'receivables', 'customers', 

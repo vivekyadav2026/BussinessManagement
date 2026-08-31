@@ -7,12 +7,12 @@ class BusinessHealthService
     /**
      * Calculates the Business Health Score from 0 to 100 based on 5 pillars (20 points each).
      */
-    public static function calculateScore($orgId, $locationId = null)
+    public static function calculateScore($orgId, $locationId = null, $sales = null, $inventory = null, $receivables = null, $customers = null)
     {
-        $sales = AnalyticsService::getSalesAndProfitMetrics($orgId, $locationId);
-        $inventory = AnalyticsService::getInventoryMetrics($orgId, $locationId);
-        $receivables = AnalyticsService::getReceivablesMetrics($orgId, $locationId);
-        $customers = AnalyticsService::getCustomerMetrics($orgId);
+        $sales = $sales ?? AnalyticsService::getSalesAndProfitMetrics($orgId, $locationId);
+        $inventory = $inventory ?? AnalyticsService::getInventoryMetrics($orgId, $locationId);
+        $receivables = $receivables ?? AnalyticsService::getReceivablesMetrics($orgId, $locationId);
+        $customers = $customers ?? AnalyticsService::getCustomerMetrics($orgId);
 
         $score = 0;
         $insights = [];
