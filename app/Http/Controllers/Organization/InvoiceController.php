@@ -40,7 +40,7 @@ class InvoiceController extends Controller
 
         $stats = [
             'paid_sum' => (clone $statsQuery)->where('status', 'Paid')->sum('grand_total'),
-            'unpaid_sum' => (clone $statsQuery)->whereIn('status', ['Due', 'Partially Paid', 'Overdue'])->sum('amount_due'),
+            'unpaid_sum' => (clone $statsQuery)->whereIn('status', ['Due', 'Partially Paid', 'Overdue'])->sum(\Illuminate\Support\Facades\DB::raw('grand_total - amount_paid')),
             'overdue_count' => (clone $statsQuery)->where('status', 'Overdue')->count(),
             'total_count' => $statsQuery->count()
         ];
