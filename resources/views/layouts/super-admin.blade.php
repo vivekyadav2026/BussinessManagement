@@ -165,8 +165,15 @@
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
             background-color: var(--bg-card) !important;
         }
+        input[type="checkbox"]:checked, input[type="radio"]:checked {
+            background-color: var(--theme-active) !important;
+            border-color: var(--theme-active) !important;
+        }
         .theme-dark input[type="checkbox"], .theme-dark input[type="radio"] {
             background-color: var(--bg-main) !important;
+        }
+        .theme-dark input[type="checkbox"]:checked, .theme-dark input[type="radio"]:checked {
+            background-color: var(--theme-active) !important;
         }
         input[type="checkbox"]:focus, input[type="radio"]:focus {
             box-shadow: 0 0 0 3px rgba(217, 154, 43, 0.15) !important;
