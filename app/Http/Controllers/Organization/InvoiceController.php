@@ -34,16 +34,15 @@ class InvoiceController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Calculate KPI stats for active location
-        $statsBase = Invoice::where('organization_id', auth()->user()->organization_id)
-            ->where('location_id', $locationId)
-            ->get();
+        // Calculate KPI stats for active location using database aggregate queries for high performance
+        $statsQuery = Invoice::where('organization_id', auth()->user()->organization_id)
+            ->where('location_id', $locationId);
 
         $stats = [
-            'paid_sum' => $statsBase->where('status', 'Paid')->sum('grand_total'),
-            'unpaid_sum' => $statsBase->filter(fn($i) => in_array($i->status, ['Due', 'Partially Paid', 'Overdue']))->sum(fn($i) => $i->amount_due),
-            'overdue_count' => $statsBase->where('status', 'Overdue')->count(),
-            'total_count' => $statsBase->count()
+            'paid_sum' => (clone $statsQuery)->where('status', 'Paid')->sum('grand_total'),
+            'unpaid_sum' => (clone $statsQuery)->whereIn('status', ['Due', 'Partially Paid', 'Overdue'])->sum('amount_due'),
+            'overdue_count' => (clone $statsQuery)->where('status', 'Overdue')->count(),
+            'total_count' => $statsQuery->count()
         ];
 
         $invoices = $query->latest()->paginate(15);

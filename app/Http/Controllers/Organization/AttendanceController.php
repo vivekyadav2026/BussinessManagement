@@ -46,16 +46,23 @@ class AttendanceController extends Controller
 
         $date = $request->date;
         DB::transaction(function () use ($request, $orgId, $locationId, $date) {
-            foreach ($request->attendance as $employeeId => $data) {
-                // Ensure employee belongs to org and location
-                $emp = Employee::where('id', $employeeId)
-                    ->where('organization_id', $orgId)
-                    ->where('location_id', $locationId)
-                    ->first();
-                    
-                if (!$emp) dd("NOT FOUND", $employeeId, $orgId, $locationId);
+            // Pre-fetch all active employees for this location to prevent N+1 queries in the loop
+            $employees = Employee::where('organization_id', $orgId)
+                ->where('location_id', $locationId)
+                ->get()
+                ->keyBy('id');
 
-                $existing = Attendance::where('employee_id', $emp->id)->whereDate('date', $date)->first();
+            // Pre-fetch existing attendance records for the date to optimize queries
+            $existingAttendances = Attendance::whereIn('employee_id', $employees->keys())
+                ->whereDate('date', $date)
+                ->get()
+                ->keyBy('employee_id');
+
+            foreach ($request->attendance as $employeeId => $data) {
+                $emp = $employees->get($employeeId);
+                if (!$emp) continue;
+
+                $existing = $existingAttendances->get($emp->id);
 
                 if ($existing) {
                     $existing->status = $data['status'];
@@ -73,7 +80,6 @@ class AttendanceController extends Controller
                         'check_out' => $data['check_out'] ?? null,
                     ]);
                 }
-                
             }
         });
 
