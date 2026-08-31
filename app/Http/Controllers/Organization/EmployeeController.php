@@ -107,11 +107,13 @@ class EmployeeController extends Controller
 
     public function show(Employee $employee)
     {
+        abort_if($employee->organization_id !== auth()->user()->organization_id, 403);
         return view('organization.employees.show', compact('employee'));
     }
 
     public function edit(Employee $employee)
     {
+        abort_if($employee->organization_id !== auth()->user()->organization_id, 403);
         $roles = Role::where('organization_id', auth()->user()->organization_id)
                      ->where('name', '!=', 'Organization Admin')
                      ->get();
@@ -124,6 +126,7 @@ class EmployeeController extends Controller
 
     public function update(Request $request, Employee $employee)
     {
+        abort_if($employee->organization_id !== auth()->user()->organization_id, 403);
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'nullable|string|max:255',
@@ -135,13 +138,27 @@ class EmployeeController extends Controller
             'locations' => 'nullable|array',
             
             // Login account fields
+            'create_account' => 'nullable|boolean',
             'role' => 'nullable|exists:roles,name',
             'reset_password' => 'nullable|boolean',
-            'password' => ['nullable', 'required_if:reset_password,1', Password::defaults()],
+            'password' => ['nullable', Password::defaults()],
         ]);
 
-        if ($employee->user_id && $request->email !== $employee->user->email) {
-            $request->validate(['email' => 'required|email|unique:users,email,'.$employee->user_id]);
+        if ($employee->user_id) {
+            if ($request->email !== $employee->user->email) {
+                $request->validate(['email' => 'required|email|unique:users,email,'.$employee->user_id]);
+            }
+            if ($request->reset_password) {
+                $request->validate(['password' => 'required']);
+            }
+        } else {
+            if ($request->create_account) {
+                $request->validate([
+                    'email' => 'required|email|unique:users,email',
+                    'password' => 'required',
+                    'role' => 'required|exists:roles,name',
+                ]);
+            }
         }
 
         DB::transaction(function () use ($request, $employee) {
@@ -175,6 +192,20 @@ class EmployeeController extends Controller
                 }
                 
                 $employee->user->locations()->sync($request->locations ?? []);
+            } elseif ($request->create_account) {
+                $user = User::create([
+                    'organization_id' => auth()->user()->organization_id,
+                    'name' => trim($request->first_name . ' ' . $request->last_name),
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                ]);
+                $user->assignRole($request->role);
+                
+                if ($request->has('locations')) {
+                    $user->locations()->sync($request->locations);
+                }
+                
+                $employee->update(['user_id' => $user->id]);
             }
         });
 
@@ -183,6 +214,7 @@ class EmployeeController extends Controller
 
     public function toggleStatus(Employee $employee)
     {
+        abort_if($employee->organization_id !== auth()->user()->organization_id, 403);
         $newStatus = $employee->status === 'active' ? 'inactive' : 'active';
         $employee->update(['status' => $newStatus]);
         

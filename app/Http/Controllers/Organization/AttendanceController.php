@@ -23,7 +23,7 @@ class AttendanceController extends Controller
 
         $employees = Employee::where('organization_id', $orgId)
             ->where('location_id', $locationId)
-            ->where('status', 'Active')
+            ->whereIn('status', ['active', 'Active'])
             ->with(['attendances' => function($q) use ($date) {
                 $q->where('date', $date);
             }])
