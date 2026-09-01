@@ -1,11 +1,20 @@
 <x-guest-layout>
     <x-slot name="header">
+        @php
+            $trialDays = (int) \App\Models\SystemSetting::get('trial_days', 14);
+            $enableTrial = \App\Models\SystemSetting::get('enable_free_trial', '1');
+        @endphp
         <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Sign in to your account</h2>
         <p class="mt-2 text-center text-sm text-gray-600">
             Or
-            <a href="{{ route('register') }}" class="font-medium text-indigo-600 hover:text-indigo-500">start your 14-day free trial</a>
+            @if($enableTrial === '1' && $trialDays > 0)
+                <a href="{{ route('register') }}" class="font-medium text-indigo-600 hover:text-indigo-500">start your {{ $trialDays }}-day free trial</a>
+            @else
+                <a href="{{ route('register') }}" class="font-medium text-indigo-600 hover:text-indigo-500">create a new business account</a>
+            @endif
         </p>
     </x-slot>
+
 
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />

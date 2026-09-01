@@ -18,12 +18,15 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             \App\Http\Middleware\LocationContext::class,
+            \App\Http\Middleware\CheckSubscriptionValidity::class,
         ]);
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'plan.feature' => \App\Http\Middleware\CheckPlanFeature::class,
+            'subscription.valid' => \App\Http\Middleware\CheckSubscriptionValidity::class,
         ]);
+
         
         $middleware->validateCsrfTokens(except: [
             'webhook/razorpay',

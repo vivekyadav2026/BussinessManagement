@@ -48,6 +48,16 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
+
+        $orgId = auth()->user()->organization_id;
+
+        $currentCount = Employee::where('organization_id', $orgId)->count();
+
+        if (\App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_employees', $currentCount)) {
+            $limit = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_employees');
+            return back()->withInput()->with('error', "Employee limit reached ({$currentCount}/{$limit}). Please upgrade your plan to add more employees.");
+        }
+
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'nullable|string|max:255',
@@ -63,6 +73,7 @@ class EmployeeController extends Controller
             'password' => ['nullable', 'required_if:create_account,1', Password::defaults()],
             'role' => 'nullable|required_if:create_account,1|exists:roles,name',
         ]);
+
 
         if ($request->create_account) {
             $request->validate(['email' => 'required|email|unique:users,email']);

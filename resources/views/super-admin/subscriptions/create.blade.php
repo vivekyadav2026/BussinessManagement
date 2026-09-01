@@ -27,8 +27,9 @@
                 <select name="plan_id" required class="w-full border border-gray-300 rounded px-3 py-2 outline-none">
                     <option value="">Select Plan</option>
                     @foreach($plans as $plan)
-                        <option value="{{ $plan->id }}" {{ old('plan_id') == $plan->id ? 'selected' : '' }}>{{ $plan->name }} - ${{ number_format($plan->price_monthly, 2) }}/mo</option>
+                        <option value="{{ $plan->id }}" {{ old('plan_id') == $plan->id ? 'selected' : '' }}>{{ $plan->name }} - ₹{{ number_format($plan->price_monthly, 2) }}/mo</option>
                     @endforeach
+
                 </select>
                 @error('plan_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
             </div>

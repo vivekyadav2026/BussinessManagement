@@ -17,89 +17,16 @@ class KitchenOrderController extends Controller
             return redirect()->route('dashboard')->with('error', 'You are not assigned to any location. Please contact your administrator.');
         }
 
-        $orgId = auth()->user()->organization_id;
-
-        // Auto-generate some dummy orders if there are none in the active location
-        $ordersCount = RestaurantOrder::where('organization_id', $orgId)
-            ->where('location_id', $locationId)
-            ->count();
-
-        if ($ordersCount === 0) {
-            $table = RestaurantTable::where('organization_id', $orgId)
-                ->where('location_id', $locationId)
-                ->first();
-
-            if (!$table) {
-                $table = RestaurantTable::create([
-                    'organization_id' => $orgId,
-                    'location_id' => $locationId,
-                    'name' => 'Table 1',
-                    'public_token' => Str::random(32),
-                    'is_active' => true,
-                ]);
-            }
-
-            // Order 1: Received status
-            $o1 = RestaurantOrder::create([
-                'organization_id' => $orgId,
-                'location_id' => $locationId,
-                'restaurant_table_id' => $table->id,
-                'order_number' => 'ORD-' . rand(1000, 9999),
-                'customer_name' => 'John Doe',
-                'order_type' => 'Dine-in',
-                'subtotal' => 450.00,
-                'tax' => 22.50,
-                'total' => 472.50,
-                'status' => 'Received',
-            ]);
-            $o1->items()->createMany([
-                ['name_snapshot' => 'Paneer Tikka Masala', 'price_snapshot' => 280.00, 'quantity' => 1, 'total' => 280.00],
-                ['name_snapshot' => 'Butter Naan', 'price_snapshot' => 45.00, 'quantity' => 3, 'total' => 135.00],
-                ['name_snapshot' => 'Masala Papad', 'price_snapshot' => 35.00, 'quantity' => 1, 'total' => 35.00]
-            ]);
-
-            // Order 2: Preparing status
-            $o2 = RestaurantOrder::create([
-                'organization_id' => $orgId,
-                'location_id' => $locationId,
-                'restaurant_table_id' => $table->id,
-                'order_number' => 'ORD-' . rand(1000, 9999),
-                'customer_name' => 'Sarah Smith',
-                'order_type' => 'Dine-in',
-                'subtotal' => 310.00,
-                'tax' => 15.50,
-                'total' => 325.50,
-                'status' => 'Preparing',
-            ]);
-            $o2->items()->createMany([
-                ['name_snapshot' => 'Veg Hakka Noodles', 'price_snapshot' => 180.00, 'quantity' => 1, 'total' => 180.00],
-                ['name_snapshot' => 'Chilli Paneer Dry', 'price_snapshot' => 130.00, 'quantity' => 1, 'total' => 130.00]
-            ]);
-
-            // Order 3: Ready status
-            $o3 = RestaurantOrder::create([
-                'organization_id' => $orgId,
-                'location_id' => $locationId,
-                'restaurant_table_id' => $table->id,
-                'order_number' => 'ORD-' . rand(1000, 9999),
-                'customer_name' => 'Mike Johnson',
-                'order_type' => 'Takeaway',
-                'subtotal' => 120.00,
-                'tax' => 6.00,
-                'total' => 126.00,
-                'status' => 'Ready',
-            ]);
-            $o3->items()->createMany([
-                ['name_snapshot' => 'Chocolate Brownie Fudge', 'price_snapshot' => 120.00, 'quantity' => 1, 'total' => 120.00]
-            ]);
-        }
-
         return view('organization.restaurant.kitchen');
     }
 
     public function fetchOrders()
     {
-        $orders = RestaurantOrder::with(['items', 'table'])
+        $orders = RestaurantOrder::select(['id', 'organization_id', 'location_id', 'restaurant_table_id', 'order_number', 'customer_name', 'order_type', 'status', 'created_at'])
+            ->with([
+                'items:id,restaurant_order_id,name_snapshot,quantity,total',
+                'table:id,name'
+            ])
             ->where('organization_id', auth()->user()->organization_id)
             ->where('location_id', session('active_location_id'))
             ->whereIn('status', ['Received', 'Preparing', 'Ready'])
@@ -108,6 +35,7 @@ class KitchenOrderController extends Controller
 
         return response()->json($orders);
     }
+
 
     public function updateStatus(Request $request, RestaurantOrder $order)
     {

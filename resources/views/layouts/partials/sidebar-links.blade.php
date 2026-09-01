@@ -5,32 +5,37 @@
 @endphp
 
 <!-- Dashboard -->
-<x-sidebar-item route="{{ route('dashboard') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>' :active="request()->routeIs('organization.dashboard') || request()->routeIs('dashboard')">
+@if($can('dashboard.view'))
+<x-sidebar-item route="{{ route('organization.dashboard') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>' :active="request()->routeIs('organization.dashboard') || request()->routeIs('dashboard')">
     Dashboard
 </x-sidebar-item>
+@endif
+
+
 
 <!-- Administration -->
-@if($can('manage_organization') || $can('manage_employees') || $can('manage_roles') || ($isAdmin && $feature('multi_location')))
+@if($isAdmin || $can('employees.view') || $can('roles.view') || ($isAdmin && $feature('multi_location')))
     <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Administration</div>
 @endif
 
-@if($can('manage_organization'))
+@if($isAdmin)
     <x-sidebar-item route="{{ route('organization.profile') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>' :active="request()->routeIs('organization.profile')">
         Organization
     </x-sidebar-item>
 @endif
 
-@if($can('manage_employees'))
+@if($can('employees.view'))
     <x-sidebar-item route="{{ route('organization.employees.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>' :active="request()->routeIs('organization.employees.*')">
         Employees
     </x-sidebar-item>
 @endif
 
-@if($can('manage_roles'))
+@if($can('roles.view'))
     <x-sidebar-item route="{{ route('organization.roles.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg>' :active="request()->routeIs('organization.roles.*')">
         Roles & Permissions
     </x-sidebar-item>
 @endif
+
 
 @if($isAdmin && $feature('multi_location'))
     <x-sidebar-item route="{{ route('organization.locations.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' :active="request()->routeIs('organization.locations.*')">
@@ -44,11 +49,18 @@
         <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Operations</div>
     @endif
 
-    @if($can('inventory.view'))
-        <x-sidebar-item route="{{ route('organization.inventory.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>' :active="request()->routeIs('organization.inventory.*')">
-            Inventory / Products
+    @if($can('products.view'))
+        <x-sidebar-item route="{{ route('organization.products.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>' :active="request()->routeIs('organization.products.*')">
+            Products Catalog
         </x-sidebar-item>
     @endif
+
+    @if($can('inventory.view'))
+        <x-sidebar-item route="{{ route('organization.inventory.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>' :active="request()->routeIs('organization.inventory.*')">
+            Inventory Stock
+        </x-sidebar-item>
+    @endif
+
 
     @if($can('clients.view'))
         <x-sidebar-item route="{{ route('organization.clients.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>' :active="request()->routeIs('organization.clients.*')">
@@ -95,7 +107,7 @@
         <div class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Restaurant</div>
     @endif
     
-    @if($can('restaurant.manage'))
+    @if($can('restaurant.menu') || $can('restaurant.tables'))
         <x-sidebar-item route="{{ route('organization.menu.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>' :active="request()->routeIs('organization.menu.index')">
             Menu Builder
         </x-sidebar-item>

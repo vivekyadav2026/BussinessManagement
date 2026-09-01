@@ -19,10 +19,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Pagination\Paginator::useTailwind();
+
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
             if ($user->hasPermission($ability)) {
                 return true;
             }
         });
     }
+
 }

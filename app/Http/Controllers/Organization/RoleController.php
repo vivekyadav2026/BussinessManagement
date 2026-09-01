@@ -17,7 +17,7 @@ class RoleController extends Controller
 
     public function create()
     {
-        $groupedPermissions = Permission::all()->groupBy('module');
+        $groupedPermissions = $this->getAvailableGroupedPermissions();
         return view('organization.roles.create', compact('groupedPermissions'));
     }
 
@@ -45,11 +45,41 @@ class RoleController extends Controller
     {
         abort_if($role->organization_id !== auth()->user()->organization_id, 403);
         
-        $groupedPermissions = Permission::all()->groupBy('module');
+        $groupedPermissions = $this->getAvailableGroupedPermissions();
         $rolePermissions = $role->permissions->pluck('id')->toArray();
         
         return view('organization.roles.edit', compact('role', 'groupedPermissions', 'rolePermissions'));
     }
+
+    private function getAvailableGroupedPermissions()
+    {
+        $orgId = auth()->user()->organization_id;
+
+        $hasRetail = \App\Services\SubscriptionService::hasFeature($orgId, 'module_retail');
+        $hasPayroll = \App\Services\SubscriptionService::hasFeature($orgId, 'module_payroll');
+        $hasRestaurant = \App\Services\SubscriptionService::hasFeature($orgId, 'module_restaurant');
+
+        $query = Permission::query();
+
+        $excludedModules = [];
+        if (!$hasRetail) {
+            $excludedModules[] = 'Products';
+            $excludedModules[] = 'Inventory';
+        }
+        if (!$hasPayroll) {
+            $excludedModules[] = 'Payroll';
+        }
+        if (!$hasRestaurant) {
+            $excludedModules[] = 'Restaurant';
+        }
+
+        if (!empty($excludedModules)) {
+            $query->whereNotIn('module', $excludedModules);
+        }
+
+        return $query->get()->groupBy('module');
+    }
+
 
     public function update(Request $request, Role $role)
     {

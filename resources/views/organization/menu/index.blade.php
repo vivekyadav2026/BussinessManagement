@@ -76,7 +76,8 @@
                                             <div class="text-xs text-gray-500 font-normal truncate max-w-xs">{{ $item->description }}</div>
                                         @endif
                                     </td>
-                                    <td class="p-3 text-gray-700 font-bold">${{ number_format($item->price, 2) }}</td>
+                                    <td class="p-3 text-gray-700 font-bold">₹{{ number_format($item->price, 2) }}</td>
+
                                     <td class="p-3">
                                         @if($item->is_available)
                                             <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">In Stock</span>

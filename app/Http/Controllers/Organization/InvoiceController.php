@@ -56,7 +56,22 @@ class InvoiceController extends Controller
 
     public function store(Request $request)
     {
+        $orgId = auth()->user()->organization_id;
+        $monthlyCount = Invoice::where('organization_id', $orgId)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        if (\App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_invoices_per_month', $monthlyCount)) {
+            $limit = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_invoices_per_month');
+            return response()->json([
+                'success' => false,
+                'message' => "Monthly invoice limit reached for your plan ({$monthlyCount}/{$limit}). Please upgrade your subscription plan to generate more invoices."
+            ], 422);
+        }
+
         $request->validate([
+
             'client_id' => 'nullable|exists:clients,id',
             'invoice_date' => 'required|date',
             'due_date' => 'nullable|date|after_or_equal:invoice_date',

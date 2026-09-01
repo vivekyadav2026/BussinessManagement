@@ -13,8 +13,11 @@ class Organization extends Model
         'address',
         'gst_number',
         'logo',
+        'default_check_in',
+        'default_check_out',
         'is_active',
     ];
+
 
     public function users()
     {

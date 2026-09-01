@@ -41,6 +41,14 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        $orgId = auth()->user()->organization_id;
+        $currentProductsCount = Product::where('organization_id', $orgId)->count();
+
+        if (\App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_products', $currentProductsCount)) {
+            $limit = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_products');
+            return back()->withInput()->with('error', "Product inventory limit reached ({$currentProductsCount}/{$limit}). Please upgrade your plan to add more products.");
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
@@ -51,16 +59,17 @@ class ProductController extends Controller
             'tax_rate' => 'nullable|numeric|min:0',
             'min_stock_level' => 'nullable|integer|min:0',
             'image' => 'nullable|image|max:2048',
+            'images.*' => 'nullable|image|max:2048',
         ]);
 
         $sku = $request->sku ?: InventoryService::generateSku(auth()->user()->organization_id, $request->category_id, $request->name);
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
+            $imagePath = \App\Services\ImageOptimizer::compressAndStore($request->file('image'), 'products', 'public', 1200, 75);
         }
 
-        Product::create([
+        $product = Product::create([
             'organization_id' => auth()->user()->organization_id,
             'category_id' => $request->category_id,
             'name' => $request->name,
@@ -75,12 +84,28 @@ class ProductController extends Controller
             'is_active' => $request->is_active ?? true,
         ]);
 
+        // Upload compressed multi-image gallery
+        if ($request->hasFile('images')) {
+            $order = 0;
+            foreach ($request->file('images') as $galleryFile) {
+                $path = \App\Services\ImageOptimizer::compressAndStore($galleryFile, 'products/gallery', 'public', 1200, 75);
+                $product->images()->create([
+                    'image_path' => $path,
+                    'sort_order' => $order++,
+                ]);
+                if (!$product->image_path && $order === 1) {
+                    $product->update(['image_path' => $path]);
+                }
+            }
+        }
+
         return redirect()->route('organization.products.index')->with('success', 'Product created successfully.');
     }
 
     public function edit(Product $product)
     {
         abort_if($product->organization_id !== auth()->user()->organization_id, 403);
+        $product->load('images');
         $categories = Category::where('organization_id', auth()->user()->organization_id)->get();
         return view('organization.products.edit', compact('product', 'categories'));
     }
@@ -99,13 +124,27 @@ class ProductController extends Controller
             'tax_rate' => 'nullable|numeric|min:0',
             'min_stock_level' => 'nullable|integer|min:0',
             'image' => 'nullable|image|max:2048',
+            'images.*' => 'nullable|image|max:2048',
+            'delete_images' => 'nullable|array',
         ]);
+
+        // Delete selected gallery images
+        if ($request->filled('delete_images')) {
+            $imagesToDelete = \App\Models\ProductImage::where('product_id', $product->id)
+                ->whereIn('id', $request->delete_images)
+                ->get();
+
+            foreach ($imagesToDelete as $imgToDelete) {
+                Storage::disk('public')->delete($imgToDelete->image_path);
+                $imgToDelete->delete();
+            }
+        }
 
         if ($request->hasFile('image')) {
             if ($product->image_path) {
                 Storage::disk('public')->delete($product->image_path);
             }
-            $product->image_path = $request->file('image')->store('products', 'public');
+            $product->image_path = \App\Services\ImageOptimizer::compressAndStore($request->file('image'), 'products', 'public', 1200, 75);
         }
 
         $product->update([
@@ -121,14 +160,34 @@ class ProductController extends Controller
             'is_active' => $request->has('is_active'),
         ]);
 
+        // Upload additional compressed gallery images
+        if ($request->hasFile('images')) {
+            $currentOrder = $product->images()->max('sort_order') ?? 0;
+            foreach ($request->file('images') as $galleryFile) {
+                $currentOrder++;
+                $path = \App\Services\ImageOptimizer::compressAndStore($galleryFile, 'products/gallery', 'public', 1200, 75);
+                $product->images()->create([
+                    'image_path' => $path,
+                    'sort_order' => $currentOrder,
+                ]);
+            }
+        }
+
+
         return redirect()->route('organization.products.index')->with('success', 'Product updated successfully.');
     }
 
     public function show(Product $product)
     {
         abort_if($product->organization_id !== auth()->user()->organization_id, 403);
-        $product->load('category');
+        $product->load(['category', 'images']);
         return view('organization.products.show', compact('product'));
+    }
+
+    public function printBarcode(Product $product)
+    {
+        abort_if($product->organization_id !== auth()->user()->organization_id, 403);
+        return view('organization.products.print-barcode', compact('product'));
     }
 
     public function destroy(Product $product)
@@ -141,3 +200,4 @@ class ProductController extends Controller
         return redirect()->route('organization.products.index')->with('success', 'Product deleted successfully.');
     }
 }
+

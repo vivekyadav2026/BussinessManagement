@@ -75,14 +75,37 @@
     </div>
     
     <div>
-        <div class="panel text-center">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">Product Image</h3>
-            @if($product->image_path)
-                <img src="{{ Storage::url($product->image_path) }}" class="w-full h-auto object-cover rounded shadow-md border border-gray-200">
+        <div class="panel text-center space-y-4">
+            <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3">Product Media Gallery</h3>
+            
+            @php
+                $allImages = collect();
+                if($product->image_path) {
+                    $allImages->push($product->image_path);
+                }
+                foreach($product->images as $gImg) {
+                    if($gImg->image_path !== $product->image_path) {
+                        $allImages->push($gImg->image_path);
+                    }
+                }
+            @endphp
+
+            @if($allImages->count() > 0)
+                <div class="w-full h-56 bg-gray-50 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                    <img id="mainGalleryViewer" src="{{ Storage::url($allImages->first()) }}" class="w-full h-full object-cover transition">
+                </div>
+
+                @if($allImages->count() > 1)
+                    <div class="grid grid-cols-4 gap-2 pt-2">
+                        @foreach($allImages as $idx => $imgSrc)
+                            <img src="{{ Storage::url($imgSrc) }}" onclick="document.getElementById('mainGalleryViewer').src = this.src" class="w-full h-14 object-cover rounded-lg border border-gray-200 shadow-xs cursor-pointer hover:opacity-80 transition">
+                        @endforeach
+                    </div>
+                @endif
             @else
-                <div class="w-full h-48 bg-gray-50 border border-dashed border-gray-200 flex flex-col items-center justify-center rounded text-gray-400 text-sm">
+                <div class="w-full h-48 bg-gray-50 border border-dashed border-gray-200 flex flex-col items-center justify-center rounded-xl text-gray-400 text-sm">
                     <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <span>No image uploaded</span>
+                    <span>No photos uploaded</span>
                 </div>
             @endif
         </div>

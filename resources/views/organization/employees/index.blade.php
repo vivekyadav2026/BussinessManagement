@@ -84,18 +84,27 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-3.5">
-                                <a href="{{ route('organization.employees.show', $emp) }}" class="text-indigo-650 hover:text-indigo-900 font-bold text-xs">View</a>
-                                <a href="{{ route('organization.employees.edit', $emp) }}" class="text-gray-400 hover:text-gray-700 font-bold text-xs">Edit</a>
-                                <form action="{{ route('organization.employees.toggle-status', $emp) }}" method="POST" onsubmit="return confirm('Toggle this employee\'s status?');" class="m-0">
+                            <div class="flex items-center justify-end gap-1">
+                                <a href="{{ route('organization.employees.show', $emp) }}" class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="View Profile">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </a>
+                                <a href="{{ route('organization.employees.edit', $emp) }}" class="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Edit Employee">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </a>
+                                <form action="{{ route('organization.employees.toggle-status', $emp) }}" method="POST" onsubmit="return confirm('Toggle this employee status?');" class="inline">
                                     @csrf
                                     @method('PATCH')
-                                    <button type="submit" class="text-xs font-bold {{ $emp->status === 'active' ? 'text-red-500 hover:text-red-700' : 'text-emerald-500 hover:text-emerald-700' }}">
-                                        {{ $emp->status === 'active' ? 'Deactivate' : 'Activate' }}
+                                    <button type="submit" class="p-1.5 {{ $emp->status === 'active' ? 'text-gray-500 hover:text-amber-600 hover:bg-amber-50' : 'text-gray-500 hover:text-emerald-600 hover:bg-emerald-50' }} rounded-lg transition" title="{{ $emp->status === 'active' ? 'Deactivate Employee' : 'Activate Employee' }}">
+                                        @if($emp->status === 'active')
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                        @else
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        @endif
                                     </button>
                                 </form>
                             </div>
                         </td>
+
                     </tr>
                     @empty
                     <tr>

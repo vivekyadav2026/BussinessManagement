@@ -36,8 +36,10 @@ class SubscriptionService
     public static function hasFeature($orgId, $featureCode)
     {
         $val = self::getFeatureValue($orgId, $featureCode);
-        return in_array($val, ['1', 'true', 'yes', 'on']);
+        if ($val === null) return false;
+        return in_array(strtolower(trim((string)$val)), ['true', 'yes', 'on']);
     }
+
 
     /**
      * Check if the organization has reached a specific numerical limit.
@@ -55,5 +57,50 @@ class SubscriptionService
         }
 
         return $currentUsage >= (int) $val;
+    }
+
+    /**
+     * Check if the organization is on trial.
+     */
+    public static function isTrial($orgId)
+    {
+        $subscription = self::getActiveSubscription($orgId);
+        if (!$subscription) return false;
+        return $subscription->status === 'Trial';
+    }
+
+    /**
+     * Check if the subscription or trial has expired.
+     */
+    public static function isExpired($orgId)
+    {
+        $org = Organization::find($orgId);
+        if (!$org) return true;
+
+        $subscription = $org->activeSubscription;
+        if (!$subscription) return true;
+
+        if (in_array($subscription->status, ['Expired', 'Cancelled'])) {
+            return true;
+        }
+
+        if ($subscription->ends_at && $subscription->ends_at->isPast() && !$subscription->ends_at->isToday()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get days remaining in trial or subscription.
+     */
+    public static function getDaysRemaining($orgId)
+    {
+        $subscription = self::getActiveSubscription($orgId);
+        if (!$subscription || !$subscription->ends_at) return 0;
+
+        if ($subscription->ends_at->isPast() && !$subscription->ends_at->isToday()) return 0;
+
+        return (int) now()->startOfDay()->diffInDays($subscription->ends_at->startOfDay(), false);
     }
 }

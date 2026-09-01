@@ -147,7 +147,26 @@ class PublicOrderController extends Controller
     {
         $order = RestaurantOrder::with('items')->where('order_number', $orderNumber)->where('organization_id', $organization->id)->firstOrFail();
         
-        return view('public.menu.track', compact('organization', 'location', 'order'));
+        $payment = null;
+        $key = config('services.razorpay.key');
+
+        if ($order->payment_status !== 'Paid' && $order->status !== 'Cancelled') {
+            try {
+                $payment = \App\Models\GatewayPayment::where('entity_type', get_class($order))
+                    ->where('entity_id', $order->id)
+                    ->where('status', 'created')
+                    ->latest()
+                    ->first();
+
+                if (!$payment && $key && $key !== 'rzp_test_xxxxxxxxx') {
+                    $payment = \App\Services\RazorpayPaymentService::createOrder($order, $order->total);
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Razorpay Order Track Payment Failed: ' . $e->getMessage());
+            }
+        }
+
+        return view('public.menu.track', compact('organization', 'location', 'order', 'payment', 'key'));
     }
 
     public function updateQuantity(Request $request, Organization $organization, Location $location, $itemId)

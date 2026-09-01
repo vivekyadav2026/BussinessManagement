@@ -48,20 +48,47 @@
         </div>
         
         <div class="panel">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">Plan Features</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Plan Features & Module Limits</h3>
             @if($plan->features->count() > 0)
+                @php
+                    $featureMap = [
+                        'module_retail' => 'Retail & Inventory ERP',
+                        'module_payroll' => 'HR & Payroll Module',
+                        'module_restaurant' => 'Restaurant POS & KOT',
+                        'digital_qr_menu' => 'Digital QR Menu',
+                        'kitchen_display' => 'Kitchen Display System (KDS)',
+                        'table_management' => 'Table & Order Management',
+                        'max_employees' => 'Max Employees Limit',
+                        'max_invoices_per_month' => 'Monthly Invoice Limit',
+                        'payment_gateway' => 'Razorpay Payment Gateway',
+                    ];
+                @endphp
                 <table class="inv-table w-full">
                     <thead>
                         <tr>
-                            <th>Feature Key / Code</th>
-                            <th>Value</th>
+                            <th>Feature Name</th>
+                            <th>Key Code</th>
+                            <th>Configured Value</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($plan->features as $feat)
+                            @php
+                                $label = $featureMap[$feat->feature_code] ?? ucwords(str_replace('_', ' ', $feat->feature_code));
+                                $val = strtolower(trim($feat->feature_value));
+                            @endphp
                             <tr>
-                                <td class="font-mono text-xs">{{ $feat->feature_code }}</td>
-                                <td><span class="bg-gray-100 px-2 py-0.5 rounded text-xs">{{ $feat->feature_value }}</span></td>
+                                <td class="font-bold text-sm text-gray-800">{{ $label }}</td>
+                                <td class="font-mono text-xs text-gray-400">{{ $feat->feature_code }}</td>
+                                <td>
+                                    @if($val === 'true' || $val === 'yes')
+                                        <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-0.5 rounded-full border border-green-200">✓ Enabled (true)</span>
+                                    @elseif($val === 'false' || $val === 'no')
+                                        <span class="bg-gray-100 text-gray-400 text-xs font-bold px-3 py-0.5 rounded-full border border-gray-200">✗ Disabled (false)</span>
+                                    @else
+                                        <span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-3 py-0.5 rounded-full border border-indigo-100 font-mono">{{ $feat->feature_value }}</span>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -70,6 +97,7 @@
                 <p class="text-gray-500 text-sm">No special configuration keys mapped for this plan.</p>
             @endif
         </div>
+
     </div>
     
     <div>

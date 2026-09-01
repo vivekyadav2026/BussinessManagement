@@ -72,7 +72,7 @@ class RestaurantMenuController extends Controller
             abort(403);
         }
 
-        $path = $request->hasFile('photo') ? $request->file('photo')->store('menu_photos', 'public') : null;
+        $path = $request->hasFile('photo') ? \App\Services\ImageOptimizer::compressAndStore($request->file('photo'), 'menu_photos', 'public', 1000, 75) : null;
 
         MenuItem::create([
             'menu_category_id' => $request->menu_category_id,
@@ -108,8 +108,9 @@ class RestaurantMenuController extends Controller
         ];
 
         if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('menu_photos', 'public');
+            $data['photo'] = \App\Services\ImageOptimizer::compressAndStore($request->file('photo'), 'menu_photos', 'public', 1000, 75);
         }
+
 
         $item->update($data);
 

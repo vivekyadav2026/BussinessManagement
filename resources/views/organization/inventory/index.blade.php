@@ -8,13 +8,25 @@
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Inventory Stock</h1>
             <p class="text-sm text-gray-500 mt-0.5">Manage and track product stock levels for <span class="font-semibold text-gray-700">{{ \App\Models\Location::find(\App\Services\LocationManager::getActiveLocationId())->name ?? 'Unknown Location' }}</span></p>
         </div>
-        <div class="flex gap-3">
-            <a href="{{ route('organization.inventory.history') }}" class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-50 transition shadow-sm">View Ledger History</a>
-            <a href="{{ route('organization.inventory.scanner') }}" class="px-4 py-2.5 bg-[var(--theme-active)] text-[var(--theme-active-text)] rounded-xl font-semibold text-sm hover:opacity-95 shadow-sm transition flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        <div class="flex flex-wrap items-center gap-2.5">
+            <a href="{{ route('organization.products.create') }}" class="px-4 py-2.5 bg-[var(--theme-active)] text-[var(--theme-active-text)] rounded-xl font-semibold text-sm hover:opacity-95 shadow-sm transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Add Product
+            </a>
+
+            <a href="{{ route('organization.inventory.scanner') }}" class="px-3.5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium text-sm hover:bg-gray-50 hover:text-gray-900 transition shadow-xs flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
                 Scanner Mode
             </a>
+
+            <a href="{{ route('organization.inventory.history') }}" class="px-3.5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium text-sm hover:bg-gray-50 hover:text-gray-900 transition shadow-xs flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Stock Ledger
+            </a>
         </div>
+
+
+
     </div>
 
     <!-- Notices -->
@@ -56,9 +68,10 @@
                 <tbody class="divide-y divide-gray-50">
                     @forelse($products as $product)
                     @php
-                        $stockLevel = $product->inventoryStocks->first()->stock ?? 0;
+                        $stockLevel = $product->inventoryStocks->first()?->quantity ?? $product->stock;
                         $isLowStock = $stockLevel <= $product->min_stock_level;
                     @endphp
+
                     <tr class="hover:bg-gray-50/50 transition">
                         <td class="px-6 py-4">
                             <div class="font-bold text-gray-900">{{ $product->name }}</div>
@@ -84,9 +97,13 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="text-center py-12 text-gray-400 font-medium">No products found. Create items in your catalog before managing stock.</td>
+                        <td colspan="4" class="text-center py-12 text-gray-400 font-medium">
+                            <p class="mb-3">No products found in your catalog. Create items before managing inventory stock.</p>
+                            <a href="{{ route('organization.products.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition">+ Add Product Now</a>
+                        </td>
                     </tr>
                     @endforelse
+
                 </tbody>
             </table>
         </div>

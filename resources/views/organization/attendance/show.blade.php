@@ -1,76 +1,77 @@
 @extends('layouts.sme')
 
 @section('content')
-<div class="dash-head flex justify-between items-end mb-6">
+<div class="dash-head flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
     <div>
-        <a href="{{ route('organization.attendance.index') }}" class="text-sm text-gray-500 hover:text-indigo-600 mb-2 inline-block">&larr; Back to Daily Attendance</a>
-        <h1 class="text-2xl font-bold text-gray-900">{{ $employee->full_name }} - Attendance</h1>
-        <p class="text-gray-500 mt-1">{{ $employee->designation }} • {{ $employee->employee_code ?? 'No Code' }}</p>
+        <a href="{{ route('organization.attendance.index') }}" class="text-xs text-slate-500 hover:text-indigo-600 mb-1 inline-block">&larr; Back to Daily Attendance</a>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">{{ $employee->full_name }} - Attendance Calendar</h1>
+        <p class="text-xs text-slate-500 mt-0.5">{{ $employee->designation ?? 'Staff Member' }} • <span class="font-mono">{{ $employee->employee_code ?? 'EMP' }}</span></p>
     </div>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
     <!-- Summary Sidebar -->
     <div class="md:col-span-1 space-y-6">
-        <div class="panel bg-indigo-50 border border-indigo-100 p-6 shadow-sm">
-            <h3 class="font-bold text-indigo-900 border-b border-indigo-200 pb-2 mb-4">{{ $dateObj->format('F Y') }} Summary</h3>
-            <div class="space-y-3">
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-600">Present</span>
-                    <span class="font-bold text-green-600">{{ $summary['present'] }}</span>
+        <div class="bg-white rounded-2xl border border-indigo-100 p-6 shadow-xs bg-gradient-to-b from-indigo-50/40 to-white">
+            <h3 class="font-bold text-indigo-900 border-b border-indigo-100 pb-3 mb-4 text-sm">{{ $dateObj->format('F Y') }} Summary</h3>
+            <div class="space-y-3 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-600 font-semibold">✓ Present Days</span>
+                    <span class="font-black text-emerald-700 text-sm">{{ $summary['present'] }}</span>
                 </div>
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-600">Absent</span>
-                    <span class="font-bold text-red-600">{{ $summary['absent'] }}</span>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-600 font-semibold">✗ Absent Days</span>
+                    <span class="font-black text-rose-700 text-sm">{{ $summary['absent'] }}</span>
                 </div>
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-600">Half Days</span>
-                    <span class="font-bold text-orange-600">{{ $summary['half_days'] }}</span>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-600 font-semibold">🌗 Half Days</span>
+                    <span class="font-black text-amber-700 text-sm">{{ $summary['half_days'] }}</span>
                 </div>
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-600">Leaves</span>
-                    <span class="font-bold text-blue-600">{{ $summary['leaves'] }}</span>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-600 font-semibold">🌴 Approved Leaves</span>
+                    <span class="font-black text-indigo-700 text-sm">{{ $summary['leaves'] }}</span>
                 </div>
-                <div class="pt-3 border-t border-indigo-200 mt-2">
+                <div class="pt-3 border-t border-indigo-100 mt-2">
                     <div class="flex justify-between items-center">
-                        <span class="font-bold text-indigo-900 text-sm">Effective Working Days</span>
+                        <span class="font-bold text-slate-900 text-xs">Effective Working Days</span>
                         <span class="font-black text-indigo-700 text-xl">{{ $summary['effective_working_days'] }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <form method="GET" action="{{ route('organization.attendance.show', $employee) }}" class="panel p-6 shadow-sm">
-            <h3 class="font-bold border-b pb-2 mb-4">Change Month</h3>
-            <div class="mb-3">
-                <select name="month" class="w-full border-gray-300 rounded-lg text-sm mb-2">
+        <form method="GET" action="{{ route('organization.attendance.show', $employee) }}" class="bg-white rounded-2xl border border-gray-100 p-6 shadow-xs">
+            <h3 class="font-bold border-b border-gray-100 pb-3 mb-4 text-xs uppercase tracking-wider text-slate-500">Select Month & Year</h3>
+            <div class="space-y-3 mb-4">
+                <select name="month" class="w-full border-gray-300 rounded-xl text-xs font-semibold text-slate-800 py-2">
                     @for($i = 1; $i <= 12; $i++)
                         <option value="{{ $i }}" {{ $dateObj->month == $i ? 'selected' : '' }}>{{ date('F', mktime(0, 0, 0, $i, 1)) }}</option>
                     @endfor
                 </select>
-                <select name="year" class="w-full border-gray-300 rounded-lg text-sm">
-                    @for($i = now()->year; $i >= now()->year - 5; $i--)
+                <select name="year" class="w-full border-gray-300 rounded-xl text-xs font-semibold text-slate-800 py-2">
+                    @for($i = max(2030, now()->year); $i >= 2024; $i--)
                         <option value="{{ $i }}" {{ $dateObj->year == $i ? 'selected' : '' }}>{{ $i }}</option>
                     @endfor
                 </select>
+
             </div>
-            <button type="submit" class="btn btn-ghost w-full justify-center text-xs py-2">View Calendar</button>
+            <button type="submit" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition">View Month Calendar</button>
         </form>
     </div>
 
-    <!-- Calendar View -->
-    <div class="md:col-span-3 panel p-6 shadow-sm">
-        <h3 class="font-bold text-lg mb-4">{{ $dateObj->format('F Y') }}</h3>
+    <!-- Calendar Grid View -->
+    <div class="md:col-span-3 bg-white rounded-2xl border border-gray-100 p-6 shadow-xs">
+        <h3 class="font-bold text-lg text-slate-900 mb-4">{{ $dateObj->format('F Y') }} Calendar</h3>
         
-        <div class="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden">
+        <div class="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-xl overflow-hidden shadow-xs">
             <!-- Days Header -->
             @foreach(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $day)
-                <div class="bg-gray-50 p-2 text-center text-xs font-bold text-gray-500 uppercase">{{ $day }}</div>
+                <div class="bg-slate-100 p-2.5 text-center text-xs font-extrabold text-slate-600 uppercase">{{ $day }}</div>
             @endforeach
 
-            <!-- Padding for first day -->
+            <!-- Empty slots before month start -->
             @for($i = 0; $i < $dateObj->copy()->startOfMonth()->dayOfWeek; $i++)
-                <div class="bg-white p-2 min-h-[100px]"></div>
+                <div class="bg-slate-50 p-2 min-h-[90px]"></div>
             @endfor
 
             <!-- Days -->
@@ -80,23 +81,23 @@
                     $att = $attendances[$currentDate] ?? null;
                     $isWeekend = $dateObj->copy()->day($day)->isWeekend();
                 @endphp
-                <div class="bg-white p-2 min-h-[100px] flex flex-col {{ $isWeekend ? 'bg-gray-50' : '' }}">
-                    <div class="text-right text-sm font-medium text-gray-400 mb-1">{{ $day }}</div>
+                <div class="bg-white p-2 min-h-[90px] flex flex-col justify-between {{ $isWeekend ? 'bg-slate-50/70' : '' }}">
+                    <div class="text-right text-xs font-bold text-slate-400 mb-1">{{ $day }}</div>
                     @if($att)
                         @php
                             $bg = match($att->status) {
-                                'Present' => 'bg-green-100 text-green-800 border-green-200',
-                                'Absent' => 'bg-red-100 text-red-800 border-red-200',
-                                'Half Day' => 'bg-orange-100 text-orange-800 border-orange-200',
-                                'Leave' => 'bg-blue-100 text-blue-800 border-blue-200',
-                                default => 'bg-gray-100 text-gray-800 border-gray-200'
+                                'Present' => 'bg-emerald-50 text-emerald-800 border-emerald-200',
+                                'Absent' => 'bg-rose-50 text-rose-800 border-rose-200',
+                                'Half Day' => 'bg-amber-50 text-amber-800 border-amber-200',
+                                'Leave' => 'bg-indigo-50 text-indigo-800 border-indigo-200',
+                                default => 'bg-slate-100 text-slate-800 border-slate-200'
                             };
                         @endphp
-                        <div class="{{ $bg }} border px-2 py-1 rounded text-xs font-bold text-center mb-1">
+                        <div class="{{ $bg }} border px-2 py-1 rounded-lg text-[11px] font-extrabold text-center">
                             {{ $att->status }}
                         </div>
                         @if($att->check_in || $att->check_out)
-                            <div class="text-[10px] text-gray-500 text-center mt-auto leading-tight">
+                            <div class="text-[10px] text-slate-500 font-mono text-center mt-1">
                                 {{ $att->check_in ? \Carbon\Carbon::parse($att->check_in)->format('H:i') : '--' }} - 
                                 {{ $att->check_out ? \Carbon\Carbon::parse($att->check_out)->format('H:i') : '--' }}
                             </div>

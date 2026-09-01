@@ -12,22 +12,29 @@
   <h1 class="text-2xl font-bold text-gray-900">Create Invoice</h1>
 </div>
 
+<!-- Alert Banner Container -->
+<div id="invoiceErrorBanner" class="hidden mb-6 bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl text-sm font-semibold shadow-sm flex items-start justify-between">
+    <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span id="errorMessageText">An error occurred while generating invoice.</span>
+    </div>
+    <button type="button" onclick="document.getElementById('invoiceErrorBanner').classList.add('hidden')" class="text-rose-400 hover:text-rose-600 font-bold">&times;</button>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2">
         <!-- Billing Details -->
-        <div class="panel mb-6 shadow-sm p-6">
+        <div class="panel mb-6 shadow-sm p-6 bg-white rounded-xl border border-gray-100">
             <h3 class="font-bold border-b pb-2 mb-4 text-gray-800">Billing Details</h3>
             <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
+                <div id="clientSearchGroup" class="relative">
                     <div class="flex justify-between items-center mb-1">
                         <label class="block text-xs font-bold text-gray-500 uppercase">Select Client</label>
                         <button type="button" onclick="openQuickClientModal()" class="text-xs text-indigo-600 hover:text-indigo-900 font-semibold">+ Quick Add Client</button>
                     </div>
-                    <div class="relative">
-                        <input type="text" id="clientSearch" placeholder="Search client (or leave blank for Walk-in)..." class="w-full border-gray-300 rounded-lg text-sm" value="{{ request('client_id') ? \App\Models\Client::find(request('client_id'))->name ?? '' : '' }}" autocomplete="off">
-                        <input type="hidden" id="clientId" value="{{ request('client_id', '') }}">
-                        <div id="clientDropdown" class="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto"></div>
-                    </div>
+                    <input type="text" id="clientSearch" placeholder="Search client by name or phone (or leave blank for Walk-in)..." class="w-full border-gray-300 rounded-lg text-sm" value="{{ request('client_id') ? \App\Models\Client::find(request('client_id'))->name ?? '' : '' }}" autocomplete="off">
+                    <input type="hidden" id="clientId" value="{{ request('client_id', '') }}">
+                    <div id="clientDropdown" class="absolute z-20 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto"></div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Invoice Date</label>
@@ -36,17 +43,17 @@
             </div>
             <div>
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Internal Notes</label>
-                <input type="text" id="invoiceNotes" placeholder="Optional notes..." class="w-full border-gray-300 rounded-lg text-sm">
+                <input type="text" id="invoiceNotes" placeholder="Optional internal reference notes..." class="w-full border-gray-300 rounded-lg text-sm">
             </div>
         </div>
 
         <!-- Items -->
-        <div class="panel p-6">
+        <div class="panel p-6 bg-white rounded-xl border border-gray-100 shadow-sm">
             <div class="flex justify-between items-end border-b pb-2 mb-4">
                 <h3 class="font-bold">Invoice Items</h3>
-                <div class="w-64 relative">
-                    <input type="text" id="productSearch" placeholder="Scan barcode or search..." class="w-full border-gray-300 rounded-lg text-sm" autocomplete="off">
-                    <div id="productDropdown" class="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg hidden max-h-64 overflow-y-auto"></div>
+                <div id="productSearchGroup" class="w-72 relative">
+                    <input type="text" id="productSearch" placeholder="Search product name, SKU or scan barcode..." class="w-full border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-500" autocomplete="off">
+                    <div id="productDropdown" class="absolute z-20 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-xl hidden max-h-64 overflow-y-auto"></div>
                 </div>
             </div>
 
@@ -59,7 +66,7 @@
             </div>
 
             <div id="cartItems" class="space-y-2 mb-4 min-h-[100px]">
-                <div id="emptyCart" class="text-center text-gray-400 py-6 text-sm">No items added yet. Search or scan to add products.</div>
+                <div id="emptyCart" class="text-center text-gray-400 py-8 text-sm">No items added yet. Type in search bar or scan barcode above to add items.</div>
             </div>
         </div>
     </div>
@@ -98,17 +105,17 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Save As</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Save As Status</label>
                     <select id="invoiceStatus" class="w-full border-gray-300 rounded-lg font-medium text-sm">
-                        <option value="Paid">Paid</option>
-                        <option value="Due">Due</option>
-                        <option value="Partially Paid">Partially Paid</option>
-                        <option value="Draft">Draft (Do not deduct stock)</option>
+                        <option value="Paid">✓ Paid (Full Payment Received)</option>
+                        <option value="Due">⏳ Due (Unpaid / Credit Sale)</option>
+                        <option value="Partially Paid">🌗 Partially Paid</option>
+                        <option value="Draft">📝 Draft (Save without deducting stock)</option>
                     </select>
                 </div>
             </div>
 
-            <button onclick="submitInvoice()" id="btnSubmit" class="btn btn-gold w-full justify-center py-3 text-base shadow-sm">Complete Invoice</button>
+            <button onclick="submitInvoice()" id="btnSubmit" class="btn btn-gold w-full justify-center py-3 text-base shadow-sm">Complete & Save Invoice</button>
         </div>
     </div>
 </div>
@@ -116,10 +123,8 @@
 <!-- Quick Add Client Modal -->
 <div id="quickClientModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Backdrop -->
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeQuickClientModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <!-- Modal panel -->
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4" id="modal-title">Quick Add Client</h3>
@@ -149,27 +154,37 @@
 <script>
 let cart = [];
 
-// Client Search
 const clientSearch = document.getElementById('clientSearch');
 const clientDropdown = document.getElementById('clientDropdown');
 const clientId = document.getElementById('clientId');
+const productSearch = document.getElementById('productSearch');
+const productDropdown = document.getElementById('productDropdown');
 
+// Client Search
 clientSearch.addEventListener('input', function() {
-    let q = this.value;
-    if(q.length < 2) { clientDropdown.classList.add('hidden'); return; }
-    
+    let q = this.value.trim();
+    if(q.length < 1) { fetchClients(''); return; }
+    fetchClients(q);
+});
+
+clientSearch.addEventListener('focus', function() {
+    fetchClients(this.value.trim());
+});
+
+function fetchClients(q) {
     fetch(`/organization/clients/search?q=${encodeURIComponent(q)}`)
         .then(res => res.json())
         .then(data => {
             clientDropdown.innerHTML = '';
             if(data.length === 0) {
-                clientDropdown.innerHTML = '<div class="p-2 text-sm text-gray-500">No clients found</div>';
+                clientDropdown.innerHTML = '<div class="p-3 text-xs text-gray-400 text-center">No clients found</div>';
             } else {
                 data.forEach(c => {
                     let div = document.createElement('div');
-                    div.className = 'p-2 hover:bg-indigo-50 cursor-pointer text-sm border-b last:border-0';
-                    div.innerHTML = `<strong>${c.name}</strong> <span class="text-xs text-gray-500">${c.phone || ''}</span>`;
-                    div.onclick = () => {
+                    div.className = 'p-2.5 hover:bg-indigo-50 cursor-pointer text-sm border-b border-gray-100 last:border-0';
+                    div.innerHTML = `<div class="font-bold text-gray-800">${c.name}</div><div class="text-xs text-gray-500">${c.phone || 'No phone'}</div>`;
+                    div.onmousedown = (e) => {
+                        e.preventDefault();
                         clientSearch.value = c.name;
                         clientId.value = c.id;
                         clientDropdown.classList.add('hidden');
@@ -179,63 +194,69 @@ clientSearch.addEventListener('input', function() {
             }
             clientDropdown.classList.remove('hidden');
         });
-});
-
-// Hide dropdowns on click outside
-document.addEventListener('click', function(e) {
-    if(e.target !== clientSearch) clientDropdown.classList.add('hidden');
-    if(e.target !== productSearch) productDropdown.classList.add('hidden');
-});
+}
 
 // Product Search
-const productSearch = document.getElementById('productSearch');
-const productDropdown = document.getElementById('productDropdown');
-
 productSearch.addEventListener('input', function() {
-    let q = this.value;
-    if(q.length < 2) { productDropdown.classList.add('hidden'); return; }
-    
+    let q = this.value.trim();
+    fetchProducts(q);
+});
+
+productSearch.addEventListener('focus', function() {
+    fetchProducts(this.value.trim());
+});
+
+function fetchProducts(q) {
     fetch(`/organization/invoices/products/search?q=${encodeURIComponent(q)}`)
         .then(res => res.json())
         .then(data => {
             productDropdown.innerHTML = '';
             if(data.length === 0) {
-                productDropdown.innerHTML = '<div class="p-2 text-sm text-gray-500">No products found</div>';
+                productDropdown.innerHTML = '<div class="p-3 text-xs text-gray-400 text-center">No products found</div>';
             } else {
                 data.forEach(p => {
                     let div = document.createElement('div');
-                    div.className = 'p-2 hover:bg-indigo-50 cursor-pointer text-sm border-b last:border-0 flex justify-between';
+                    div.className = 'p-2.5 hover:bg-indigo-50 cursor-pointer text-sm border-b border-gray-100 last:border-0 flex justify-between items-center';
                     div.innerHTML = `
                         <div>
-                            <strong>${p.name}</strong> 
-                            <div class="text-xs text-gray-500">SKU: ${p.sku}</div>
+                            <div class="font-bold text-gray-900">${p.name}</div>
+                            <div class="text-xs text-gray-400 font-mono">SKU: ${p.sku}</div>
                         </div>
                         <div class="text-right">
-                            <div class="font-bold">₹${parseFloat(p.selling_price).toFixed(2)}</div>
-                            <div class="text-xs text-gray-500">Stock: ${p.current_stock}</div>
+                            <div class="font-bold text-indigo-700">₹${parseFloat(p.selling_price).toFixed(2)}</div>
+                            <div class="text-[11px] ${p.current_stock > 0 ? 'text-emerald-600 font-semibold' : 'text-rose-500 font-bold'}">Stock: ${p.current_stock}</div>
                         </div>
                     `;
-                    div.onclick = () => {
+                    div.onmousedown = (e) => {
+                        e.preventDefault();
                         addToCart(p);
                         productSearch.value = '';
                         productDropdown.classList.add('hidden');
-                        productSearch.focus(); // keep focus for next scan
+                        productSearch.focus();
                     };
                     productDropdown.appendChild(div);
                 });
             }
             productDropdown.classList.remove('hidden');
         });
+}
+
+// Global click outside listener
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('clientSearchGroup').contains(e.target)) {
+        clientDropdown.classList.add('hidden');
+    }
+    if (!document.getElementById('productSearchGroup').contains(e.target)) {
+        productDropdown.classList.add('hidden');
+    }
 });
 
-// Handle Barcode Scanner Enter Key
+// Barcode scanner enter key
 productSearch.addEventListener('keypress', function(e) {
     if(e.key === 'Enter') {
-        e.preventDefault(); // don't submit form
-        // If there's an exact barcode match, we should ideally hit a specific endpoint. 
-        // For simplicity, if dropdown has exactly 1 item, we click it.
-        if(!productDropdown.classList.contains('hidden') && productDropdown.children.length === 1 && !productDropdown.children[0].classList.contains('text-gray-500')) {
-            productDropdown.children[0].click();
+        e.preventDefault();
+        if(!productDropdown.classList.contains('hidden') && productDropdown.children.length === 1) {
+            productDropdown.children[0].dispatchEvent(new Event('mousedown'));
         }
     }
 });
@@ -280,17 +301,13 @@ function removeCart(id) {
 
 function renderCart() {
     const container = document.getElementById('cartItems');
-    const empty = document.getElementById('emptyCart');
     
     if(cart.length === 0) {
-        container.innerHTML = '';
-        container.appendChild(empty);
-        empty.classList.remove('hidden');
+        container.innerHTML = '<div id="emptyCart" class="text-center text-gray-400 py-8 text-sm">No items added yet. Type in search bar or scan barcode above to add items.</div>';
         calculateTotals();
         return;
     }
     
-    empty.classList.add('hidden');
     container.innerHTML = '';
     
     cart.forEach(item => {
@@ -298,18 +315,18 @@ function renderCart() {
         let total = (item.price + taxAmt) * item.qty;
         
         let row = document.createElement('div');
-        row.className = 'cart-grid border border-gray-100 bg-white rounded-lg p-2 shadow-sm text-sm items-center';
+        row.className = 'cart-grid border border-gray-100 bg-white rounded-lg p-2.5 shadow-xs text-sm items-center';
         row.innerHTML = `
-            <div class="font-medium">${item.name} <span class="text-xs text-red-500 ml-1 ${item.qty > item.maxStock ? '' : 'hidden'}">Low Stock!</span></div>
-            <div>₹${item.price.toFixed(2)}</div>
+            <div class="font-medium text-gray-900">${item.name} ${item.qty > item.maxStock ? '<span class="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold ml-1">Low Stock (' + item.maxStock + ')</span>' : ''}</div>
+            <div class="font-semibold text-gray-700">₹${item.price.toFixed(2)}</div>
             <div class="flex items-center gap-1">
                 <button type="button" onclick="adjustQty(${item.id}, -1)" class="w-6 h-6 flex items-center justify-center border border-gray-300 rounded bg-gray-50 hover:bg-gray-100 font-bold text-gray-600">-</button>
-                <input type="number" min="1" value="${item.qty}" class="w-12 border-gray-300 rounded py-0.5 px-1 text-center text-sm" onchange="updateQty(${item.id}, this.value)">
+                <input type="number" min="1" value="${item.qty}" class="w-12 border-gray-300 rounded py-0.5 px-1 text-center text-sm font-bold" onchange="updateQty(${item.id}, this.value)">
                 <button type="button" onclick="adjustQty(${item.id}, 1)" class="w-6 h-6 flex items-center justify-center border border-gray-300 rounded bg-gray-50 hover:bg-gray-100 font-bold text-gray-600">+</button>
             </div>
             <div class="text-right font-bold text-indigo-900">₹${total.toFixed(2)}</div>
             <div class="text-right">
-                <button class="text-red-500 hover:text-red-700" onclick="removeCart(${item.id})">
+                <button class="text-gray-400 hover:text-rose-600 p-1" onclick="removeCart(${item.id})" title="Remove item">
                     <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
@@ -339,7 +356,6 @@ function calculateTotals() {
     document.getElementById('sumTax').textContent = tax.toFixed(2);
     document.getElementById('sumGrandTotal').textContent = grandTotal.toFixed(2);
     
-    // Auto-fill paid amount if fully paid
     let status = document.getElementById('invoiceStatus').value;
     if(status === 'Paid') {
         document.getElementById('sumPaid').value = grandTotal.toFixed(2);
@@ -386,28 +402,34 @@ function submitQuickClient() {
             clientSearch.value = data.client.name;
             closeQuickClientModal();
         } else {
-            alert("Error: " + data.message);
+            showErrorBanner(data.message || "Error saving client.");
         }
     })
     .catch(err => {
-        alert("An error occurred saving the client.");
+        showErrorBanner("An error occurred saving the client.");
         console.error(err);
     });
 }
 
+function showErrorBanner(msg) {
+    const banner = document.getElementById('invoiceErrorBanner');
+    document.getElementById('errorMessageText').textContent = msg;
+    banner.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function submitInvoice() {
-    if(cart.length === 0) { alert("Please add at least one item."); return; }
-    
-    const clientVal = clientId.value;
-    if(!clientVal) {
-        if(!confirm("No client selected. Create this invoice as a 'Walk-in Client'?")) {
-            return;
-        }
+    document.getElementById('invoiceErrorBanner').classList.add('hidden');
+
+    if(cart.length === 0) {
+        showErrorBanner("Please add at least one product to the invoice.");
+        return;
     }
     
+    const clientVal = clientId.value;
     const btn = document.getElementById('btnSubmit');
     btn.disabled = true;
-    btn.textContent = 'Processing...';
+    btn.textContent = 'Processing & Generating Invoice...';
     
     const payload = {
         client_id: clientVal || null,
@@ -428,21 +450,25 @@ function submitInvoice() {
         },
         body: JSON.stringify(payload)
     })
-    .then(res => res.json())
-    .then(data => {
-        if(data.success) {
+    .then(async res => {
+        const data = await res.json();
+        if(res.ok && data.success) {
             window.location.href = data.redirect;
         } else {
-            alert("Error: " + data.message);
+            let errorMsg = data.message || "Failed to create invoice.";
+            if(data.errors) {
+                errorMsg = Object.values(data.errors).flat().join(" ");
+            }
+            showErrorBanner(errorMsg);
             btn.disabled = false;
-            btn.textContent = 'Complete Invoice';
+            btn.textContent = 'Complete & Save Invoice';
         }
     })
     .catch(err => {
-        alert("A server error occurred.");
+        showErrorBanner("A server error occurred. Please try again.");
         console.error(err);
         btn.disabled = false;
-        btn.textContent = 'Complete Invoice';
+        btn.textContent = 'Complete & Save Invoice';
     });
 }
 </script>

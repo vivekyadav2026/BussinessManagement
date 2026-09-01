@@ -24,8 +24,11 @@ class OrganizationProfileController extends Controller
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
             'gst_number' => 'nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
+            'default_check_in' => 'nullable|string',
+            'default_check_out' => 'nullable|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
+
             'gst_number.regex' => 'Please enter a valid 15-digit GSTIN number format.',
         ]);
 
@@ -34,11 +37,11 @@ class OrganizationProfileController extends Controller
             if ($organization->logo) {
                 Storage::disk('public')->delete($organization->logo);
             }
-            $path = $this->compressAndSaveImage($request->file('logo'), 'logos');
-            $validated['logo'] = $path;
+            $validated['logo'] = \App\Services\ImageOptimizer::compressAndStore($request->file('logo'), 'logos', 'public', 600, 80);
         }
 
         $organization->update($validated);
+
 
         return redirect()->route('organization.profile')->with('success', 'Organization profile updated successfully.');
     }

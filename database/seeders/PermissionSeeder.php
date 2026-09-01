@@ -19,6 +19,13 @@ class PermissionSeeder extends Seeder
                 'employees.edit' => 'Edit Employees',
                 'employees.delete' => 'Delete Employees',
             ],
+            'Roles & Permissions' => [
+                'roles.view' => 'View Roles',
+                'roles.create' => 'Create Roles',
+                'roles.edit' => 'Edit Roles',
+                'roles.delete' => 'Delete Roles',
+            ],
+
             'Products' => [
                 'products.view' => 'View Products',
                 'products.create' => 'Create Products',

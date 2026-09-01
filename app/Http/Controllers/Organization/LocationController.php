@@ -22,7 +22,16 @@ class LocationController extends Controller
 
     public function store(Request $request)
     {
+        $orgId = auth()->user()->organization_id;
+        $currentLocationsCount = Location::where('organization_id', $orgId)->count();
+
+        if (\App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_locations', $currentLocationsCount)) {
+            $limit = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_locations');
+            return back()->withInput()->with('error', "Location limit reached ({$currentLocationsCount}/{$limit}). Please upgrade your plan to add more locations.");
+        }
+
         $request->validate([
+
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',

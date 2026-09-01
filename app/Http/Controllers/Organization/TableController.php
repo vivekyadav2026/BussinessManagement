@@ -27,7 +27,16 @@ class TableController extends Controller
 
     public function store(Request $request)
     {
+        $orgId = auth()->user()->organization_id;
+        $currentTablesCount = RestaurantTable::where('organization_id', $orgId)->count();
+
+        if (\App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_tables', $currentTablesCount)) {
+            $limit = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_tables');
+            return back()->with('error', "Table limit reached ({$currentTablesCount}/{$limit}). Please upgrade your plan to add more tables.");
+        }
+
         $request->validate(['name' => 'required|string|max:255']);
+
 
         RestaurantTable::create([
             'organization_id' => auth()->user()->organization_id,

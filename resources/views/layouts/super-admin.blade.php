@@ -333,6 +333,7 @@
                         <x-sidebar-item route="{{ route('super-admin.organizations.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>' :active="request()->routeIs('super-admin.organizations.*')" class="text-gray-300 hover:bg-slate-800 hover:text-white">Organizations</x-sidebar-item>
                         <x-sidebar-item route="{{ route('super-admin.plans.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>' :active="request()->routeIs('super-admin.plans.*')" class="text-gray-300 hover:bg-slate-800 hover:text-white">Plans</x-sidebar-item>
                         <x-sidebar-item route="{{ route('super-admin.subscriptions.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' :active="request()->routeIs('super-admin.subscriptions.*')" class="text-gray-300 hover:bg-slate-800 hover:text-white">Subscriptions</x-sidebar-item>
+                        <x-sidebar-item route="{{ route('super-admin.settings.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' :active="request()->routeIs('super-admin.settings.*')" class="text-gray-300 hover:bg-slate-800 hover:text-white">Platform Settings</x-sidebar-item>
                     </nav>
                 </div>
             </div>
@@ -356,7 +357,9 @@
                     <x-sidebar-item :dark="true" route="{{ route('super-admin.organizations.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>' :active="request()->routeIs('super-admin.organizations.*')">Organizations</x-sidebar-item>
                     <x-sidebar-item :dark="true" route="{{ route('super-admin.plans.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>' :active="request()->routeIs('super-admin.plans.*')">Plans</x-sidebar-item>
                     <x-sidebar-item :dark="true" route="{{ route('super-admin.subscriptions.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' :active="request()->routeIs('super-admin.subscriptions.*')">Subscriptions</x-sidebar-item>
+                    <x-sidebar-item :dark="true" route="{{ route('super-admin.settings.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' :active="request()->routeIs('super-admin.settings.*')">Platform Settings</x-sidebar-item>
                 </nav>
+
             </div>
             <div class="flex flex-shrink-0 border-t border-white/10 p-4">
                 <div class="group block w-full flex-shrink-0">
@@ -487,5 +490,97 @@
     </div>
 
     @stack('scripts')
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function initLiveFilter() {
+            const filterForms = document.querySelectorAll('form[method="GET"]');
+
+            filterForms.forEach(form => {
+                if (form.dataset.liveFilterInitialized) return;
+                if (form.getAttribute('data-no-live-filter') !== null) return;
+                form.dataset.liveFilterInitialized = 'true';
+
+                let debounceTimer;
+
+                const executeLiveFilter = () => {
+                    const formData = new FormData(form);
+                    const params = new URLSearchParams();
+
+                    for (const [key, value] of formData.entries()) {
+                        if (value && value.toString().trim() !== '') {
+                            params.append(key, value);
+                        }
+                    }
+
+                    const targetUrl = form.action + (params.toString() ? '?' + params.toString() : '');
+                    
+                    const dashContent = document.querySelector('.dash-content');
+                    if (dashContent) dashContent.style.opacity = '0.6';
+
+                    fetch(targetUrl, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        const newContent = doc.querySelector('.dash-content');
+                        const currentContent = document.querySelector('.dash-content');
+
+                        if (newContent && currentContent) {
+                            currentContent.innerHTML = newContent.innerHTML;
+                            initLiveFilter();
+                        }
+
+                        history.replaceState(null, '', targetUrl);
+                    })
+                    .catch(err => console.error('Live filter error:', err))
+                    .finally(() => {
+                        const currentContent = document.querySelector('.dash-content');
+                        if (currentContent) currentContent.style.opacity = '1';
+                    });
+                };
+
+                form.addEventListener('input', function (e) {
+                    if (e.target.tagName === 'INPUT') {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(executeLiveFilter, 300);
+                    }
+                });
+
+                form.addEventListener('change', function (e) {
+                    if (e.target.tagName === 'SELECT') {
+                        executeLiveFilter();
+                    }
+                });
+
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    executeLiveFilter();
+                });
+
+                const clearBtns = form.querySelectorAll('a[href], button[type="reset"]');
+                clearBtns.forEach(clearBtn => {
+                    if (clearBtn.textContent.trim().toLowerCase() === 'clear' || clearBtn.getAttribute('type') === 'reset') {
+                        clearBtn.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            form.querySelectorAll('input[type="text"], input[type="search"]').forEach(i => i.value = '');
+                            form.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+                            executeLiveFilter();
+                        });
+                    }
+                });
+            });
+        }
+
+
+        initLiveFilter();
+    });
+    </script>
 </body>
 </html>
+

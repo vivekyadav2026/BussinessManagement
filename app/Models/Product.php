@@ -19,8 +19,14 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('sort_order');
+    }
+
     public function inventoryStocks()
     {
+
         return $this->hasMany(InventoryStock::class);
     }
 

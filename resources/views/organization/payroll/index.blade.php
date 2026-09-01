@@ -28,10 +28,11 @@
         <div class="w-full md:w-48">
             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Year</label>
             <select name="year" class="w-full border-gray-300 rounded-lg text-sm">
-                @for($i=date('Y')-2; $i<=date('Y')+1; $i++)
+                @for($i = max(2030, (int)date('Y')); $i >= 2024; $i--)
                     <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>{{ $i }}</option>
                 @endfor
             </select>
+
         </div>
         <button type="submit" class="btn btn-ghost py-2.5 px-6 flex-1 md:flex-none justify-center w-full md:w-auto">View</button>
     </form>

@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Theme Switcher Script -->
     <script>
@@ -19,7 +20,35 @@
         })();
     </script>
     <style>
+        .org-logo-img {
+            width: 32px !important;
+            height: 32px !important;
+            max-width: 32px !important;
+            max-height: 32px !important;
+            object-fit: cover !important;
+            flex-shrink: 0 !important;
+            border-radius: 8px !important;
+        }
+        .org-header-logo {
+            width: 28px !important;
+            height: 28px !important;
+            max-width: 28px !important;
+            max-height: 28px !important;
+            object-fit: cover !important;
+            flex-shrink: 0 !important;
+            border-radius: 6px !important;
+        }
+        .org-preview-logo {
+            width: 64px !important;
+            height: 64px !important;
+            max-width: 64px !important;
+            max-height: 64px !important;
+            object-fit: cover !important;
+            flex-shrink: 0 !important;
+            border-radius: 12px !important;
+        }
         :root {
+
             /* Theme bases from Vyapaargo style guide */
             --bg-main: #F3F5F3;
             --bg-card: #FFFFFF;
@@ -322,9 +351,13 @@
                         <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                    <div class="logo text-white">
-                        <div class="mark bg-[#D99A2B]"></div>
-                        <span>Vyapaargo</span>
+                    <div class="logo text-white flex items-center gap-2">
+                        @if(auth()->user()->organization && auth()->user()->organization->logo)
+                            <img src="{{ asset('storage/' . auth()->user()->organization->logo) }}" class="org-header-logo w-7 h-7 rounded-md object-cover border border-white/20">
+                        @else
+                            <div class="mark bg-[#D99A2B]"></div>
+                        @endif
+                        <span class="truncate max-w-[150px]">{{ auth()->user()->organization->name ?? 'Vyapaargo' }}</span>
                     </div>
                 </div>
                 <nav class="mt-5 flex-1 space-y-1 px-2">
@@ -339,9 +372,15 @@
         <div class="flex min-h-0 flex-1 flex-col" style="background-color: var(--theme-bg);">
             <div class="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                 <div class="flex flex-shrink-0 items-center px-4 mb-3">
-                    <div class="logo text-white">
-                        <div class="mark bg-[#D99A2B]"></div>
-                        <span>Vyapaargo</span>
+                    <div class="logo text-white flex items-center gap-2.5">
+                        @if(auth()->user()->organization && auth()->user()->organization->logo)
+                            <img src="{{ asset('storage/' . auth()->user()->organization->logo) }}" class="org-logo-img w-8 h-8 rounded-lg object-cover border border-white/20 shadow-sm">
+                        @else
+                            <div class="mark bg-[#D99A2B]"></div>
+                        @endif
+                        <span class="truncate max-w-[160px] font-bold text-base tracking-tight" title="{{ auth()->user()->organization->name ?? 'Vyapaargo' }}">
+                            {{ auth()->user()->organization->name ?? 'Vyapaargo' }}
+                        </span>
                     </div>
                 </div>
 
@@ -376,7 +415,23 @@
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
             </button>
             <div class="flex flex-1 justify-between px-4 items-center">
-                <div class="flex items-center">
+                <div class="flex items-center gap-3">
+                    @if(auth()->user()->organization)
+                        <div class="flex items-center gap-2 pr-3 border-r border-gray-200">
+                            @if(auth()->user()->organization->logo)
+                                <img src="{{ asset('storage/' . auth()->user()->organization->logo) }}" class="org-header-logo w-7 h-7 rounded-md object-cover border border-gray-200 shadow-sm">
+                            @else
+                                <div class="w-7 h-7 rounded-md bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
+                                    {{ substr(auth()->user()->organization->name, 0, 1) }}
+                                </div>
+                            @endif
+                            <span class="font-bold text-gray-900 text-sm hidden sm:inline-block truncate max-w-[160px]" title="{{ auth()->user()->organization->name }}">
+                                {{ auth()->user()->organization->name }}
+                            </span>
+                        </div>
+                    @endif
+
+
                     <!-- Location Switcher -->
                     <div class="flex items-center">
                         @php
@@ -390,20 +445,19 @@
                         @if($availableLocations->count() > 0)
                             <form action="{{ route('organization.set-location') }}" method="POST" class="m-0">
                                 @csrf
-                                <select name="location_id" onchange="this.form.submit()" class="block w-full border-0 bg-transparent py-2 pl-3 pr-8 text-sm font-semibold text-gray-900 focus:ring-0">
+                                <select name="location_id" onchange="this.form.submit()" class="block w-full border-0 bg-transparent py-2 pl-2 pr-8 text-sm font-semibold text-gray-700 focus:ring-0">
                                     @if(!$activeLocationId)
                                         <option value="" disabled selected>Select Location</option>
                                     @endif
                                     @foreach($availableLocations as $loc)
-                                        <option value="{{ $loc->id }}" {{ $activeLocationId == $loc->id ? 'selected' : '' }}>{{ $loc->name }}</option>
+                                        <option value="{{ $loc->id }}" {{ $activeLocationId == $loc->id ? 'selected' : '' }}>📍 {{ $loc->name }}</option>
                                     @endforeach
                                 </select>
                             </form>
-                        @else
-                            <span class="text-sm font-semibold text-gray-900">{{ auth()->user()->organization->name ?? 'Business' }}</span>
                         @endif
                     </div>
                 </div>
+
 
                 <div class="flex-1 flex justify-center px-4">
                     <div class="w-full max-w-lg">
@@ -513,9 +567,25 @@
             </div>
             @endisset
 
-            <div class="mt-8">
-                <!-- Keep dash-content wrapper for backward compatibility with old views, but give it a max-w container -->
+            <div class="mt-4">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 dash-content">
+                    @php
+                        $orgId = auth()->user()->organization_id;
+                        $isTrial = $orgId ? \App\Services\SubscriptionService::isTrial($orgId) : false;
+                        $daysLeft = $orgId ? \App\Services\SubscriptionService::getDaysRemaining($orgId) : 0;
+                    @endphp
+                    @if($isTrial)
+                        <div class="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-3 rounded-xl text-xs font-semibold flex items-center justify-between shadow-sm mb-6">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-amber-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span><strong>Free Trial Active:</strong> You have <strong>{{ $daysLeft }} {{ \Illuminate\Support\Str::plural('day', $daysLeft) }} remaining</strong> in your free trial.</span>
+                            </div>
+                            <a href="{{ route('organization.subscription.index') }}" class="bg-white text-amber-900 hover:bg-amber-50 px-3.5 py-1.5 rounded-lg font-bold text-xs shadow-sm transition">
+                                Upgrade Plan &rarr;
+                            </a>
+                        </div>
+                    @endif
+
                     @if(session('success'))
                         <div class="rounded-md bg-green-50 p-4 mb-6">
                             <div class="flex">
@@ -548,5 +618,127 @@
     </div>
 
     @stack('scripts')
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function initLiveFilter() {
+            const filterForms = document.querySelectorAll('form[method="GET"]');
+
+            filterForms.forEach(form => {
+                if (form.dataset.liveFilterInitialized) return;
+                if (form.getAttribute('data-no-live-filter') !== null) return;
+                form.dataset.liveFilterInitialized = 'true';
+
+                let debounceTimer;
+
+                const executeLiveFilter = () => {
+                    const formData = new FormData(form);
+                    const params = new URLSearchParams();
+
+                    for (const [key, value] of formData.entries()) {
+                        if (value && value.toString().trim() !== '') {
+                            params.append(key, value);
+                        }
+                    }
+
+                    const targetUrl = form.action + (params.toString() ? '?' + params.toString() : '');
+                    
+                    const dashContent = document.querySelector('.dash-content');
+                    if (dashContent) dashContent.style.opacity = '0.6';
+
+                    fetch(targetUrl, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        const newContent = doc.querySelector('.dash-content');
+                        const currentContent = document.querySelector('.dash-content');
+
+                        if (newContent && currentContent) {
+                            currentContent.innerHTML = newContent.innerHTML;
+                            initLiveFilter(); // Re-initialize listeners on new DOM nodes
+                        }
+
+                        history.replaceState(null, '', targetUrl);
+                    })
+                    .catch(err => console.error('Live filter error:', err))
+                    .finally(() => {
+                        const currentContent = document.querySelector('.dash-content');
+                        if (currentContent) currentContent.style.opacity = '1';
+                    });
+                };
+
+                // Debounced input for search fields
+                form.addEventListener('input', function (e) {
+                    if (e.target.tagName === 'INPUT') {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(executeLiveFilter, 300);
+                    }
+                });
+
+                // Immediate trigger for dropdown selects
+                form.addEventListener('change', function (e) {
+                    if (e.target.tagName === 'SELECT') {
+                        executeLiveFilter();
+                    }
+                });
+
+                // Instant Filter Button & Submit Handler
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    executeLiveFilter();
+                });
+
+                // Instant Clear / Reset Button Handler for software-like experience
+                const clearBtns = form.querySelectorAll('a[href], button[type="reset"]');
+                clearBtns.forEach(clearBtn => {
+                    if (clearBtn.textContent.trim().toLowerCase() === 'clear' || clearBtn.getAttribute('type') === 'reset') {
+                        clearBtn.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            form.querySelectorAll('input[type="text"], input[type="search"]').forEach(i => i.value = '');
+                            form.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+                            const topHeaderSearch = document.getElementById('search');
+                            if (topHeaderSearch) topHeaderSearch.value = '';
+                            executeLiveFilter();
+                        });
+                    }
+                });
+
+                // Top Header Search Auto-Wire to Active Page Filter
+                const topSearch = document.getElementById('search');
+                if (topSearch) {
+                    topSearch.addEventListener('input', function(e) {
+                        const val = e.target.value;
+                        const pageSearchInput = document.querySelector('form[method="GET"] input[name="search"]');
+                        if (pageSearchInput) {
+                            pageSearchInput.value = val;
+                            pageSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    });
+
+                    topSearch.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const val = e.target.value.trim();
+                            const pageSearchInput = document.querySelector('form[method="GET"] input[name="search"]');
+                            if (!pageSearchInput && val) {
+                                window.location.href = "{{ route('organization.invoices.index') }}?search=" + encodeURIComponent(val);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        initLiveFilter();
+    });
+    </script>
+
 </body>
 </html>
+

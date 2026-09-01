@@ -57,8 +57,44 @@ class RegisteredUserController extends Controller
             \App\Models\Role::firstOrCreate(['name' => 'Organization Admin', 'organization_id' => $org->id]);
             $user->assignRole('Organization Admin');
 
+            // Assign default Plan subscription based on Super Admin Trial Settings
+            $freePlan = \App\Models\Plan::where('name', 'Free')->first();
+            if (!$freePlan) {
+                $freePlan = \App\Models\Plan::create([
+                    'name' => 'Free',
+                    'price_monthly' => 0,
+                    'price_yearly' => 0,
+                    'is_active' => true,
+                    'description' => 'Default free trial plan'
+                ]);
+            }
+            
+            // Ensure plan has retail and payroll modules enabled
+            \App\Models\PlanFeature::firstOrCreate(['plan_id' => $freePlan->id, 'feature_code' => 'module_retail'], ['feature_value' => 'true']);
+            \App\Models\PlanFeature::firstOrCreate(['plan_id' => $freePlan->id, 'feature_code' => 'module_payroll'], ['feature_value' => 'true']);
+
+            $trialDays = (int) \App\Models\SystemSetting::get('trial_days', 14);
+            $enableTrial = \App\Models\SystemSetting::get('enable_free_trial', '1');
+
+            if ($enableTrial === '0' || $trialDays <= 0) {
+                $status = 'Expired';
+                $endsAt = now();
+            } else {
+                $status = 'Trial';
+                $endsAt = now()->addDays($trialDays);
+            }
+
+            \App\Models\OrganizationSubscription::create([
+                'organization_id' => $org->id,
+                'plan_id' => $freePlan->id,
+                'status' => $status,
+                'starts_at' => now(),
+                'ends_at' => $endsAt,
+            ]);
+
             return $user;
         });
+
 
         event(new Registered($user));
 

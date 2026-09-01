@@ -68,15 +68,23 @@ class ReceivableController extends Controller
     public function clientReport(Request $request)
     {
         $orgId = auth()->user()->organization_id;
-        
+        $locationId = LocationManager::getActiveLocationId();
+
         $clients = Client::where('organization_id', $orgId)
-            ->with(['invoices' => function($q) {
-                $q->whereNotIn('status', ['Cancelled', 'Paid']);
+            ->with(['invoices' => function($q) use ($locationId) {
+                $q->whereNotIn('status', ['Cancelled', 'Paid'])
+                  ->when($locationId, function($lq) use ($locationId) {
+                      $lq->where('location_id', $locationId);
+                  });
             }])
             ->get()
             ->map(function($client) {
-                $client->total_outstanding = $client->invoices->sum('amount_due');
-                $client->total_overdue = $client->invoices->where('due_date', '<', now()->startOfDay())->sum('amount_due');
+                $client->total_outstanding = $client->invoices->sum(function($inv) {
+                    return $inv->amount_due;
+                });
+                $client->total_overdue = $client->invoices->where('due_date', '<', now()->startOfDay())->sum(function($inv) {
+                    return $inv->amount_due;
+                });
                 $client->invoice_count = $client->invoices->count();
                 return $client;
             })
@@ -95,7 +103,9 @@ class ReceivableController extends Controller
         
         $invoices = Invoice::with('client')
             ->where('organization_id', $orgId)
-            ->where('location_id', $locationId)
+            ->when($locationId, function($q) use ($locationId) {
+                $q->where('location_id', $locationId);
+            })
             ->whereNotIn('status', ['Cancelled', 'Paid'])
             ->where('due_date', '<', now()->startOfDay())
             ->orderBy('due_date', 'asc')
@@ -103,4 +113,5 @@ class ReceivableController extends Controller
             
         return view('organization.receivables.overdue_report', compact('invoices'));
     }
+
 }

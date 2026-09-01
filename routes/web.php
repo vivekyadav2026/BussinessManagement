@@ -39,29 +39,30 @@ Route::get('/dashboard', function () {
     
     if ($user->hasRole('Super Admin')) {
         return redirect()->route('super-admin.dashboard');
-    } elseif ($user->hasRole('Organization Admin')) {
+    }
+
+    if ($user->organization_id && ($user->hasRole('Organization Admin') || $user->hasPermissionTo('dashboard.view'))) {
         return redirect()->route('organization.dashboard'); 
     }
     
-    // Smart redirect for specialized staff (only if no error is flashed, to prevent loops)
-    if (!session('error')) {
-        if ($user->hasPermissionTo('restaurant.view')) {
-            return redirect()->route('organization.menu.kitchen.index');
-        } elseif ($user->hasPermissionTo('invoices.view')) {
-            return redirect()->route('organization.invoices.index');
-        } elseif ($user->hasPermissionTo('inventory.view')) {
-            return redirect()->route('organization.inventory.index');
-        }
+    // Smart fallback for specialized staff without explicit dashboard.view permission
+    if ($user->hasPermissionTo('restaurant.view')) {
+        return redirect()->route('organization.menu.kitchen.index');
+    } elseif ($user->hasPermissionTo('invoices.view')) {
+        return redirect()->route('organization.invoices.index');
+    } elseif ($user->hasPermissionTo('inventory.view')) {
+        return redirect()->route('organization.inventory.index');
     }
 
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
 // Razorpay Webhook
 Route::post('webhook/razorpay', [\App\Http\Controllers\RazorpayWebhookController::class, 'handleWebhook']);
 
 // Payment Checkout
-Route::get('pay/invoice/{invoice}', [\App\Http\Controllers\PaymentController::class, 'checkoutInvoice'])->name('payment.invoice');
+Route::get('pay/invoice/{invoice}/checkout', [\App\Http\Controllers\PaymentController::class, 'checkoutInvoice'])->name('payment.invoice');
 Route::get('pay/order/{order}', [\App\Http\Controllers\PaymentController::class, 'checkoutRestaurantOrder'])->name('payment.order');
 
 Route::middleware(['auth', 'role:Super Admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
@@ -73,19 +74,34 @@ Route::middleware(['auth', 'role:Super Admin'])->prefix('super-admin')->name('su
     Route::resource('plans', \App\Http\Controllers\SuperAdmin\PlanController::class);
     
     Route::resource('subscriptions', \App\Http\Controllers\SuperAdmin\SubscriptionController::class);
+    
+    Route::get('settings', [\App\Http\Controllers\SuperAdmin\SystemSettingController::class, 'index'])->name('settings.index');
+    Route::post('settings', [\App\Http\Controllers\SuperAdmin\SystemSettingController::class, 'update'])->name('settings.update');
+    
     Route::get('/profile', function(){ return "Profile"; })->name('profile.edit');
 });
 
 
 
-Route::middleware(['auth', 'role:Organization Admin'])->prefix('organization')->name('organization.')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Organization\DashboardController::class, 'index'])->name('dashboard');
 
+// Organization Dashboard (accessible to Org Admin & Employees with dashboard.view permission)
+Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'permission:dashboard.view'])->prefix('organization')->name('organization.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Organization\DashboardController::class, 'index'])->name('dashboard');
+});
+
+// Roles & Permissions management (permission protected)
+Route::middleware(['auth', 'permission:roles.view'])->prefix('organization')->name('organization.')->group(function () {
     Route::resource('roles', \App\Http\Controllers\Organization\RoleController::class);
-    
+});
+
+// Employees management (permission protected)
+Route::middleware(['auth', 'permission:employees.view'])->prefix('organization')->name('organization.')->group(function () {
     Route::resource('employees', \App\Http\Controllers\Organization\EmployeeController::class);
     Route::patch('employees/{employee}/toggle-status', [\App\Http\Controllers\Organization\EmployeeController::class, 'toggleStatus'])->name('employees.toggle-status');
-    
+});
+
+// Organization Admin strict routes (Locations & Subscriptions)
+Route::middleware(['auth', 'role:Organization Admin'])->prefix('organization')->name('organization.')->group(function () {
     Route::resource('locations', \App\Http\Controllers\Organization\LocationController::class);
     Route::patch('locations/{location}/toggle-status', [\App\Http\Controllers\Organization\LocationController::class, 'toggleStatus'])->name('locations.toggle-status');
     
@@ -93,25 +109,28 @@ Route::middleware(['auth', 'role:Organization Admin'])->prefix('organization')->
     Route::prefix('subscription')->name('subscription.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Organization\SubscriptionController::class, 'index'])->name('index');
         Route::post('/switch', [\App\Http\Controllers\Organization\SubscriptionController::class, 'switchPlan'])->name('switch');
+        Route::post('/initiate/{plan}', [\App\Http\Controllers\Organization\SubscriptionController::class, 'initiatePayment'])->name('initiate');
+        Route::post('/confirm', [\App\Http\Controllers\Organization\SubscriptionController::class, 'confirmPayment'])->name('confirm');
     });
+
 }); // End of Organization Admin Group
 
 // Menu Management (Requires Restaurant Permissions, not necessarily Org Admin)
 Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'plan.feature:module_restaurant'])->prefix('organization/menu')->name('organization.menu.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'index'])->name('index')->middleware('permission:restaurant.manage');
-    Route::post('/categories', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'storeCategory'])->name('categories.store')->middleware('permission:restaurant.manage');
-    Route::put('/categories/{category}', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'updateCategory'])->name('categories.update')->middleware('permission:restaurant.manage');
-    Route::delete('/categories/{category}', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'destroyCategory'])->name('categories.destroy')->middleware('permission:restaurant.manage');
+    Route::get('/', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'index'])->name('index')->middleware('permission:restaurant.menu');
+    Route::post('/categories', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'storeCategory'])->name('categories.store')->middleware('permission:restaurant.menu');
+    Route::put('/categories/{category}', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'updateCategory'])->name('categories.update')->middleware('permission:restaurant.menu');
+    Route::delete('/categories/{category}', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'destroyCategory'])->name('categories.destroy')->middleware('permission:restaurant.menu');
 
-    Route::post('/items', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'storeItem'])->name('items.store')->middleware('permission:restaurant.manage');
-    Route::put('/items/{item}', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'updateItem'])->name('items.update')->middleware('permission:restaurant.manage');
-    Route::delete('/items/{item}', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'destroyItem'])->name('items.destroy')->middleware('permission:restaurant.manage');
+    Route::post('/items', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'storeItem'])->name('items.store')->middleware('permission:restaurant.menu');
+    Route::put('/items/{item}', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'updateItem'])->name('items.update')->middleware('permission:restaurant.menu');
+    Route::delete('/items/{item}', [\App\Http\Controllers\Organization\RestaurantMenuController::class, 'destroyItem'])->name('items.destroy')->middleware('permission:restaurant.menu');
     
-    Route::get('/tables', [\App\Http\Controllers\Organization\TableController::class, 'index'])->name('tables.index')->middleware('permission:restaurant.manage');
-    Route::post('/tables', [\App\Http\Controllers\Organization\TableController::class, 'store'])->name('tables.store')->middleware('permission:restaurant.manage');
-    Route::put('/tables/{table}', [\App\Http\Controllers\Organization\TableController::class, 'update'])->name('tables.update')->middleware('permission:restaurant.manage');
-    Route::delete('/tables/{table}', [\App\Http\Controllers\Organization\TableController::class, 'destroy'])->name('tables.destroy')->middleware('permission:restaurant.manage');
-    Route::post('/tables/{table}/regenerate', [\App\Http\Controllers\Organization\TableController::class, 'regenerateQr'])->name('tables.regenerate')->middleware('permission:restaurant.manage');
+    Route::get('/tables', [\App\Http\Controllers\Organization\TableController::class, 'index'])->name('tables.index')->middleware('permission:restaurant.tables');
+    Route::post('/tables', [\App\Http\Controllers\Organization\TableController::class, 'store'])->name('tables.store')->middleware('permission:restaurant.tables');
+    Route::put('/tables/{table}', [\App\Http\Controllers\Organization\TableController::class, 'update'])->name('tables.update')->middleware('permission:restaurant.tables');
+    Route::delete('/tables/{table}', [\App\Http\Controllers\Organization\TableController::class, 'destroy'])->name('tables.destroy')->middleware('permission:restaurant.tables');
+    Route::post('/tables/{table}/regenerate', [\App\Http\Controllers\Organization\TableController::class, 'regenerateQr'])->name('tables.regenerate')->middleware('permission:restaurant.tables');
     Route::get('/tables/print', [\App\Http\Controllers\Organization\TableController::class, 'printSheet'])->name('tables.print')->middleware('permission:restaurant.view');
     
     Route::get('/kitchen', [\App\Http\Controllers\Organization\KitchenOrderController::class, 'index'])->name('kitchen.index')->middleware('permission:restaurant.view');
@@ -121,8 +140,10 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'plan.fe
 
 Route::middleware(['auth', 'permission:products.view'])->prefix('organization')->name('organization.')->group(function () {
     Route::resource('categories', \App\Http\Controllers\Organization\CategoryController::class)->except(['create', 'show', 'edit']);
+    Route::get('products/{product}/print-barcode', [\App\Http\Controllers\Organization\ProductController::class, 'printBarcode'])->name('products.print-barcode');
     Route::resource('products', \App\Http\Controllers\Organization\ProductController::class);
 });
+
 
 Route::middleware(['auth', 'permission:clients.view'])->prefix('organization')->name('organization.')->group(function () {
     Route::get('clients/search', [\App\Http\Controllers\Organization\ClientController::class, 'apiSearch'])->name('clients.search');

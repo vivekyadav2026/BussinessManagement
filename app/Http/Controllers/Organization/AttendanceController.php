@@ -17,6 +17,7 @@ class AttendanceController extends Controller
     {
         $orgId = auth()->user()->organization_id;
         $locationId = LocationManager::getActiveLocationId();
+        $organization = auth()->user()->organization;
         
         $date = $request->input('date', now()->toDateString());
         $dateObj = Carbon::parse($date);
@@ -25,13 +26,14 @@ class AttendanceController extends Controller
             ->where('location_id', $locationId)
             ->whereIn('status', ['active', 'Active'])
             ->with(['attendances' => function($q) use ($date) {
-                $q->where('date', $date);
+                $q->whereDate('date', $date);
             }])
             ->orderBy('first_name')
             ->get();
 
-        return view('organization.attendance.index', compact('employees', 'date', 'dateObj'));
+        return view('organization.attendance.index', compact('employees', 'date', 'dateObj', 'organization'));
     }
+
 
     public function storeBulk(Request $request)
     {

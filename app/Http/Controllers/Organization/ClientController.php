@@ -33,7 +33,16 @@ class ClientController extends Controller
 
     public function store(Request $request)
     {
+        $orgId = auth()->user()->organization_id;
+        $currentClientsCount = Client::where('organization_id', $orgId)->count();
+
+        if (\App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_clients', $currentClientsCount)) {
+            $limit = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_clients');
+            return back()->withInput()->with('error', "Client limit reached ({$currentClientsCount}/{$limit}). Please upgrade your plan to add more clients.");
+        }
+
         $request->validate([
+
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
@@ -115,7 +124,19 @@ class ClientController extends Controller
 
     public function quickStore(Request $request)
     {
+        $orgId = auth()->user()->organization_id;
+        $currentClientsCount = Client::where('organization_id', $orgId)->count();
+
+        if (\App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_clients', $currentClientsCount)) {
+            $limit = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_clients');
+            return response()->json([
+                'success' => false,
+                'message' => "Client limit reached ({$currentClientsCount}/{$limit}). Please upgrade your plan to add more clients."
+            ], 422);
+        }
+
         $request->validate([
+
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',

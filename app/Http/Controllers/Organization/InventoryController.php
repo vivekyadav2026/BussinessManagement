@@ -43,14 +43,23 @@ class InventoryController extends Controller
             'barcode' => 'required|string',
         ]);
         
+        $raw = trim($request->barcode);
+        $clean = preg_replace('/[^a-zA-Z0-9]/', '', $raw);
+
         $product = Product::where('organization_id', auth()->user()->organization_id)
-            ->where(function($q) use ($request) {
-                $q->where('barcode', $request->barcode)
-                  ->orWhere('sku', $request->barcode);
+            ->where(function($q) use ($raw, $clean) {
+                $q->where('barcode', $raw)
+                  ->orWhere('sku', $raw)
+                  ->orWhere('barcode', 'like', "%{$raw}%")
+                  ->orWhere('sku', 'like', "%{$raw}%");
+                if (!empty($clean)) {
+                    $q->orWhereRaw("LOWER(REPLACE(barcode, '-', '')) = ?", [strtolower($clean)])
+                      ->orWhereRaw("LOWER(REPLACE(sku, '-', '')) = ?", [strtolower($clean)]);
+                }
             })->first();
 
         if (!$product) {
-            return response()->json(['success' => false, 'message' => 'Product not found.'], 404);
+            return response()->json(['success' => false, 'message' => "Product not found for code: {$raw}"], 404);
         }
         
         // Include stock info for the current location
@@ -59,6 +68,7 @@ class InventoryController extends Controller
         
         return response()->json(['success' => true, 'product' => $stock]);
     }
+
 
     public function adjust(Request $request)
     {
@@ -91,11 +101,28 @@ class InventoryController extends Controller
                 $request->type, 
                 $request->notes
             );
+
+            if ($request->expectsJson()) {
+                $product->refresh();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Stock adjusted successfully.',
+                    'new_stock' => $product->stock
+                ]);
+            }
+
             return back()->with('success', 'Stock adjusted successfully.');
         } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 422);
+            }
             return back()->with('error', $e->getMessage());
         }
     }
+
 
     public function history()
     {
