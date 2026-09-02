@@ -87,9 +87,21 @@
                     <span class="font-bold text-gray-900">₹<span id="sumTax">0.00</span></span>
                 </div>
 
-                <div class="flex justify-between items-center pt-1 pb-3 border-b border-gray-100">
-                    <span class="text-gray-600">Discount (₹)</span>
-                    <input type="number" id="sumDiscount" value="0" min="0" step="0.01" class="w-24 text-right border-gray-300 rounded-lg text-sm py-1.5 px-2 bg-gray-50 focus:bg-white" oninput="calculateTotals()">
+                <div class="pt-2 pb-3 border-b border-gray-100 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Discount Type</label>
+                        <select id="discountType" onchange="calculateTotals()" class="w-36 border-gray-300 rounded-lg text-xs font-bold py-1.5 px-2.5 bg-gray-50 focus:bg-white text-gray-800">
+                            <option value="fixed">₹ Flat (Rupees)</option>
+                            <option value="percent">% Percentage (%)</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Discount Value</label>
+                        <input type="number" id="sumDiscount" value="0" min="0" step="0.01" placeholder="0" class="w-36 text-right border-gray-300 rounded-lg text-sm py-1.5 px-2.5 bg-gray-50 focus:bg-white font-bold text-gray-800" oninput="calculateTotals()">
+                    </div>
+                    <div id="discountConvertedRow" class="hidden text-right text-xs text-indigo-600 font-bold bg-indigo-50/70 py-1 px-2.5 rounded-lg border border-indigo-100">
+                        Discount Amount: -₹<span id="sumDiscountCalculated">0.00</span>
+                    </div>
                 </div>
             </div>
 
@@ -171,16 +183,54 @@ clientSearch.addEventListener('focus', function() {
     fetchClients(this.value.trim());
 });
 
+clientSearch.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        let q = this.value.trim();
+        
+        // If dropdown has real matching clients
+        let firstClientItem = clientDropdown.querySelector('[data-client-id]');
+        if (firstClientItem && q.length > 0) {
+            firstClientItem.dispatchEvent(new Event('mousedown'));
+            return;
+        }
+        
+        // Otherwise, automatically trigger Quick Add Modal with pre-filled value
+        openQuickClientModalWithPrefill(q);
+    }
+});
+
 function fetchClients(q) {
     fetch(`/organization/clients/search?q=${encodeURIComponent(q)}`)
         .then(res => res.json())
         .then(data => {
             clientDropdown.innerHTML = '';
             if(data.length === 0) {
-                clientDropdown.innerHTML = '<div class="p-3 text-xs text-gray-400 text-center">No clients found</div>';
+                if(q.length > 0) {
+                    let safeQ = q.replace(/'/g, "\\'");
+                    clientDropdown.innerHTML = `
+                        <div class="p-3 bg-indigo-50/80 border-t border-indigo-100 text-center space-y-2 rounded-b-lg">
+                            <div class="text-xs text-gray-500 font-medium">No client matching "<b class="text-gray-900">${q}</b>"</div>
+                            <button type="button" onmousedown="openQuickClientModalWithPrefill('${safeQ}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow-xs">
+                                <span>➕ Add "${q}" as New Client</span>
+                                <kbd class="bg-indigo-800/60 text-[10px] px-1.5 py-0.5 rounded font-mono">ENTER ↵</kbd>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    clientDropdown.innerHTML = `
+                        <div class="p-3 text-xs text-gray-500 text-center space-y-2">
+                            <div>No client selected.</div>
+                            <button type="button" onmousedown="openQuickClientModalWithPrefill('')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow-xs">
+                                <span>➕ Add New Client</span>
+                            </button>
+                        </div>
+                    `;
+                }
             } else {
                 data.forEach(c => {
                     let div = document.createElement('div');
+                    div.setAttribute('data-client-id', c.id);
                     div.className = 'p-2.5 hover:bg-indigo-50 cursor-pointer text-sm border-b border-gray-100 last:border-0';
                     div.innerHTML = `<div class="font-bold text-gray-800">${c.name}</div><div class="text-xs text-gray-500">${c.phone || 'No phone'}</div>`;
                     div.onmousedown = (e) => {
@@ -191,10 +241,34 @@ function fetchClients(q) {
                     };
                     clientDropdown.appendChild(div);
                 });
+
+                if (q.length > 0) {
+                    let safeQ = q.replace(/'/g, "\\'");
+                    let addOption = document.createElement('div');
+                    addOption.className = 'p-2.5 bg-indigo-50/90 hover:bg-indigo-100 cursor-pointer text-xs font-bold text-indigo-900 border-t border-indigo-100 flex items-center justify-between gap-2 transition rounded-b-lg';
+                    addOption.innerHTML = `
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <span class="text-indigo-600 font-black text-sm shrink-0">➕</span>
+                            <span class="truncate">Add "<span class="text-indigo-700 font-extrabold">${q}</span>"</span>
+                        </div>
+                        <span class="bg-indigo-600 text-white px-2 py-1 rounded-md text-[10px] font-bold shrink-0 shadow-xs flex items-center gap-1">
+                            <span>+ Add</span>
+                            <kbd class="bg-indigo-800/60 text-[9px] px-1 rounded">↵</kbd>
+                        </span>
+                    `;
+                    addOption.onmousedown = (e) => {
+                        e.preventDefault();
+                        openQuickClientModalWithPrefill(safeQ);
+                    };
+                    clientDropdown.appendChild(addOption);
+                }
             }
             clientDropdown.classList.remove('hidden');
         });
 }
+
+
+
 
 // Product Search
 productSearch.addEventListener('input', function() {
@@ -251,13 +325,38 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Barcode scanner enter key
-productSearch.addEventListener('keypress', function(e) {
+// Barcode scanner enter key & Instant Add
+productSearch.addEventListener('keydown', function(e) {
     if(e.key === 'Enter') {
         e.preventDefault();
-        if(!productDropdown.classList.contains('hidden') && productDropdown.children.length === 1) {
-            productDropdown.children[0].dispatchEvent(new Event('mousedown'));
-        }
+        let q = this.value.trim();
+        if(!q) return;
+
+        // Prevent double trigger if dropdown was already rendering
+        productDropdown.innerHTML = '<div class="p-3 text-xs text-indigo-500 font-bold text-center animate-pulse">Scanning...</div>';
+        productDropdown.classList.remove('hidden');
+
+        fetch(`/organization/invoices/products/search?q=${encodeURIComponent(q)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.length === 1 || (data.length > 0 && (data[0].barcode === q || data[0].sku === q))) {
+                    addToCart(data[0]);
+                    productSearch.value = '';
+                    productDropdown.classList.add('hidden');
+                    productSearch.focus();
+                } else if(data.length > 0) {
+                    addToCart(data[0]);
+                    productSearch.value = '';
+                    productDropdown.classList.add('hidden');
+                    productSearch.focus();
+                } else {
+                    productDropdown.innerHTML = '<div class="p-3 text-xs text-rose-500 text-center font-bold">No product found for "'+q+'"</div>';
+                    productSearch.select(); // Select text so they can scan again immediately
+                }
+            })
+            .catch(err => {
+                productDropdown.innerHTML = '<div class="p-3 text-xs text-red-500 text-center">Scan failed</div>';
+            });
     }
 });
 
@@ -348,8 +447,20 @@ function calculateTotals() {
         tax += t;
     });
     
-    let discount = parseFloat(document.getElementById('sumDiscount').value) || 0;
-    let grandTotal = subtotal + tax - discount;
+    let discountType = document.getElementById('discountType').value;
+    let discountInput = parseFloat(document.getElementById('sumDiscount').value) || 0;
+    let calculatedDiscount = 0;
+
+    if (discountType === 'percent') {
+        calculatedDiscount = (subtotal + tax) * (discountInput / 100);
+        document.getElementById('discountConvertedRow').classList.remove('hidden');
+        document.getElementById('sumDiscountCalculated').textContent = calculatedDiscount.toFixed(2);
+    } else {
+        calculatedDiscount = discountInput;
+        document.getElementById('discountConvertedRow').classList.add('hidden');
+    }
+
+    let grandTotal = subtotal + tax - calculatedDiscount;
     if(grandTotal < 0) grandTotal = 0;
     
     document.getElementById('sumSubtotal').textContent = subtotal.toFixed(2);
@@ -366,23 +477,64 @@ document.getElementById('invoiceStatus').addEventListener('change', calculateTot
 
 // Quick Add Client Functions
 function openQuickClientModal() {
+    openQuickClientModalWithPrefill(clientSearch.value.trim());
+}
+
+function openQuickClientModalWithPrefill(prefill) {
+    clientDropdown.classList.add('hidden');
     document.getElementById('modalClientName').value = '';
     document.getElementById('modalClientPhone').value = '';
     document.getElementById('modalClientEmail').value = '';
+
+    if (prefill) {
+        let isPhone = /^[0-9+\s\-]{5,15}$/.test(prefill);
+        if (isPhone) {
+            document.getElementById('modalClientPhone').value = prefill;
+        } else {
+            document.getElementById('modalClientName').value = prefill;
+        }
+    }
     document.getElementById('quickClientModal').classList.remove('hidden');
+    setTimeout(() => {
+        if (document.getElementById('modalClientName').value === '') {
+            document.getElementById('modalClientName').focus();
+        } else {
+            document.getElementById('modalClientPhone').focus();
+        }
+    }, 100);
 }
 
 function closeQuickClientModal() {
     document.getElementById('quickClientModal').classList.add('hidden');
 }
 
+['modalClientName', 'modalClientPhone', 'modalClientEmail'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+        el.addEventListener('keydown', function(e) {
+            if(e.key === 'Enter') {
+                e.preventDefault();
+                submitQuickClient();
+            }
+        });
+    }
+});
+
+
+
 function submitQuickClient() {
-    const name = document.getElementById('modalClientName').value.trim();
-    const phone = document.getElementById('modalClientPhone').value.trim();
-    const email = document.getElementById('modalClientEmail').value.trim();
+    let name = document.getElementById('modalClientName').value.trim();
+    let phone = document.getElementById('modalClientPhone').value.trim();
+    let email = document.getElementById('modalClientEmail').value.trim();
+
+    if(!name && phone) {
+        name = "Client " + phone;
+        document.getElementById('modalClientName').value = name;
+    }
 
     if(!name) {
-        alert("Client Name is required.");
+        alert("Please enter Client Name or Phone Number.");
+        document.getElementById('modalClientName').focus();
         return;
     }
 
@@ -395,21 +547,26 @@ function submitQuickClient() {
         },
         body: JSON.stringify({ name, phone, email })
     })
-    .then(res => res.json())
-    .then(data => {
-        if(data.success) {
+    .then(async res => {
+        const data = await res.json();
+        if(res.ok && data.success) {
             clientId.value = data.client.id;
             clientSearch.value = data.client.name;
             closeQuickClientModal();
         } else {
-            showErrorBanner(data.message || "Error saving client.");
+            let errorMsg = data.message || "Error saving client.";
+            if(data.errors) {
+                errorMsg = Object.values(data.errors).flat().join(" ");
+            }
+            alert(errorMsg);
         }
     })
     .catch(err => {
-        showErrorBanner("An error occurred saving the client.");
+        alert("An error occurred saving the client.");
         console.error(err);
     });
 }
+
 
 function showErrorBanner(msg) {
     const banner = document.getElementById('invoiceErrorBanner');
@@ -431,11 +588,19 @@ function submitInvoice() {
     btn.disabled = true;
     btn.textContent = 'Processing & Generating Invoice...';
     
+    let discountType = document.getElementById('discountType').value;
+    let discountInput = parseFloat(document.getElementById('sumDiscount').value) || 0;
+    let subtotalVal = parseFloat(document.getElementById('sumSubtotal').textContent) || 0;
+    let taxVal = parseFloat(document.getElementById('sumTax').textContent) || 0;
+    let finalDiscount = discountType === 'percent' ? ((subtotalVal + taxVal) * (discountInput / 100)) : discountInput;
+
     const payload = {
         client_id: clientVal || null,
         invoice_date: document.getElementById('invoiceDate').value,
         notes: document.getElementById('invoiceNotes').value,
-        discount: parseFloat(document.getElementById('sumDiscount').value) || 0,
+        discount: finalDiscount,
+        discount_type: discountType,
+        discount_value: discountInput,
         amount_paid: parseFloat(document.getElementById('sumPaid').value) || 0,
         status: document.getElementById('invoiceStatus').value,
         items: cart.map(i => ({ product_id: i.id, quantity: i.qty }))

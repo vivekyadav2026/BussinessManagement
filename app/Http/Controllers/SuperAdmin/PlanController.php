@@ -10,7 +10,7 @@ class PlanController extends Controller
 {
     public function index()
     {
-        $plans = Plan::with('features')->get();
+        $plans = Plan::with('features')->withCount('subscriptions')->latest()->paginate(15)->withQueryString();
         return view('super-admin.plans.index', compact('plans'));
     }
 

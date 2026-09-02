@@ -78,7 +78,7 @@
                                 <a href="{{ route('organization.clients.edit', $client) }}" class="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Edit Client">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
-                                @if($client->invoices()->count() === 0)
+                                @if($client->invoices_count === 0)
                                     <form action="{{ route('organization.clients.destroy', $client) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this client?');" class="inline">
                                         @csrf
                                         @method('DELETE')

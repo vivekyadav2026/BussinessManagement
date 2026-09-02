@@ -45,7 +45,7 @@ class InvoiceController extends Controller
             'total_count' => $statsQuery->count()
         ];
 
-        $invoices = $query->latest()->paginate(15);
+        $invoices = $query->with('client')->latest()->paginate(15)->withQueryString();
         return view('organization.invoices.index', compact('invoices', 'stats'));
     }
 
@@ -79,6 +79,8 @@ class InvoiceController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'discount' => 'nullable|numeric|min:0',
+            'discount_type' => 'nullable|string|in:fixed,percent,percentage',
+            'discount_value' => 'nullable|numeric|min:0',
             'amount_paid' => 'nullable|numeric|min:0',
             'status' => 'required|in:Draft,Paid,Partially Paid,Due',
             'notes' => 'nullable|string'

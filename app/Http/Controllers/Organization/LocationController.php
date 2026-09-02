@@ -11,9 +11,12 @@ class LocationController extends Controller
 {
     public function index()
     {
-        $locations = Location::where('organization_id', auth()->user()->organization_id)->get();
-        return view('organization.locations.index', compact('locations'));
+        $orgId = auth()->user()->organization_id;
+        $locations = Location::where('organization_id', $orgId)->withCount('employees')->latest()->paginate(15)->withQueryString();
+        $maxLocations = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_locations') ?? '1';
+        return view('organization.locations.index', compact('locations', 'maxLocations'));
     }
+
 
     public function create()
     {

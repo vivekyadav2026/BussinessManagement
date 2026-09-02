@@ -15,48 +15,46 @@ class ReceivableController extends Controller
     public function dashboard(Request $request)
     {
         $orgId = auth()->user()->organization_id;
+        $locationId = LocationManager::getActiveLocationId();
         
-        // Base query for all metrics
-        $query = Invoice::where('organization_id', $orgId)
+        // Base query for KPI Cards (Outstanding balances)
+        $unpaidBase = Invoice::where('organization_id', $orgId)
+            ->when($locationId, function($q) use ($locationId) {
+                $q->where('location_id', $locationId);
+            })
             ->whereNotIn('status', ['Cancelled', 'Paid']);
-            
-        // Apply Location Filter
-        if ($request->filled('location_id')) {
-            $query->where('location_id', $request->location_id);
-        } else {
-            // Default to all allowed locations for this user? The request asked for a filter. 
-            // If no filter, we can show across the org, or restrict to active location. 
-            // Let's restrict to active location to maintain the paradigm, but allow "All Locations" if Super/Org Admin.
-            // For now, let's keep it bound to the active location unless overridden.
-            $query->where('location_id', LocationManager::getActiveLocationId());
-        }
 
-        // Global KPIs
-        $kpiQuery = clone $query;
-        $totalOutstanding = $kpiQuery->sum('grand_total') - $kpiQuery->sum('amount_paid');
-        
-        $kpiQuery = clone $query;
-        $totalOverdue = $kpiQuery->where('due_date', '<', now()->startOfDay())->get()->sum('amount_due');
-        
-        $kpiQuery = clone $query;
-        $dueToday = $kpiQuery->whereDate('due_date', now()->toDateString())->get()->sum('amount_due');
-        
-        $kpiQuery = clone $query;
-        $dueThisWeek = $kpiQuery->whereBetween('due_date', [now()->toDateString(), now()->endOfWeek()->toDateString()])->get()->sum('amount_due');
+        $totalOutstanding = (clone $unpaidBase)->get()->sum('amount_due');
+        $totalOverdue = (clone $unpaidBase)->where('due_date', '<', now()->startOfDay())->get()->sum('amount_due');
+        $dueToday = (clone $unpaidBase)->whereDate('due_date', now()->toDateString())->get()->sum('amount_due');
+        $dueThisWeek = (clone $unpaidBase)->whereBetween('due_date', [now()->toDateString(), now()->endOfWeek()->toDateString()])->get()->sum('amount_due');
 
-        // Invoice List with dynamic filtering
+        // Dynamic Invoice Query for Table
+        $listQuery = Invoice::where('organization_id', $orgId)
+            ->when($locationId, function($q) use ($locationId) {
+                $q->where('location_id', $locationId);
+            })
+            ->where('status', '!=', 'Cancelled');
+
         if ($request->filled('client_id')) {
-            $query->where('client_id', $request->client_id);
+            $listQuery->where('client_id', $request->client_id);
         }
+
         if ($request->filled('status')) {
             if ($request->status === 'Overdue') {
-                $query->where('due_date', '<', now()->startOfDay());
+                $listQuery->whereNotIn('status', ['Cancelled', 'Paid'])
+                          ->where('due_date', '<', now()->startOfDay());
+            } elseif ($request->status === 'ALL') {
+                // Show all non-cancelled invoices
             } else {
-                $query->where('status', $request->status);
+                $listQuery->where('status', $request->status);
             }
+        } else {
+            // Default when no status filter selected: show unpaid invoices
+            $listQuery->whereNotIn('status', ['Paid']);
         }
         
-        $invoices = $query->with('client')->latest('due_date')->paginate(15);
+        $invoices = $listQuery->with('client')->latest('due_date')->paginate(15)->withQueryString();
         
         $clients = Client::where('organization_id', $orgId)->orderBy('name')->get();
 

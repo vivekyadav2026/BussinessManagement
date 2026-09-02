@@ -55,11 +55,16 @@
         'digital_qr_menu' => 'Digital QR Menu',
         'kitchen_display' => 'Kitchen Display System (KDS)',
         'table_management' => 'Table & Order Management',
+        'max_clients' => 'Max Clients / Customers Quota',
+        'max_locations' => 'Multi-Location Branch Limit',
         'max_employees' => 'Max Employees Limit',
         'max_invoices_per_month' => 'Monthly Invoice Limit',
+        'max_products' => 'Max Products Catalog Limit',
+        'max_tables' => 'Max Restaurant Tables Quota',
         'payment_gateway' => 'Razorpay Payment Gateway',
     ];
 @endphp
+
 
 @if($currentSubscription)
     <div class="text-sm text-gray-600 mb-4">

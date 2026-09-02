@@ -107,6 +107,18 @@
                             'default' => 'true',
                             'desc' => 'Enables live barcode scanner camera & hardware reader in inventory/invoicing.'
                         ],
+                        'max_clients' => [
+                            'label' => 'Max Clients / Customers Quota',
+                            'type' => 'text',
+                            'default' => 'Unlimited',
+                            'desc' => 'Maximum client/customer records an organization can store (e.g. 50, 500, Unlimited).'
+                        ],
+                        'max_tables' => [
+                            'label' => 'Max Restaurant Tables Quota',
+                            'type' => 'text',
+                            'default' => 'Unlimited',
+                            'desc' => 'Maximum restaurant tables allowed for dine-in management (e.g. 10, 50, Unlimited).'
+                        ],
                         'max_employees' => [
                             'label' => 'Max Employees Limit',
                             'type' => 'text',
@@ -132,6 +144,7 @@
                             'desc' => 'Maximum inventory products allowed in catalog (e.g. 100, 1000, Unlimited).'
                         ],
                     ];
+
                     $index = 0;
                 @endphp
 

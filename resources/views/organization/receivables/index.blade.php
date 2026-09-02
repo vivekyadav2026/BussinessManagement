@@ -53,6 +53,8 @@
                 <option value="Due" {{ request('status') == 'Due' ? 'selected' : '' }}>Due</option>
                 <option value="Partially Paid" {{ request('status') == 'Partially Paid' ? 'selected' : '' }}>Partially Paid</option>
                 <option value="Overdue" {{ request('status') == 'Overdue' ? 'selected' : '' }}>Overdue</option>
+                <option value="Paid" {{ request('status') == 'Paid' ? 'selected' : '' }}>Paid (Fully Settled)</option>
+                <option value="ALL" {{ request('status') == 'ALL' ? 'selected' : '' }}>All Statuses (Including Paid)</option>
             </select>
         </div>
         <div class="flex gap-2 w-full md:w-auto">
@@ -88,15 +90,29 @@
                         {{ $inv->client ? $inv->client->name : 'Walk-in Client' }}
                     </td>
                     <td class="py-3.5 px-4">
-                        <span class="{{ $inv->due_date < now()->startOfDay() ? 'text-rose-600 font-bold' : 'text-slate-600' }}">
+                        <span class="{{ $inv->status !== 'Paid' && $inv->due_date < now()->startOfDay() ? 'text-rose-600 font-bold' : 'text-slate-600' }}">
                             {{ $inv->due_date ? $inv->due_date->format('M d, Y') : '-' }}
                         </span>
                     </td>
                     <td class="py-3.5 px-4 text-right font-black text-slate-900 text-sm">₹{{ number_format($inv->amount_due, 2) }}</td>
                     <td class="py-3.5 px-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $inv->due_date < now()->startOfDay() ? 'bg-rose-50 text-rose-700 border border-rose-200' : ($inv->status === 'Partially Paid' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-700 border border-amber-200') }}">
-                            {{ $inv->due_date < now()->startOfDay() ? 'Overdue' : $inv->status }}
-                        </span>
+                        @if($inv->status === 'Paid')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                Paid
+                            </span>
+                        @elseif($inv->due_date && $inv->due_date < now()->startOfDay())
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
+                                Overdue
+                            </span>
+                        @elseif($inv->status === 'Partially Paid')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                                Partially Paid
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                                {{ $inv->status }}
+                            </span>
+                        @endif
                     </td>
                     <td class="py-3.5 px-4 text-right">
                         <a href="{{ route('organization.invoices.show', $inv) }}" class="p-1.5 inline-flex items-center gap-1 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition text-xs font-bold" title="Manage Invoice">

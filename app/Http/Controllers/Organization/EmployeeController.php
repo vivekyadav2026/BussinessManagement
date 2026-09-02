@@ -31,7 +31,8 @@ class EmployeeController extends Controller
             $query->where('status', $request->status);
         }
 
-        $employees = $query->latest()->paginate(15);
+        $employees = $query->with(['user', 'user.roles'])->latest()->paginate(15)->withQueryString();
+
         return view('organization.employees.index', compact('employees'));
     }
 

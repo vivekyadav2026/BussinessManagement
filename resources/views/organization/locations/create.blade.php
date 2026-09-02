@@ -1,53 +1,53 @@
 @extends('layouts.sme')
 
 @section('content')
-<div class="max-w-3xl mx-auto px-4 py-2">
+<div class="max-w-3xl mx-auto p-6 space-y-6">
     <!-- Header -->
-    <div class="flex items-center gap-3 pb-3 mb-4 border-b border-gray-100">
-        <a href="{{ route('organization.locations.index') }}" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-gray-900 hover:bg-gray-50 shadow-sm transition">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    <div class="flex items-center gap-3 pb-3 border-b border-gray-200">
+        <a href="{{ route('organization.locations.index') }}" class="p-2.5 rounded-2xl border border-gray-200 bg-white text-gray-700 hover:text-gray-900 hover:bg-gray-50 shadow-xs transition" title="Back to Locations">
+            &larr;
         </a>
         <div>
-            <h1 class="text-lg font-bold text-gray-900 tracking-tight">Add New Location</h1>
-            <p class="text-xs text-gray-500">Create a new branch outlet profile inside multi-tenant branch registry.</p>
+            <h1 class="text-2xl font-black text-gray-900 tracking-tight">Add New Branch Location</h1>
+            <p class="text-xs text-gray-500 font-medium">Create a new branch outlet profile inside multi-tenant branch registry.</p>
         </div>
     </div>
 
-    <!-- Form Container -->
-    <form action="{{ route('organization.locations.store') }}" method="POST" class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+    <!-- Form Container Card -->
+    <form action="{{ route('organization.locations.store') }}" method="POST" class="bg-white rounded-3xl border border-gray-200 shadow-xs overflow-hidden">
         @csrf
         
-        <div class="p-5 space-y-4">
-            <div class="flex items-center gap-2 pb-1.5 border-b border-gray-50">
-                <span class="w-1 h-3.5 bg-[var(--theme-active)] rounded-full"></span>
-                <h2 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Location Information</h2>
+        <div class="p-6 space-y-5">
+            <div class="flex items-center gap-2 pb-2 border-b border-gray-100">
+                <span class="w-1.5 h-4 bg-indigo-600 rounded-full"></span>
+                <h2 class="text-xs font-extrabold text-gray-800 uppercase tracking-wider">Branch Details</h2>
             </div>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Location Name / Branch Code <span class="text-red-500">*</span></label>
-                    <input type="text" name="name" value="{{ old('name') }}" required class="w-full border border-gray-300 focus:border-[var(--theme-active)] focus:ring-1 focus:ring-[var(--theme-active)] rounded-lg px-3 py-2 text-sm outline-none transition @error('name') border-red-300 @enderror" placeholder="e.g. South Branch, WH-2">
-                    @error('name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                    <label class="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1.5">Branch / Outlet Name <span class="text-rose-500">*</span></label>
+                    <input type="text" name="name" value="{{ old('name') }}" required class="w-full border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-2xl px-4 py-3 text-xs font-bold text-gray-900 outline-none transition @error('name') border-rose-300 @enderror" placeholder="e.g. South Branch, Downtown Cafe, Outlet #2">
+                    @error('name') <span class="text-xs font-bold text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Contact Phone</label>
-                    <input type="text" name="phone" value="{{ old('phone') }}" class="w-full border border-gray-300 focus:border-[var(--theme-active)] focus:ring-1 focus:ring-[var(--theme-active)] rounded-lg px-3 py-2 text-sm outline-none transition @error('phone') border-red-300 @enderror" placeholder="e.g. +91 98765 43210">
-                    @error('phone') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                    <label class="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1.5">Contact Phone Number</label>
+                    <input type="text" name="phone" value="{{ old('phone') }}" class="w-full border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-2xl px-4 py-3 text-xs font-bold text-gray-900 outline-none transition @error('phone') border-rose-300 @enderror" placeholder="e.g. +91 98765 43210">
+                    @error('phone') <span class="text-xs font-bold text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Address</label>
-                    <textarea name="address" rows="3" class="w-full border border-gray-300 focus:border-[var(--theme-active)] focus:ring-1 focus:ring-[var(--theme-active)] rounded-lg px-3 py-2 text-sm outline-none transition @error('address') border-red-300 @enderror" placeholder="e.g. Plot No 42, Industrial Area, Sector 5">{{ old('address') }}</textarea>
-                    @error('address') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                    <label class="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1.5">Full Physical Address</label>
+                    <textarea name="address" rows="3" class="w-full border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-2xl px-4 py-3 text-xs font-medium text-gray-900 outline-none transition @error('address') border-rose-300 @enderror" placeholder="e.g. Plot No 42, Industrial Area, Sector 5">{{ old('address') }}</textarea>
+                    @error('address') <span class="text-xs font-bold text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
         </div>
         
         <!-- Footer Actions -->
-        <div class="bg-gray-50 border-t border-gray-200 px-5 py-3.5 flex justify-end gap-2.5">
-            <a href="{{ route('organization.locations.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg font-semibold text-xs hover:bg-gray-50 shadow-sm transition">Cancel</a>
-            <button type="submit" class="px-4 py-2 bg-[var(--theme-active)] text-[var(--theme-active-text)] rounded-lg font-semibold text-xs hover:opacity-90 shadow-sm transition">Save Location</button>
+        <div class="bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
+            <a href="{{ route('organization.locations.index') }}" class="px-5 py-2.5 border border-gray-300 text-gray-700 bg-white rounded-xl font-bold text-xs hover:bg-gray-100 shadow-xs transition">Cancel</a>
+            <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-extrabold text-xs hover:bg-indigo-700 shadow-md transition">Save Branch Location</button>
         </div>
     </form>
 </div>

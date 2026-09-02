@@ -18,17 +18,18 @@ class SubscriptionService
     /**
      * Get a specific feature's value from the active plan.
      */
-    public static function getFeatureValue($orgId, $featureCode)
+    public static function getFeatureValue($orgId, $featureCode, $default = 'Unlimited')
     {
         $subscription = self::getActiveSubscription($orgId);
         
         if (!$subscription || !$subscription->plan) {
-            return null;
+            return $default;
         }
 
         $feature = $subscription->plan->features->where('feature_code', $featureCode)->first();
-        return $feature ? $feature->feature_value : null;
+        return ($feature && $feature->feature_value !== null && $feature->feature_value !== '') ? $feature->feature_value : $default;
     }
+
 
     /**
      * Check if a feature is enabled (treated as boolean).
@@ -48,16 +49,17 @@ class SubscriptionService
     {
         $val = self::getFeatureValue($orgId, $featureCode);
         
-        if ($val === null) {
-            return true; // No limit defined = no access
+        if ($val === null || trim((string)$val) === '') {
+            return false; // No explicit limit defined on plan = unlimited usage allowed
         }
 
-        if (strtolower($val) === 'unlimited' || strtolower($val) === 'infinite') {
+        if (in_array(strtolower(trim((string)$val)), ['unlimited', 'infinite', 'all', '-1'])) {
             return false;
         }
 
         return $currentUsage >= (int) $val;
     }
+
 
     /**
      * Check if the organization is on trial.

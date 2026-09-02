@@ -27,7 +27,7 @@ class ProductController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        $products = $query->latest()->paginate(15);
+        $products = $query->with('category')->latest()->paginate(15)->withQueryString();
         $categories = Category::where('organization_id', auth()->user()->organization_id)->get();
         
         return view('organization.products.index', compact('products', 'categories'));

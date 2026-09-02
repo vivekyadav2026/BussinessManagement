@@ -22,7 +22,8 @@ class ClientController extends Controller
             });
         }
 
-        $clients = $query->latest()->paginate(15);
+        $clients = $query->withCount('invoices')->latest()->paginate(15)->withQueryString();
+
         return view('organization.clients.index', compact('clients'));
     }
 

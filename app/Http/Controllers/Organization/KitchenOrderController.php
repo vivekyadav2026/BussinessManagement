@@ -22,9 +22,14 @@ class KitchenOrderController extends Controller
 
     public function fetchOrders()
     {
-        $orders = RestaurantOrder::select(['id', 'organization_id', 'location_id', 'restaurant_table_id', 'order_number', 'customer_name', 'order_type', 'status', 'created_at'])
+        $orders = RestaurantOrder::select([
+                'id', 'organization_id', 'location_id', 'restaurant_table_id', 
+                'order_number', 'customer_name', 'customer_phone', 'order_type', 
+                'subtotal', 'tax', 'total', 'payment_status', 'special_notes', 
+                'status', 'created_at'
+            ])
             ->with([
-                'items:id,restaurant_order_id,name_snapshot,quantity,total',
+                'items:id,restaurant_order_id,name_snapshot,price_snapshot,quantity,total',
                 'table:id,name'
             ])
             ->where('organization_id', auth()->user()->organization_id)
@@ -35,6 +40,7 @@ class KitchenOrderController extends Controller
 
         return response()->json($orders);
     }
+
 
 
     public function updateStatus(Request $request, RestaurantOrder $order)
@@ -82,5 +88,44 @@ class KitchenOrderController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    public function todaySummary()
+    {
+        $orgId = auth()->user()->organization_id;
+        $locationId = session('active_location_id') ?? \App\Services\LocationManager::getActiveLocationId();
+
+        $todayOrders = RestaurantOrder::where('organization_id', $orgId)
+            ->where('location_id', $locationId)
+            ->whereDate('created_at', now()->toDateString())
+            ->whereNotIn('status', ['Cancelled']);
+
+        $totalOrdersCount = (clone $todayOrders)->count();
+        $totalRevenue = (clone $todayOrders)->sum('total');
+
+        // Fetch Item-wise aggregation for Today
+        $itemSales = \App\Models\RestaurantOrderItem::join('restaurant_orders', 'restaurant_order_items.restaurant_order_id', '=', 'restaurant_orders.id')
+            ->where('restaurant_orders.organization_id', $orgId)
+            ->where('restaurant_orders.location_id', $locationId)
+            ->whereDate('restaurant_orders.created_at', now()->toDateString())
+            ->whereNotIn('restaurant_orders.status', ['Cancelled'])
+            ->select(
+                'restaurant_order_items.name_snapshot',
+                'restaurant_order_items.price_snapshot',
+                \Illuminate\Support\Facades\DB::raw('SUM(restaurant_order_items.quantity) as total_quantity'),
+                \Illuminate\Support\Facades\DB::raw('SUM(restaurant_order_items.total) as total_amount')
+            )
+            ->groupBy('restaurant_order_items.name_snapshot', 'restaurant_order_items.price_snapshot')
+            ->orderByDesc('total_quantity')
+            ->get();
+
+        $totalItemsCount = $itemSales->sum('total_quantity');
+
+        return response()->json([
+            'total_orders' => $totalOrdersCount,
+            'total_revenue' => $totalRevenue,
+            'total_items_sold' => $totalItemsCount,
+            'items' => $itemSales
+        ]);
     }
 }

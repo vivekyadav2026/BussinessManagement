@@ -64,10 +64,13 @@ class PermissionSeeder extends Seeder
                 'complaints.manage' => 'Manage Complaints',
             ],
             'Restaurant' => [
-                'restaurant.view' => 'View Restaurant',
-                'restaurant.menu' => 'Manage Menu',
-                'restaurant.orders' => 'Manage Orders',
-                'restaurant.tables' => 'Manage Tables',
+                'restaurant.view' => 'View Restaurant & Waiter POS',
+                'restaurant.kitchen' => 'Access Kitchen KDS Display',
+                'restaurant.orders' => 'Manage Restaurant Orders & Billing',
+                'restaurant.cancel_order' => 'Cancel Active Restaurant Orders',
+                'restaurant.menu' => 'Manage Menu Builder',
+                'restaurant.tables' => 'Manage Tables & QR Codes',
+                'restaurant.reports' => 'View Restro Sales & Customer Analytics',
             ],
             'Reports' => [
                 'reports.view' => 'View Reports',

@@ -35,9 +35,9 @@ class InvoiceService
             // 2. Initialize totals
             $subtotal = 0;
             $totalTax = 0;
-            $totalDiscount = $data['discount'] ?? 0;
             
             $itemsData = [];
+
 
             // 3. Process items securely
             foreach ($data['items'] as $item) {
@@ -82,7 +82,19 @@ class InvoiceService
                 ];
             }
 
+            // Calculate Discount
+            $discountType = $data['discount_type'] ?? 'fixed';
+            $discountVal = floatval($data['discount_value'] ?? ($data['discount'] ?? 0));
+
+            if ($discountType === 'percent' || $discountType === 'percentage') {
+                $totalDiscount = ($subtotal + $totalTax) * ($discountVal / 100);
+            } else {
+                $totalDiscount = $discountVal;
+            }
+
             $grandTotal = $subtotal + $totalTax - $totalDiscount;
+            if ($grandTotal < 0) $grandTotal = 0;
+
             
             // 4. Create Invoice Record
             $invoice = Invoice::create([

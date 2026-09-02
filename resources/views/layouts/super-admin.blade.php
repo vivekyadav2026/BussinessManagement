@@ -119,109 +119,77 @@
 
         /* Global inputs & form elements styling overrides for premium look */
         input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="date"], input[type="time"], input[type="search"], select, textarea {
-            width: 100% !important;
-            border-width: 1px !important;
-            border-style: solid !important;
-            border-color: var(--border-hard) !important;
-            border-radius: 9px !important;
-            padding-left: 13px !important;
-            padding-right: 13px !important;
-            padding-top: 10px !important;
-            padding-bottom: 10px !important;
-            font-size: 13.5px !important;
-            font-family: 'Inter', sans-serif !important;
-            outline: none !important;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
             background-color: var(--bg-card) !important;
+            border: 1px solid var(--border-hard) !important;
+            border-radius: 10px !important;
+            padding: 9px 13px !important;
+            font-size: 13px !important;
             color: var(--text-main) !important;
             box-shadow: none !important;
-        }
-        
-        .theme-dark input[type="text"], .theme-dark input[type="number"], .theme-dark input[type="email"], .theme-dark input[type="password"], .theme-dark input[type="date"], .theme-dark input[type="time"], .theme-dark input[type="search"], .theme-dark select, .theme-dark textarea {
-            background-color: var(--bg-main) !important;
+            transition: all 0.2s ease !important;
         }
 
         input[type="text"]:focus, input[type="number"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="date"]:focus, input[type="time"]:focus, input[type="search"]:focus, select:focus, textarea:focus {
             border-color: var(--gold) !important;
-            background-color: var(--bg-card) !important;
-            box-shadow: 0 0 0 3px rgba(217, 154, 43, 0.15) !important;
             outline: none !important;
-        }
-
-        input::placeholder, textarea::placeholder {
-            color: var(--text-faint) !important;
-        }
-
-        /* Checkbox overrides */
-        input[type="checkbox"], input[type="radio"] {
-            width: 1.125rem !important;
-            height: 1.125rem !important;
-            border-radius: 0.375rem !important;
-            border-color: var(--border-hard) !important;
-            color: var(--gold) !important;
-            accent-color: var(--gold) !important;
-            cursor: pointer !important;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-            background-color: var(--bg-card) !important;
-        }
-        input[type="checkbox"]:checked, input[type="radio"]:checked {
-            background-color: var(--theme-active) !important;
-            border-color: var(--theme-active) !important;
-        }
-        .theme-dark input[type="checkbox"], .theme-dark input[type="radio"] {
-            background-color: var(--bg-main) !important;
-        }
-        .theme-dark input[type="checkbox"]:checked, .theme-dark input[type="radio"]:checked {
-            background-color: var(--theme-active) !important;
-        }
-        input[type="checkbox"]:focus, input[type="radio"]:focus {
             box-shadow: 0 0 0 3px rgba(217, 154, 43, 0.15) !important;
+            background-color: #FFFFFF !important;
         }
 
-        /* Buttons Overrides */
-        .btn, button.btn {
+        /* Buttons styling */
+        .btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 7px !important;
             font-family: 'Space Grotesk', sans-serif !important;
-            font-weight: 600 !important;
-            font-size: 13.5px !important;
-            border-radius: 9px !important;
-            padding: 11px 18px !important;
-            transition: all 0.2s !important;
+            font-weight: 700 !important;
+            border-radius: 10px !important;
+            padding: 9px 18px !important;
+            font-size: 13px !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
         }
-        .btn-gold, button.btn-gold, [class*="btn-gold"] {
+
+        .btn-gold, .btn-primary {
             background-color: var(--gold) !important;
-            color: var(--text-main) !important;
-            border: 1px solid transparent !important;
+            color: #17233F !important;
+            border: none !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
         }
-        .btn-gold:hover, button.btn-gold:hover {
+        .btn-gold:hover, .btn-primary:hover {
             background-color: var(--gold-deep) !important;
-            color: var(--text-main) !important;
+            color: #ffffff !important;
         }
-        .btn-ghost, button.btn-ghost {
+
+        .btn-secondary {
+            background-color: #FFFFFF !important;
+            color: var(--text-main) !important;
             border: 1px solid var(--border-hard) !important;
-            background-color: var(--bg-card) !important;
-            color: var(--text-main) !important;
         }
-        .btn-ghost:hover, button.btn-ghost:hover {
+        .btn-secondary:hover {
             background-color: var(--bg-main) !important;
+            border-color: var(--text-muted) !important;
         }
 
-        /* Card and Panels rounded overrides */
-        .panel, .card {
-            border-radius: var(--radius) !important; /* 14px */
+        .btn-sm {
+            padding: 6px 12px !important;
+            font-size: 12px !important;
+            border-radius: 8px !important;
+        }
+
+        /* Table & Panels styling */
+        .panel, .card, div[class*="bg-white rounded"] {
+            background: var(--bg-card) !important;
             border: 1px solid var(--border-color) !important;
+            border-radius: var(--radius) !important;
             box-shadow: var(--shadow) !important;
-            background-color: var(--bg-card) !important;
-            padding: 1.5rem !important; /* Added global 24px padding to panels */
-        }
-        .theme-dark .panel, .theme-dark .card {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3) !important;
         }
 
-        /* Table styles override to match theme */
         .inv-table th {
             font-family: 'IBM Plex Mono', monospace !important;
-            font-size: 10.5px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
             text-transform: uppercase !important;
             color: var(--text-muted) !important;
             letter-spacing: .04em !important;
@@ -231,52 +199,6 @@
         .inv-table td {
             border-top: 1px solid var(--border-color) !important;
             padding: 12px 8px !important;
-        }
-
-        /* Roles selection cards in forms */
-        .role-opt {
-            border: 1px solid var(--border-hard) !important;
-            border-radius: 10px !important;
-            padding: 12px 14px !important;
-            cursor: pointer !important;
-            font-size: 12.5px !important;
-            font-weight: 600 !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 9px !important;
-            transition: all 0.2s !important;
-            background-color: var(--bg-card) !important;
-            color: var(--text-main) !important;
-        }
-        .role-opt input {
-            accent-color: var(--gold) !important;
-        }
-        .role-opt:has(input:checked), .role-opt.checked {
-            border-color: var(--gold) !important;
-            background-color: #FBF1DD !important;
-            color: var(--text-main) !important;
-        }
-
-        /* Client chip visual preview */
-        .client-chip {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background-color: var(--teal-soft);
-            border: 1px solid #C7E1D8;
-            border-radius: 9px;
-            padding: 9px 12px;
-            margin-top: 10px;
-            font-size: 12.5px;
-        }
-        .client-chip .who {
-            font-weight: 600;
-            color: var(--teal);
-        }
-        .client-chip .meta {
-            color: var(--text-muted);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
         }
 
         /* Eyebrow badge styling */
@@ -302,13 +224,35 @@
         input[class*="pl-9"], input.pl-9 { padding-left: 2.25rem !important; }
         input[class*="pl-10"], input.pl-10 { padding-left: 2.5rem !important; }
         input[class*="pl-12"], input.pl-12 { padding-left: 3rem !important; }
+
+        /* Explicit Sidebar Collapse Rules */
+        .sidebar-expanded { width: 16rem !important; }
+        .sidebar-collapsed { width: 4.5rem !important; }
+
+        .main-expanded { padding-left: 16rem !important; }
+        .main-collapsed { padding-left: 4.5rem !important; }
+
+        /* Pre-render instant CSS sync to prevent page layout shift on navigation */
+        html.sidebar-is-collapsed .sidebar-expanded { width: 4.5rem !important; }
+        html.sidebar-is-collapsed .main-expanded { padding-left: 4.5rem !important; }
+
+        @media (max-width: 768px) {
+            .main-expanded, .main-collapsed, html.sidebar-is-collapsed .main-expanded { padding-left: 0 !important; }
+            .sidebar-expanded, .sidebar-collapsed, html.sidebar-is-collapsed .sidebar-expanded { width: 16rem !important; }
+        }
     </style>
+
+    <script>
+        localStorage.removeItem('sidebar_collapsed');
+        document.documentElement.classList.remove('sidebar-is-collapsed');
+    </script>
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <script src="{{ asset('js/app.js') }}" defer></script>
     @stack('styles')
 </head>
-<body class="h-full font-sans antialiased text-gray-900" x-data="{ sidebarOpen: false }">
+<body class="h-full font-sans antialiased text-gray-900" x-data="{ sidebarOpen: false, sidebarCollapsed: false }">
+
 
     <!-- Mobile sidebar -->
     <div x-show="sidebarOpen" class="relative z-40 md:hidden" role="dialog" aria-modal="true" style="display: none;">
@@ -342,14 +286,17 @@
     </div>
 
     <!-- Static sidebar -->
-    <div class="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
+    <div :class="sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'" class="hidden md:fixed md:inset-y-0 md:flex md:flex-col transition-all duration-300 z-30">
         <div class="flex min-h-0 flex-1 flex-col" style="background-color: var(--theme-bg);">
             <div class="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
-                <div class="flex flex-shrink-0 items-center px-4 mb-3">
-                    <div class="logo text-white">
+                <div class="flex flex-shrink-0 items-center justify-between px-4 mb-3">
+                    <div class="logo text-white flex items-center gap-2">
                         <div class="mark bg-[#D99A2B]"></div>
-                        <span>Vyapaargo</span>
+                        <span x-show="!sidebarCollapsed" class="truncate font-bold text-base">Vyapaargo</span>
                     </div>
+                    {{-- <button type="button" @click="sidebarCollapsed = !sidebarCollapsed; localStorage.setItem('sidebar_collapsed', sidebarCollapsed); document.documentElement.classList.toggle('sidebar-is-collapsed', sidebarCollapsed)" class="text-gray-300 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition" title="Toggle Sidebar">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16" /></svg>
+                    </button> --}}
                 </div>
 
                 <nav class="mt-2 flex-1 space-y-1 px-2">
@@ -363,12 +310,12 @@
             </div>
             <div class="flex flex-shrink-0 border-t border-white/10 p-4">
                 <div class="group block w-full flex-shrink-0">
-                    <div class="flex items-center">
-                        <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold">
+                    <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center' : ''">
+                        <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold shrink-0">
                             {{ substr(auth()->user()->name, 0, 1) }}
                         </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-white">{{ auth()->user()->name }}</p>
+                        <div x-show="!sidebarCollapsed" class="ml-3">
+                            <p class="text-sm font-medium text-white truncate max-w-[130px]">{{ auth()->user()->name }}</p>
                             <form method="POST" action="{{ route('logout') }}" class="mt-1">
                                 @csrf
                                 <button type="submit" class="text-xs font-medium text-[var(--theme-text)] hover:text-white transition-colors">Sign out</button>
@@ -380,12 +327,18 @@
         </div>
     </div>
 
-    <div class="flex flex-1 flex-col md:pl-64">
+    <!-- Main Container -->
+    <div :class="sidebarCollapsed ? 'main-collapsed' : 'main-expanded'" class="flex flex-1 flex-col transition-all duration-300">
         <div class="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white shadow">
             <button type="button" @click="sidebarOpen = true" class="border-r border-gray-200 px-4 text-gray-500 md:hidden">
                 <span class="sr-only">Open sidebar</span>
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
             </button>
+
+            {{-- <button type="button" @click="sidebarCollapsed = !sidebarCollapsed; localStorage.setItem('sidebar_collapsed', sidebarCollapsed)" class="hidden md:flex items-center justify-center border-r border-gray-200 px-4 text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition" title="Toggle Sidebar">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16" /></svg>
+            </button> --}}
+
             <div class="flex flex-1 justify-between px-4 items-center">
                 <div class="flex flex-1"></div>
                 <div class="ml-4 flex items-center md:ml-6 gap-3">
@@ -414,50 +367,26 @@
                         </div>
                     </div>
 
-                    <!-- Notifications Dropdown -->
+                    <!-- Profile dropdown -->
                     <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none relative transition-colors">
-                            <span class="sr-only">View notifications</span>
-                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.07 6.07 0 00-1-3.5M9 17v1a3 3 0 006 0v-1m-6 0H9m0 0a3 3 0 01-3-3v-3.5M9 17h6" /></svg>
-                            <span class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
-                        </button>
-                        <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-80 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30" style="display: none;">
-                            <div class="px-4 py-2 text-sm font-semibold border-b border-gray-100 text-gray-800">Notifications</div>
-                            <div class="divide-y divide-gray-50 max-h-64 overflow-y-auto">
-                                <div class="px-4 py-3 hover:bg-gray-50 text-xs">
-                                    <p class="font-medium text-gray-900">New Registration</p>
-                                    <p class="text-gray-500 mt-0.5">TechCorp Ltd signed up</p>
-                                    <p class="text-gray-400 text-[10px] mt-1">5 mins ago</p>
-                                </div>
-                                <div class="px-4 py-3 hover:bg-gray-50 text-xs">
-                                    <p class="font-medium text-gray-900">Subscription Updated</p>
-                                    <p class="text-gray-500 mt-0.5">Sharma Traders upgraded to Pro Plan</p>
-                                    <p class="text-gray-400 text-[10px] mt-1">1 hour ago</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Profile Dropdown -->
-                    <div class="relative ml-2" x-data="{ open: false }">
                         <div>
-                            <button @click="open = !open" class="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--theme-active)] focus:ring-offset-2" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            <button @click="open = !open" type="button" class="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                                 <span class="sr-only">Open user menu</span>
-                                <div class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold text-sm">
+                                <div class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold text-xs">
                                     {{ substr(auth()->user()->name, 0, 1) }}
                                 </div>
                             </button>
                         </div>
-                        <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30" style="display: none;">
-                            <div class="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
-                                <div class="font-semibold text-gray-800">{{ auth()->user()->name }}</div>
-                                <div class="truncate text-[10px]">{{ auth()->user()->email }}</div>
+                        <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1" style="display: none;">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <p class="text-xs text-gray-500 font-medium">Signed in as</p>
+                                <p class="text-xs font-bold text-gray-900 truncate">{{ auth()->user()->email }}</p>
                             </div>
-                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 font-medium">Profile Settings</a>
-                            <a href="/" class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 font-medium">Visit Website</a>
-                            <form method="POST" action="{{ route('logout') }}" class="m-0">
+                            <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="block w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 border-t border-gray-100 font-semibold">Sign out</button>
+                                <button type="submit" class="block w-full px-4 py-2 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 transition">
+                                    Sign Out
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -465,122 +394,13 @@
             </div>
         </div>
 
-        <main class="flex-1 pb-8">
-            <div class="mt-8">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 dash-content">
-                    @if(session('success'))
-                        <div class="rounded-md bg-green-50 p-4 mb-6">
-                            <div class="flex">
-                                <div class="ml-3"><p class="text-sm font-medium text-green-800">{{ session('success') }}</p></div>
-                            </div>
-                        </div>
-                    @endif
-                    @if(session('error'))
-                        <div class="rounded-md bg-red-50 p-4 mb-6">
-                            <div class="flex">
-                                <div class="ml-3"><p class="text-sm font-medium text-red-800">{{ session('error') }}</p></div>
-                            </div>
-                        </div>
-                    @endif
-
+        <main class="flex-1">
+            <div class="py-6">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                     @yield('content')
                 </div>
             </div>
         </main>
     </div>
-
-    @stack('scripts')
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        function initLiveFilter() {
-            const filterForms = document.querySelectorAll('form[method="GET"]');
-
-            filterForms.forEach(form => {
-                if (form.dataset.liveFilterInitialized) return;
-                if (form.getAttribute('data-no-live-filter') !== null) return;
-                form.dataset.liveFilterInitialized = 'true';
-
-                let debounceTimer;
-
-                const executeLiveFilter = () => {
-                    const formData = new FormData(form);
-                    const params = new URLSearchParams();
-
-                    for (const [key, value] of formData.entries()) {
-                        if (value && value.toString().trim() !== '') {
-                            params.append(key, value);
-                        }
-                    }
-
-                    const targetUrl = form.action + (params.toString() ? '?' + params.toString() : '');
-                    
-                    const dashContent = document.querySelector('.dash-content');
-                    if (dashContent) dashContent.style.opacity = '0.6';
-
-                    fetch(targetUrl, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => response.text())
-                    .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-
-                        const newContent = doc.querySelector('.dash-content');
-                        const currentContent = document.querySelector('.dash-content');
-
-                        if (newContent && currentContent) {
-                            currentContent.innerHTML = newContent.innerHTML;
-                            initLiveFilter();
-                        }
-
-                        history.replaceState(null, '', targetUrl);
-                    })
-                    .catch(err => console.error('Live filter error:', err))
-                    .finally(() => {
-                        const currentContent = document.querySelector('.dash-content');
-                        if (currentContent) currentContent.style.opacity = '1';
-                    });
-                };
-
-                form.addEventListener('input', function (e) {
-                    if (e.target.tagName === 'INPUT') {
-                        clearTimeout(debounceTimer);
-                        debounceTimer = setTimeout(executeLiveFilter, 300);
-                    }
-                });
-
-                form.addEventListener('change', function (e) {
-                    if (e.target.tagName === 'SELECT') {
-                        executeLiveFilter();
-                    }
-                });
-
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    executeLiveFilter();
-                });
-
-                const clearBtns = form.querySelectorAll('a[href], button[type="reset"]');
-                clearBtns.forEach(clearBtn => {
-                    if (clearBtn.textContent.trim().toLowerCase() === 'clear' || clearBtn.getAttribute('type') === 'reset') {
-                        clearBtn.addEventListener('click', function (e) {
-                            e.preventDefault();
-                            form.querySelectorAll('input[type="text"], input[type="search"]').forEach(i => i.value = '');
-                            form.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
-                            executeLiveFilter();
-                        });
-                    }
-                });
-            });
-        }
-
-
-        initLiveFilter();
-    });
-    </script>
 </body>
 </html>
-

@@ -11,7 +11,7 @@ class SubscriptionController extends Controller
 {
     public function index()
     {
-        $subscriptions = OrganizationSubscription::with(['organization', 'plan'])->latest()->paginate(20);
+        $subscriptions = OrganizationSubscription::with(['organization', 'plan'])->latest()->paginate(20)->withQueryString();
         return view('super-admin.subscriptions.index', compact('subscriptions'));
     }
 

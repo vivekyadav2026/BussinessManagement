@@ -331,14 +331,41 @@
         input[class*="pl-9"], input.pl-9 { padding-left: 2.25rem !important; }
         input[class*="pl-10"], input.pl-10 { padding-left: 2.5rem !important; }
         input[class*="pl-12"], input.pl-12 { padding-left: 3rem !important; }
+
+        /* Explicit Sidebar Collapse Rules */
+        .sidebar-expanded { width: 16rem !important; }
+        .sidebar-collapsed { width: 4.5rem !important; }
+
+        .main-expanded { padding-left: 16rem !important; }
+        .main-collapsed { padding-left: 4.5rem !important; }
+
+        /* Pre-render instant CSS sync to prevent page layout shift on navigation */
+        html.sidebar-is-collapsed .sidebar-expanded { width: 4.5rem !important; }
+        html.sidebar-is-collapsed .main-expanded { padding-left: 4.5rem !important; }
+
+        /* Custom sleek scrollbar for dark sidebar */
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        @media (max-width: 768px) {
+            .main-expanded, .main-collapsed, html.sidebar-is-collapsed .main-expanded { padding-left: 0 !important; }
+            .sidebar-expanded, .sidebar-collapsed, html.sidebar-is-collapsed .sidebar-expanded { width: 16rem !important; }
+        }
     </style>
+
+    <script>
+        localStorage.removeItem('sidebar_collapsed');
+        document.documentElement.classList.remove('sidebar-is-collapsed');
+    </script>
 
     <!-- Scripts -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <script src="{{ asset('js/app.js') }}" defer></script>
     @stack('styles')
 </head>
-<body class="h-full font-sans antialiased text-gray-900" x-data="{ sidebarOpen: false }">
+<body class="h-full font-sans antialiased text-gray-900" x-data="{ sidebarOpen: false, sidebarCollapsed: false }">
 
     <!-- Off-canvas menu for mobile -->
     <div x-show="sidebarOpen" class="relative z-40 md:hidden" role="dialog" aria-modal="true" style="display: none;">
@@ -351,6 +378,7 @@
                         <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
+                <div class="flex items-center px-4 mb-3">
                     <div class="logo text-white flex items-center gap-2">
                         @if(auth()->user()->organization && auth()->user()->organization->logo)
                             <img src="{{ asset('storage/' . auth()->user()->organization->logo) }}" class="org-header-logo w-7 h-7 rounded-md object-cover border border-white/20">
@@ -368,35 +396,39 @@
     </div>
 
     <!-- Static sidebar for desktop -->
-    <div class="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
+    <div :class="sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'" class="hidden md:fixed md:inset-y-0 md:flex md:flex-col transition-all duration-300 z-30">
+
         <div class="flex min-h-0 flex-1 flex-col" style="background-color: var(--theme-bg);">
-            <div class="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
-                <div class="flex flex-shrink-0 items-center px-4 mb-3">
+            <div class="flex flex-1 flex-col overflow-y-auto sidebar-scroll pt-5 pb-6">
+                <div class="flex flex-shrink-0 items-center justify-between px-4 mb-3">
                     <div class="logo text-white flex items-center gap-2.5">
                         @if(auth()->user()->organization && auth()->user()->organization->logo)
                             <img src="{{ asset('storage/' . auth()->user()->organization->logo) }}" class="org-logo-img w-8 h-8 rounded-lg object-cover border border-white/20 shadow-sm">
                         @else
                             <div class="mark bg-[#D99A2B]"></div>
                         @endif
-                        <span class="truncate max-w-[160px] font-bold text-base tracking-tight" title="{{ auth()->user()->organization->name ?? 'Vyapaargo' }}">
+                        <span x-show="!sidebarCollapsed" class="truncate max-w-[140px] font-bold text-base tracking-tight" title="{{ auth()->user()->organization->name ?? 'Vyapaargo' }}">
                             {{ auth()->user()->organization->name ?? 'Vyapaargo' }}
                         </span>
                     </div>
+                    {{-- <button type="button" @click="sidebarCollapsed = !sidebarCollapsed; localStorage.setItem('sidebar_collapsed', sidebarCollapsed); document.documentElement.classList.toggle('sidebar-is-collapsed', sidebarCollapsed)" class="text-gray-300 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition" title="Toggle Sidebar">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16" /></svg>
+                    </button> --}}
                 </div>
 
 
-                <nav class="mt-2 flex-1 space-y-1 px-3">
+                <nav class="mt-2 flex-1 space-y-1 px-3 pb-8">
                     @include('layouts.partials.sidebar-links')
                 </nav>
             </div>
             <div class="flex flex-shrink-0 border-t border-white/10 p-4">
                 <div class="group block w-full flex-shrink-0">
-                    <div class="flex items-center">
-                        <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold">
+                    <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center' : ''">
+                        <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--theme-active)] text-[var(--theme-active-text)] font-bold shrink-0">
                             {{ substr(auth()->user()->name, 0, 1) }}
                         </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-white">{{ auth()->user()->name }}</p>
+                        <div x-show="!sidebarCollapsed" class="ml-3">
+                            <p class="text-sm font-medium text-white truncate max-w-[130px]">{{ auth()->user()->name }}</p>
                             <form method="POST" action="{{ route('logout') }}" class="mt-1">
                                 @csrf
                                 <button type="submit" class="text-xs font-medium text-[var(--theme-text)] hover:text-white transition-colors">Sign out</button>
@@ -408,12 +440,22 @@
         </div>
     </div>
 
-    <div class="flex flex-1 flex-col md:pl-64">
+    <!-- Main Container -->
+    <div :class="sidebarCollapsed ? 'main-collapsed' : 'main-expanded'" class="flex flex-1 flex-col transition-all duration-300">
+
         <div class="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white shadow-sm border-b border-gray-200">
+            <!-- Mobile Open Button -->
             <button type="button" @click="sidebarOpen = true" class="border-r border-gray-200 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden">
                 <span class="sr-only">Open sidebar</span>
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
             </button>
+
+            {{-- <button type="button" @click="sidebarCollapsed = !sidebarCollapsed; localStorage.setItem('sidebar_collapsed', sidebarCollapsed)" class="hidden md:flex items-center justify-center border-r border-gray-200 px-4 text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition" title="Toggle Sidebar">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16" /></svg>
+            </button> --}}
+
+
+
             <div class="flex flex-1 justify-between px-4 items-center">
                 <div class="flex items-center gap-3">
                     @if(auth()->user()->organization)
@@ -621,6 +663,21 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Auto-focus search input and place cursor at end on page load if search param exists
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('search') || urlParams.has('q')) {
+            const pageSearchInput = document.querySelector('form[method="GET"] input[name="search"], form[method="GET"] input[name="q"], #search');
+            if (pageSearchInput && pageSearchInput.value) {
+                setTimeout(() => {
+                    pageSearchInput.focus();
+                    const len = pageSearchInput.value.length;
+                    if (typeof pageSearchInput.setSelectionRange === 'function' && pageSearchInput.type !== 'number' && pageSearchInput.type !== 'date') {
+                        pageSearchInput.setSelectionRange(len, len);
+                    }
+                }, 50);
+            }
+        }
+
         function initLiveFilter() {
             const filterForms = document.querySelectorAll('form[method="GET"]');
 
@@ -644,7 +701,7 @@
                     const targetUrl = form.action + (params.toString() ? '?' + params.toString() : '');
                     
                     const dashContent = document.querySelector('.dash-content');
-                    if (dashContent) dashContent.style.opacity = '0.6';
+                    if (dashContent) dashContent.style.opacity = '0.7';
 
                     fetch(targetUrl, {
                         headers: {
@@ -656,12 +713,44 @@
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
 
-                        const newContent = doc.querySelector('.dash-content');
-                        const currentContent = document.querySelector('.dash-content');
+                        const currentTable = document.querySelector('table');
+                        const newTable = doc.querySelector('table');
 
-                        if (newContent && currentContent) {
-                            currentContent.innerHTML = newContent.innerHTML;
-                            initLiveFilter(); // Re-initialize listeners on new DOM nodes
+                        // Strategy A: If page has a table, update ONLY table & pagination!
+                        // This leaves search form & input 100% UNTOUCHED, so cursor NEVER jumps!
+                        if (currentTable && newTable) {
+                            currentTable.innerHTML = newTable.innerHTML;
+
+                            const currentPagination = document.querySelector('.pagination, nav[role="navigation"]');
+                            const newPagination = doc.querySelector('.pagination, nav[role="navigation"]');
+                            if (currentPagination && newPagination) {
+                                currentPagination.innerHTML = newPagination.innerHTML;
+                            }
+                        } else {
+                            // Strategy B: Fallback for non-table views
+                            const newContent = doc.querySelector('.dash-content');
+                            const currentContent = document.querySelector('.dash-content');
+
+                            if (newContent && currentContent) {
+                                let activeId = document.activeElement ? document.activeElement.id : null;
+                                let activeName = document.activeElement ? document.activeElement.getAttribute('name') : null;
+                                let cursorPos = (document.activeElement && typeof document.activeElement.selectionStart === 'number') ? document.activeElement.selectionStart : 0;
+
+                                currentContent.innerHTML = newContent.innerHTML;
+                                initLiveFilter();
+
+                                let elToFocus = activeId ? document.getElementById(activeId) : (activeName ? document.querySelector(`form[method="GET"] [name="${activeName}"]`) : null);
+                                if (elToFocus) {
+                                    elToFocus.focus();
+                                    try {
+                                        const len = elToFocus.value ? elToFocus.value.length : 0;
+                                        const pos = Math.min(cursorPos, len);
+                                        if (typeof elToFocus.setSelectionRange === 'function' && elToFocus.type !== 'number' && elToFocus.type !== 'date') {
+                                            elToFocus.setSelectionRange(pos, pos);
+                                        }
+                                    } catch(err) {}
+                                }
+                            }
                         }
 
                         history.replaceState(null, '', targetUrl);
@@ -673,11 +762,11 @@
                     });
                 };
 
-                // Debounced input for search fields
+                // Debounced input for search fields (400ms for comfortable typing)
                 form.addEventListener('input', function (e) {
                     if (e.target.tagName === 'INPUT') {
                         clearTimeout(debounceTimer);
-                        debounceTimer = setTimeout(executeLiveFilter, 300);
+                        debounceTimer = setTimeout(executeLiveFilter, 400);
                     }
                 });
 
@@ -738,6 +827,7 @@
         initLiveFilter();
     });
     </script>
+
 
 </body>
 </html>

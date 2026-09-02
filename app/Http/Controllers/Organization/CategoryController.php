@@ -11,7 +11,7 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::where('organization_id', auth()->user()->organization_id)->get();
+        $categories = Category::where('organization_id', auth()->user()->organization_id)->withCount('products')->latest()->paginate(15)->withQueryString();
         return view('organization.categories.index', compact('categories'));
     }
 

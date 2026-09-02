@@ -26,7 +26,7 @@ class OrganizationController extends Controller
             $query->where('is_active', $status);
         }
 
-        $organizations = $query->latest()->paginate(10);
+        $organizations = $query->latest()->paginate(10)->withQueryString();
         return view('super-admin.organizations.index', compact('organizations'));
     }
 

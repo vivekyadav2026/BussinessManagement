@@ -30,10 +30,10 @@
       <tr>
         <td class="font-bold">{{ $category->name }}</td>
         <td class="text-gray-500">{{ $category->slug }}</td>
-        <td>{{ $category->products()->count() }}</td>
+        <td>{{ $category->products_count }}</td>
         <td class="text-right flex justify-end gap-3 items-center">
-            <button onclick="editCategory({{ $category->id }}, '{{ $category->name }}')" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">Edit</button>
-            @if($category->products()->count() === 0)
+            <button onclick="editCategory({{ $category->id }}, '{{ addslashes($category->name) }}')" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs">Edit</button>
+            @if($category->products_count === 0)
                 <form action="{{ route('organization.categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this category?');" style="display:inline-block; margin:0;">
                     @csrf
                     @method('DELETE')
@@ -46,10 +46,15 @@
       <tr>
         <td colspan="4" class="text-center py-6 text-gray-500">No categories added yet.</td>
       </tr>
-      @endforelse
     </tbody>
   </table>
+  @if($categories->hasPages())
+    <div class="p-4 border-t border-gray-100 bg-gray-50/50">
+        {{ $categories->links() }}
+    </div>
+  @endif
 </div>
+
 
 <!-- Create Modal -->
 <div id="createCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

@@ -28,7 +28,7 @@ class InventoryController extends Controller
             });
         }
 
-        $products = $query->paginate(20);
+        $products = $query->paginate(20)->withQueryString();
         return view('organization.inventory.index', compact('products'));
     }
 
