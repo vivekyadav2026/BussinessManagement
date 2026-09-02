@@ -26,7 +26,7 @@ class ImageOptimizer
     ): string {
         $filename = uniqid() . '_' . time() . '.jpg';
         $relativeFolder = trim($directory, '/');
-        $destinationDir = storage_path("app/{$disk}/{$relativeFolder}");
+        $destinationDir = public_path("uploads/{$relativeFolder}");
         $destinationPath = "{$destinationDir}/{$filename}";
 
         // Ensure target directory exists
