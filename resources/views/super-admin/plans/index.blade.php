@@ -61,6 +61,8 @@
                                 </td>
 
                             </tr>
+                        @endforeach
+                    </tbody>
                 </table>
             </div>
             @if($plans->hasPages())
@@ -72,4 +74,3 @@
     </div>
 </div>
 @endsection
-
