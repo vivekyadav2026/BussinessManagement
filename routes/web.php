@@ -61,6 +61,9 @@ Route::get('/link-storage', function () {
 Route::get('/storage/{path}', function ($path) {
     $filePath = storage_path('app/public/' . $path);
     if (!file_exists($filePath)) {
+        $filePath = public_path('uploads/' . $path);
+    }
+    if (!file_exists($filePath)) {
         $filePath = storage_path('app/' . $path);
     }
     if (!file_exists($filePath)) {
