@@ -64,18 +64,18 @@ class WaiterPosController extends Controller
 
         $locationId = LocationManager::getActiveLocationId();
 
-        $activeOrder = RestaurantOrder::with('items')
+        $activeOrders = RestaurantOrder::with('items')
             ->where('organization_id', $orgId)
             ->where('location_id', $locationId)
             ->where('restaurant_table_id', $table->id)
             ->whereNotIn('status', ['Cancelled', 'Completed'])
             ->where('payment_status', 'Pending')
-            ->latest()
-            ->first();
+            ->oldest()
+            ->get();
 
         return response()->json([
             'table' => $table,
-            'active_order' => $activeOrder
+            'active_orders' => $activeOrders
         ]);
     }
 
@@ -103,42 +103,19 @@ class WaiterPosController extends Controller
             $order = DB::transaction(function () use ($request, $orgId, $locationId) {
                 $tableId = $request->restaurant_table_id;
 
-                // Check if existing pending order exists for this table
-                $order = null;
-                if ($tableId) {
-                    $order = RestaurantOrder::where('organization_id', $orgId)
-                        ->where('location_id', $locationId)
-                        ->where('restaurant_table_id', $tableId)
-                        ->whereNotIn('status', ['Cancelled', 'Completed'])
-                        ->where('payment_status', 'Pending')
-                        ->latest()
-                        ->first();
-                }
-
-                if (!$order) {
-                    $orderNumber = 'ORD-' . strtoupper(Str::random(6));
-                    $order = RestaurantOrder::create([
-                        'organization_id' => $orgId,
-                        'location_id' => $locationId,
-                        'restaurant_table_id' => $tableId,
-                        'order_number' => $orderNumber,
-                        'customer_name' => $request->customer_name ?? 'Guest',
-                        'customer_phone' => $request->customer_phone,
-                        'order_type' => $request->order_type,
-                        'status' => 'Received',
-                        'payment_status' => 'Pending',
-                        'notes' => $request->notes
-                    ]);
-                } else {
-                    $order->update([
-                        'customer_name' => $request->customer_name ?? $order->customer_name,
-                        'customer_phone' => $request->customer_phone ?? $order->customer_phone,
-                        'notes' => $request->notes ?? $order->notes,
-                        'status' => 'Received' // Re-flag as received for kitchen update
-                    ]);
-                    // Clear previous items to update with current cart ticket
-                    $order->items()->delete();
-                }
+                $orderNumber = 'ORD-' . strtoupper(Str::random(6));
+                $order = RestaurantOrder::create([
+                    'organization_id' => $orgId,
+                    'location_id' => $locationId,
+                    'restaurant_table_id' => $tableId,
+                    'order_number' => $orderNumber,
+                    'customer_name' => $request->customer_name ?? 'Guest',
+                    'customer_phone' => $request->customer_phone,
+                    'order_type' => $request->order_type,
+                    'status' => 'Received',
+                    'payment_status' => 'Pending',
+                    'notes' => $request->notes
+                ]);
 
                 $subtotal = 0;
                 foreach ($request->items as $itemData) {
@@ -156,11 +133,20 @@ class WaiterPosController extends Controller
                     ]);
                 }
 
-                $tax = 0; // Tax can be dynamically calculated or included
+                $org = \App\Models\Organization::find($orgId);
+                $cgstPercent = $org ? (float)$org->cgst_percent : 0;
+                $sgstPercent = $org ? (float)$org->sgst_percent : 0;
+
+                $cgstAmount = ($subtotal * $cgstPercent) / 100;
+                $sgstAmount = ($subtotal * $sgstPercent) / 100;
+
+                $tax = $cgstAmount + $sgstAmount;
                 $grandTotal = $subtotal + $tax;
 
                 $order->update([
                     'subtotal' => $subtotal,
+                    'cgst' => $cgstAmount,
+                    'sgst' => $sgstAmount,
                     'tax' => $tax,
                     'total' => $grandTotal
                 ]);
@@ -195,33 +181,51 @@ class WaiterPosController extends Controller
         try {
             DB::transaction(function () use ($order, $request, $orgId) {
                 $discount = floatval($request->discount ?? 0);
-                $finalTotal = max(0, $order->total - $discount);
-
-                // Mark current order and all pending orders on this table as Completed & Paid
-                $order->update([
-                    'payment_status' => 'Paid',
-                    'status' => 'Completed',
-                    'total' => $finalTotal
-                ]);
-
+                
+                $ordersToSettle = collect([$order]);
                 if ($order->restaurant_table_id) {
-                    RestaurantOrder::where('organization_id', $orgId)
+                    $otherOrders = RestaurantOrder::with('items')
+                        ->where('organization_id', $orgId)
                         ->where('restaurant_table_id', $order->restaurant_table_id)
                         ->whereNotIn('status', ['Cancelled', 'Completed'])
-                        ->update(['status' => 'Completed', 'payment_status' => 'Paid']);
+                        ->where('id', '!=', $order->id)
+                        ->get();
+                    $ordersToSettle = $ordersToSettle->concat($otherOrders);
+                } elseif ($request->has('extra_order_ids') && is_array($request->extra_order_ids)) {
+                    $extraOrders = RestaurantOrder::with('items')
+                        ->where('organization_id', $orgId)
+                        ->whereIn('id', $request->extra_order_ids)
+                        ->whereNotIn('status', ['Cancelled', 'Completed'])
+                        ->get();
+                    $ordersToSettle = $ordersToSettle->concat($extraOrders);
+                }
+
+                $grossTotal = $ordersToSettle->sum('total');
+                $finalTotal = max(0, $grossTotal - $discount);
+
+                // Mark all pending orders as Completed & Paid
+                foreach ($ordersToSettle as $o) {
+                    $o->update([
+                        'payment_status' => 'Paid',
+                        'status' => 'Completed',
+                        // Store the final discounted total only on the primary order
+                        'total' => ($o->id === $order->id) ? $finalTotal : 0 
+                    ]);
                 }
 
                 // Generate Official Organization Invoice for accounting & ledger tracking safely
                 if (!$order->invoice_id) {
                     try {
                         $invoiceItems = [];
-                        foreach ($order->items as $item) {
-                            $invoiceItems[] = [
-                                'name' => $item->name_snapshot,
-                                'unit_price' => $item->price_snapshot,
-                                'quantity' => $item->quantity,
-                                'tax_rate' => 0
-                            ];
+                        foreach ($ordersToSettle as $o) {
+                            foreach ($o->items as $item) {
+                                $invoiceItems[] = [
+                                    'name' => $item->name_snapshot,
+                                    'unit_price' => $item->price_snapshot,
+                                    'quantity' => $item->quantity,
+                                    'tax_rate' => 0
+                                ];
+                            }
                         }
 
                         $invoiceData = [
@@ -237,7 +241,11 @@ class WaiterPosController extends Controller
                         ];
 
                         $invoice = InvoiceService::createInvoice($invoiceData);
-                        $order->update(['invoice_id' => $invoice->id]);
+                        
+                        // Link invoice to all settled orders
+                        foreach ($ordersToSettle as $o) {
+                            $o->update(['invoice_id' => $invoice->id]);
+                        }
                     } catch (\Exception $ex) {
                         Log::error('Invoice auto-creation note: ' . $ex->getMessage());
                     }
@@ -296,7 +304,18 @@ class WaiterPosController extends Controller
         abort_if($order->organization_id !== $orgId, 403);
 
         $order->load(['items', 'table', 'organization', 'location']);
-        return view('organization.menu.receipt', compact('order'));
+        
+        // Fetch all orders from the same invoice to combine their items on the receipt
+        $allOrders = collect([$order]);
+        if ($order->invoice_id) {
+            $otherOrders = RestaurantOrder::with('items')
+                ->where('invoice_id', $order->invoice_id)
+                ->where('id', '!=', $order->id)
+                ->get();
+            $allOrders = $allOrders->concat($otherOrders);
+        }
+
+        return view('organization.menu.receipt', compact('order', 'allOrders'));
     }
 
     public function printKot(RestaurantOrder $order)

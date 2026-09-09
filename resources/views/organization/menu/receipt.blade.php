@@ -110,7 +110,13 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($order->items as $item)
+            @php
+                $itemsToPrint = isset($allOrders) ? $allOrders->pluck('items')->flatten() : $order->items;
+                $grossSubtotal = isset($allOrders) ? $allOrders->sum('subtotal') : $order->subtotal;
+                $grossCgst = isset($allOrders) ? $allOrders->sum('cgst') : $order->cgst;
+                $grossSgst = isset($allOrders) ? $allOrders->sum('sgst') : $order->sgst;
+            @endphp
+            @foreach($itemsToPrint as $item)
             <tr>
                 <td class="text-left bold">{{ $item->name_snapshot }}</td>
                 <td class="text-center">{{ $item->quantity }}</td>
@@ -127,12 +133,18 @@
     <table style="margin-top: 5px;">
         <tr>
             <td class="text-left">Subtotal:</td>
-            <td class="text-right bold">₹{{ number_format($order->subtotal, 2) }}</td>
+            <td class="text-right bold">₹{{ number_format($grossSubtotal, 2) }}</td>
         </tr>
-        @if($order->tax > 0)
+        @if($grossCgst > 0)
         <tr>
-            <td class="text-left">GST / Tax:</td>
-            <td class="text-right">₹{{ number_format($order->tax, 2) }}</td>
+            <td class="text-left">CGST ({{ (float)auth()->user()->organization->cgst_percent }}%):</td>
+            <td class="text-right">₹{{ number_format($grossCgst, 2) }}</td>
+        </tr>
+        @endif
+        @if($grossSgst > 0)
+        <tr>
+            <td class="text-left">SGST ({{ (float)auth()->user()->organization->sgst_percent }}%):</td>
+            <td class="text-right">₹{{ number_format($grossSgst, 2) }}</td>
         </tr>
         @endif
         <tr>

@@ -39,6 +39,10 @@ class InvoiceService
             $itemsData = [];
 
 
+            $org = \App\Models\Organization::find($organizationId);
+            $cgstPercent = $org ? (float)$org->cgst_percent : 0;
+            $sgstPercent = $org ? (float)$org->sgst_percent : 0;
+
             // 3. Process items securely
             foreach ($data['items'] as $item) {
                 if (isset($item['product_id'])) {
@@ -50,14 +54,12 @@ class InvoiceService
                     
                     $name = $product->name;
                     $price = $product->selling_price;
-                    $taxRate = $product->tax_rate ?? 0;
                     $productId = $product->id;
                     $stockProduct = $product;
                 } else {
                     // For Restaurant Orders or custom items
                     $name = $item['name'];
                     $price = $item['unit_price'];
-                    $taxRate = $item['tax_rate'] ?? 0;
                     $productId = null;
                     $stockProduct = null;
                 }
@@ -65,11 +67,8 @@ class InvoiceService
                 $quantity = $item['quantity'];
                 
                 $lineTotalBase = $price * $quantity;
-                $lineTax = ($lineTotalBase * $taxRate) / 100;
-                $lineTotal = $lineTotalBase + $lineTax;
 
                 $subtotal += $lineTotalBase;
-                $totalTax += $lineTax;
 
                 $itemsData[] = [
                     'product_id' => $productId,
@@ -77,10 +76,15 @@ class InvoiceService
                     'snapshot' => $name,
                     'quantity' => $quantity,
                     'unit_price' => $price,
-                    'tax' => $lineTax,
-                    'total' => $lineTotal
+                    'tax' => 0, // Item level tax is now 0 as we do global CGST/SGST
+                    'total' => $lineTotalBase
                 ];
             }
+
+            // Calculate Global Taxes on the Subtotal
+            $totalCgst = ($subtotal * $cgstPercent) / 100;
+            $totalSgst = ($subtotal * $sgstPercent) / 100;
+            $totalTax = $totalCgst + $totalSgst;
 
             // Calculate Discount
             $discountType = $data['discount_type'] ?? 'fixed';
@@ -105,6 +109,8 @@ class InvoiceService
                 'invoice_date' => $data['invoice_date'] ?? now()->toDateString(),
                 'due_date' => $data['due_date'] ?? now()->addDays(7)->toDateString(),
                 'subtotal' => $subtotal,
+                'cgst' => $totalCgst,
+                'sgst' => $totalSgst,
                 'tax' => $totalTax,
                 'discount' => $totalDiscount,
                 'grand_total' => $grandTotal,

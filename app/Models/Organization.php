@@ -11,7 +11,7 @@ class Organization extends Model
         'email',
         'phone',
         'address',
-        'gst_number',
+        'gst_number', 'cgst_percent', 'sgst_percent',
         'logo',
         'default_check_in',
         'default_check_out',

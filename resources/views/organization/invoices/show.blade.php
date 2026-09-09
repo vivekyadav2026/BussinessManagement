@@ -180,10 +180,18 @@
                     <span>Subtotal</span>
                     <span class="font-semibold text-white">₹{{ number_format($invoice->subtotal, 2) }}</span>
                 </div>
+                @if($invoice->cgst > 0)
                 <div class="flex justify-between">
-                    <span>Total Tax</span>
-                    <span class="font-semibold text-white">₹{{ number_format($invoice->tax, 2) }}</span>
+                    <span>CGST ({{ (float)$invoice->organization->cgst_percent }}%)</span>
+                    <span class="font-semibold text-white">₹{{ number_format($invoice->cgst, 2) }}</span>
                 </div>
+                @endif
+                @if($invoice->sgst > 0)
+                <div class="flex justify-between">
+                    <span>SGST ({{ (float)$invoice->organization->sgst_percent }}%)</span>
+                    <span class="font-semibold text-white">₹{{ number_format($invoice->sgst, 2) }}</span>
+                </div>
+                @endif
                 @if($invoice->discount > 0)
                 <div class="flex justify-between text-green-400 font-medium">
                     <span>Discount</span>

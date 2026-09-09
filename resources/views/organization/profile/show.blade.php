@@ -48,6 +48,20 @@
                     @error('gst_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
+                <!-- CGST % -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">CGST %</label>
+                    <input type="number" step="0.01" name="cgst_percent" value="{{ old('cgst_percent', $organization->cgst_percent) }}" placeholder="e.g., 9" class="w-full border border-gray-200 focus:border-[var(--theme-active)] focus:ring-2 focus:ring-[var(--theme-active)]/20 rounded-xl px-4 py-2.5 text-sm outline-none transition">
+                    @error('cgst_percent') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- SGST % -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">SGST %</label>
+                    <input type="number" step="0.01" name="sgst_percent" value="{{ old('sgst_percent', $organization->sgst_percent) }}" placeholder="e.g., 9" class="w-full border border-gray-200 focus:border-[var(--theme-active)] focus:ring-2 focus:ring-[var(--theme-active)]/20 rounded-xl px-4 py-2.5 text-sm outline-none transition">
+                    @error('sgst_percent') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
                 <!-- Logo Uploader -->
                 <div x-data="{ imgPreview: '{{ $organization->logo ? asset('storage/' . $organization->logo) : '' }}' }">
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Logo</label>

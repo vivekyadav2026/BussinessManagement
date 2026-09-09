@@ -83,8 +83,13 @@
                 </div>
                 
                 <div class="flex justify-between">
-                    <span>Total Tax</span>
-                    <span class="font-bold text-gray-900">₹<span id="sumTax">0.00</span></span>
+                    <span>CGST ({{ (float)auth()->user()->organization->cgst_percent }}%)</span>
+                    <span class="font-bold text-gray-900">₹<span id="sumCgst">0.00</span></span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span>SGST ({{ (float)auth()->user()->organization->sgst_percent }}%)</span>
+                    <span class="font-bold text-gray-900">₹<span id="sumSgst">0.00</span></span>
                 </div>
 
                 <div class="pt-2 pb-3 border-b border-gray-100 space-y-2">
@@ -438,14 +443,18 @@ function renderCart() {
 
 function calculateTotals() {
     let subtotal = 0;
-    let tax = 0;
     
     cart.forEach(item => {
         let base = item.price * item.qty;
-        let t = base * (item.taxRate / 100);
         subtotal += base;
-        tax += t;
     });
+
+    let cgstPercent = {{ (float)auth()->user()->organization->cgst_percent }};
+    let sgstPercent = {{ (float)auth()->user()->organization->sgst_percent }};
+
+    let cgst = (subtotal * cgstPercent) / 100;
+    let sgst = (subtotal * sgstPercent) / 100;
+    let tax = cgst + sgst;
     
     let discountType = document.getElementById('discountType').value;
     let discountInput = parseFloat(document.getElementById('sumDiscount').value) || 0;
@@ -464,7 +473,8 @@ function calculateTotals() {
     if(grandTotal < 0) grandTotal = 0;
     
     document.getElementById('sumSubtotal').textContent = subtotal.toFixed(2);
-    document.getElementById('sumTax').textContent = tax.toFixed(2);
+    document.getElementById('sumCgst').textContent = cgst.toFixed(2);
+    document.getElementById('sumSgst').textContent = sgst.toFixed(2);
     document.getElementById('sumGrandTotal').textContent = grandTotal.toFixed(2);
     
     let status = document.getElementById('invoiceStatus').value;
@@ -591,7 +601,9 @@ function submitInvoice() {
     let discountType = document.getElementById('discountType').value;
     let discountInput = parseFloat(document.getElementById('sumDiscount').value) || 0;
     let subtotalVal = parseFloat(document.getElementById('sumSubtotal').textContent) || 0;
-    let taxVal = parseFloat(document.getElementById('sumTax').textContent) || 0;
+    let cgstVal = parseFloat(document.getElementById('sumCgst').textContent) || 0;
+    let sgstVal = parseFloat(document.getElementById('sumSgst').textContent) || 0;
+    let taxVal = cgstVal + sgstVal;
     let finalDiscount = discountType === 'percent' ? ((subtotalVal + taxVal) * (discountInput / 100)) : discountInput;
 
     const payload = {

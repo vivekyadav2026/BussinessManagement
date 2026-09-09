@@ -65,6 +65,7 @@ class PermissionSeeder extends Seeder
             ],
             'Restaurant' => [
                 'restaurant.view' => 'View Restaurant & Waiter POS',
+                'restaurant.counter' => 'Access Counter Billing Mode',
                 'restaurant.kitchen' => 'Access Kitchen KDS Display',
                 'restaurant.orders' => 'Manage Restaurant Orders & Billing',
                 'restaurant.cancel_order' => 'Cancel Active Restaurant Orders',

@@ -204,10 +204,16 @@
                 <td class="text-left">Subtotal:</td>
                 <td class="text-right font-bold">₹{{ number_format($invoice->subtotal, 2) }}</td>
             </tr>
-            @if($invoice->tax > 0)
+            @if($invoice->cgst > 0)
             <tr>
-                <td class="text-left">Tax / GST:</td>
-                <td class="text-right">₹{{ number_format($invoice->tax, 2) }}</td>
+                <td class="text-left">CGST ({{ (float)$invoice->organization->cgst_percent }}%):</td>
+                <td class="text-right">₹{{ number_format($invoice->cgst, 2) }}</td>
+            </tr>
+            @endif
+            @if($invoice->sgst > 0)
+            <tr>
+                <td class="text-left">SGST ({{ (float)$invoice->organization->sgst_percent }}%):</td>
+                <td class="text-right">₹{{ number_format($invoice->sgst, 2) }}</td>
             </tr>
             @endif
             @if($invoice->discount > 0)

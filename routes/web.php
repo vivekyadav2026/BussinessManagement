@@ -210,6 +210,14 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'plan.fe
     Route::get('/pos/orders/{order}/print-receipt', [\App\Http\Controllers\Organization\WaiterPosController::class, 'printReceipt'])->name('pos.orders.print-receipt');
     Route::get('/pos/orders/{order}/print-kot', [\App\Http\Controllers\Organization\WaiterPosController::class, 'printKot'])->name('pos.orders.print-kot');
 
+    // Counter Billing Mode Routes
+    Route::get('/counter', [\App\Http\Controllers\Organization\CounterBillingController::class, 'index'])->name('counter.index');
+    Route::get('/counter/api/active-orders', [\App\Http\Controllers\Organization\CounterBillingController::class, 'fetchActiveOrders'])->name('counter.orders.active');
+    Route::get('/counter/api/completed-orders', [\App\Http\Controllers\Organization\CounterBillingController::class, 'fetchCompletedOrders'])->name('counter.orders.completed');
+    Route::post('/counter/orders', [\App\Http\Controllers\Organization\CounterBillingController::class, 'saveOrder'])->name('counter.orders.save');
+    Route::post('/counter/orders/{order}/settle', [\App\Http\Controllers\Organization\CounterBillingController::class, 'settleOrder'])->name('counter.orders.settle');
+    Route::post('/counter/orders/{order}/cancel', [\App\Http\Controllers\Organization\CounterBillingController::class, 'cancelOrder'])->name('counter.orders.cancel');
+
     // Restaurant Sales Reports & Analytics Route
     Route::get('/reports', [\App\Http\Controllers\Organization\RestaurantReportController::class, 'index'])->name('reports.index');
 

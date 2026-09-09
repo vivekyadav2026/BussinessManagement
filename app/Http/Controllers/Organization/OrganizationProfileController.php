@@ -26,6 +26,8 @@ class OrganizationProfileController extends Controller
             'gst_number' => 'nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
             'default_check_in' => 'nullable|string',
             'default_check_out' => 'nullable|string',
+            'cgst_percent' => 'nullable|numeric|min:0|max:100',
+            'sgst_percent' => 'nullable|numeric|min:0|max:100',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
 

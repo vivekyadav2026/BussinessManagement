@@ -235,14 +235,23 @@
             <!-- Right: Calculation Breakdown -->
             <div class="border border-slate-300 rounded-xl p-4 bg-white space-y-2 text-xs">
                 <div class="flex justify-between text-slate-600 font-medium">
-                    <span>Subtotal (Base Price)</span>
+                    <span>Subtotal</span>
                     <span class="font-bold text-slate-900">₹{{ number_format($invoice->subtotal, 2) }}</span>
                 </div>
-
+                
+                @if($invoice->cgst > 0)
                 <div class="flex justify-between text-slate-600 font-medium">
-                    <span>Total GST Tax</span>
-                    <span class="font-bold text-slate-900">₹{{ number_format($invoice->tax, 2) }}</span>
+                    <span>CGST ({{ (float)$invoice->organization->cgst_percent }}%)</span>
+                    <span class="font-bold text-slate-900">₹{{ number_format($invoice->cgst, 2) }}</span>
                 </div>
+                @endif
+                
+                @if($invoice->sgst > 0)
+                <div class="flex justify-between text-slate-600 font-medium">
+                    <span>SGST ({{ (float)$invoice->organization->sgst_percent }}%)</span>
+                    <span class="font-bold text-slate-900">₹{{ number_format($invoice->sgst, 2) }}</span>
+                </div>
+                @endif
 
                 @if($invoice->discount > 0)
                     <div class="flex justify-between text-emerald-700 font-semibold border-t border-slate-100 pt-1.5">

@@ -131,13 +131,13 @@
                         <h3 class="font-bold text-base text-gray-900 flex items-center gap-1.5">
                             <span x-text="orderType === 'Dine-in' ? (selectedTableName ? 'Table: ' + selectedTableName : 'Select Table') : 'Takeaway Order'"></span>
                         </h3>
-                        <div class="text-[11px] text-gray-400 font-mono mt-0.5" x-show="activeOrderId">Order #: <span x-text="activeOrderNumber" class="font-bold text-gray-700"></span></div>
+                        <div class="text-[11px] text-gray-400 font-mono mt-0.5" x-show="activeOrderIds.length > 0">Order #: <span x-text="activeOrderNumber" class="font-bold text-gray-700"></span></div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button type="button" @click="cancelOrder()" class="px-2.5 py-1 bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-bold border border-rose-200 transition flex items-center gap-1 shadow-2xs" x-show="activeOrderId">
+                        <button type="button" @click="cancelOrder()" class="px-2.5 py-1 bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-bold border border-rose-200 transition flex items-center gap-1 shadow-2xs" x-show="activeOrderIds.length > 0">
                             <span>🚫 Cancel Order</span>
                         </button>
-                        <button type="button" @click="clearTicket()" class="text-xs text-gray-500 hover:text-gray-700 font-semibold" x-show="cart.length > 0 && !activeOrderId">Clear</button>
+                        <button type="button" @click="clearTicket()" class="text-xs text-gray-500 hover:text-gray-700 font-semibold" x-show="cart.length > 0 && !activeOrderIds.length">Clear</button>
                     </div>
                 </div>
 
@@ -155,25 +155,41 @@
 
                 <!-- Order Ticket Items List -->
                 <div class="space-y-2 max-h-60 overflow-y-auto min-h-[140px] pr-1">
-                    <template x-if="cart.length === 0">
+                    <template x-if="combinedItems.length === 0">
                         <div class="text-center py-10 text-gray-400 text-xs font-medium">
                             <p>No items added to ticket.</p>
                             <p class="text-[10px] text-gray-300 mt-1">Tap any food item from the menu grid to add.</p>
                         </div>
                     </template>
 
-                    <template x-for="(item, index) in cart" :key="item.id">
-                        <div class="flex items-center justify-between p-2 rounded-xl bg-gray-50/80 border border-gray-100 text-xs">
+                    <!-- Sent Items -->
+                    <template x-for="(item, index) in sentItems" :key="'sent_'+index">
+                        <div class="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100 text-xs opacity-75">
                             <div class="flex-1 pr-2 min-w-0">
-                                <div class="font-bold text-gray-800 truncate" x-text="item.name"></div>
-                                <div class="text-[10px] text-gray-500 font-semibold">₹<span x-text="item.price.toFixed(2)"></span> x <span x-text="item.qty"></span></div>
+                                <div class="font-bold text-gray-700 truncate" x-text="item.name"></div>
+                                <div class="text-[10px] text-gray-500 font-semibold">₹<span x-text="item.price.toFixed(2)"></span> x <span x-text="item.qty"></span> <span class="ml-1 text-[9px] bg-gray-200 text-gray-600 px-1 py-0.5 rounded">Sent to Kitchen</span></div>
                             </div>
-
                             <div class="flex items-center gap-1">
-                                <button type="button" @click="updateQty(index, -1)" class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 font-bold text-gray-700 flex items-center justify-center text-xs">-</button>
-                                <span class="w-6 text-center font-bold text-xs" x-text="item.qty"></span>
-                                <button type="button" @click="updateQty(index, 1)" class="w-5 h-5 rounded bg-gray-200 hover:bg-gray-300 font-bold text-gray-700 flex items-center justify-center text-xs">+</button>
-                                <button type="button" @click="removeItem(index)" class="ml-1 text-rose-500 hover:text-rose-700 font-bold p-0.5">✕</button>
+                                <span class="w-6 text-center font-bold text-sm text-gray-500" x-text="item.qty"></span>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Unsent Cart Items -->
+                    <template x-for="(item, index) in cart" :key="'cart_'+index">
+                        <div class="flex items-center justify-between p-2 rounded-xl bg-indigo-50/50 border border-indigo-100 text-xs shadow-sm">
+                            <div class="flex-1 pr-2 min-w-0">
+                                <div class="font-bold text-gray-800 truncate flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                                    <span x-text="item.name"></span>
+                                </div>
+                                <div class="text-[10px] text-gray-500 font-semibold pl-2.5">₹<span x-text="item.price.toFixed(2)"></span> x <span x-text="item.qty"></span> <span class="ml-1 text-[9px] text-indigo-500 font-bold">New</span></div>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button type="button" @click="updateQty(index, -1)" class="w-6 h-6 rounded bg-white border border-gray-200 hover:border-indigo-400 font-bold text-gray-700 flex items-center justify-center text-sm shadow-xs transition">-</button>
+                                <span class="w-6 text-center font-bold text-sm" x-text="item.qty"></span>
+                                <button type="button" @click="updateQty(index, 1)" class="w-6 h-6 rounded bg-white border border-gray-200 hover:border-indigo-400 font-bold text-gray-700 flex items-center justify-center text-sm shadow-xs transition">+</button>
+                                <button type="button" @click="cart.splice(index, 1); calculateTotals();" class="ml-1 text-rose-500 hover:text-rose-700 font-bold p-0.5">✕</button>
                             </div>
                         </div>
                     </template>
@@ -204,16 +220,16 @@
                 <!-- Action Buttons -->
                 <div class="space-y-2 pt-2">
                     <div class="grid grid-cols-2 gap-2">
-                        <button type="button" @click="saveOrder('kot')" :disabled="loading || cart.length === 0" class="w-full py-2.5 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs disabled:opacity-50">
+                        <button type="button" @click="saveOrder('kot')" :disabled="loading || combinedItems.length === 0" class="w-full py-2.5 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs disabled:opacity-50">
                             <span>👨‍🍳 Send KOT</span>
                         </button>
 
-                        <button type="button" @click="openSettleModal()" :disabled="loading || cart.length === 0" class="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs disabled:opacity-50">
+                        <button type="button" @click="openSettleModal()" :disabled="loading || combinedItems.length === 0" class="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs disabled:opacity-50">
                             <span>💳 Settle & Bill</span>
                         </button>
                     </div>
 
-                    <div class="flex gap-2" x-show="activeOrderId">
+                    <div class="flex gap-2" x-show="activeOrderIds.length > 0">
                         <a :href="activeKotUrl" target="_blank" class="flex-1 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-center rounded-lg text-xs font-bold transition">
                             🖨️ Print KOT Slip
                         </a>
@@ -271,6 +287,7 @@
 <script>
 function waiterPos() {
     return {
+        tables: @json($tables),
         selectedTableId: null,
         selectedTableName: '',
         orderType: 'Dine-in',
@@ -283,12 +300,13 @@ function waiterPos() {
         discount: 0,
         subtotal: 0,
         grandTotal: 0,
-        activeOrderId: null,
+        activeOrderIds: [],
         activeOrderNumber: '',
         activeKotUrl: '#',
         activeReceiptUrl: '#',
         settleModalOpen: false,
         paymentMethod: 'Cash',
+        sentItems: [],
         loading: false,
 
         init() {
@@ -303,27 +321,7 @@ function waiterPos() {
             this.selectedTableId = table.id;
             this.selectedTableName = table.name;
             this.orderType = 'Dine-in';
-
-            if (table.active_order) {
-                this.activeOrderId = table.active_order.id;
-                this.activeOrderNumber = table.active_order.order_number;
-                this.customerName = table.active_order.customer_name || '';
-                this.customerPhone = table.active_order.customer_phone || '';
-                this.cookingNotes = table.active_order.notes || '';
-                this.activeKotUrl = `/organization/menu/pos/orders/${table.active_order.id}/print-kot`;
-                this.activeReceiptUrl = `/organization/menu/pos/orders/${table.active_order.id}/print-receipt`;
-
-                this.cart = table.active_order.items.map(i => ({
-                    id: i.menu_item_id,
-                    name: i.name_snapshot,
-                    price: parseFloat(i.price_snapshot),
-                    qty: i.quantity
-                }));
-            } else {
-                this.clearTicketData();
-            }
-
-            this.calculateTotals();
+            this.getTableOrder(table.id);
         },
 
         setOrderType(type) {
@@ -331,8 +329,59 @@ function waiterPos() {
             if (type === 'Takeaway') {
                 this.selectedTableId = null;
                 this.selectedTableName = '';
-                this.clearTicketData();
+                this.resetForm();
+                this.orderType = 'Takeaway';
             }
+        },
+
+        getTableOrder(tableId) {
+            if (!tableId) return;
+            this.loading = true;
+            this.resetForm();
+            this.selectedTableId = tableId;
+            this.activeTable = this.tables.find(t => t.id === tableId);
+            if(this.activeTable) this.selectedTableName = this.activeTable.name;
+            
+            fetch(`/organization/menu/pos/table/${tableId}`)
+                .then(res => res.json())
+                .then(data => {
+                    this.loading = false;
+                    if (data.active_orders && data.active_orders.length > 0) {
+                        this.activeOrderIds = data.active_orders.map(o => o.id);
+                        this.activeOrderNumber = data.active_orders[0].order_number;
+                        this.customerName = data.active_orders[0].customer_name || '';
+                        this.customerPhone = data.active_orders[0].customer_phone || '';
+                        this.orderType = data.active_orders[0].order_type || 'Dine-in';
+                        this.cookingNotes = data.active_orders.map(o => o.notes).filter(Boolean).join(' | ');
+                        
+                        let allSent = [];
+                        data.active_orders.forEach(order => {
+                            order.items.forEach(i => {
+                                allSent.push({
+                                    id: i.menu_item_id,
+                                    name: i.name_snapshot,
+                                    price: parseFloat(i.price_snapshot),
+                                    qty: i.quantity
+                                });
+                            });
+                        });
+                        this.sentItems = allSent;
+                        this.calculateTotals();
+                    }
+                });
+        },
+
+        get combinedItems() {
+            let items = [...this.sentItems];
+            this.cart.forEach(c => {
+                let existing = items.find(i => i.id === c.id);
+                if (existing) {
+                    existing.qty += c.qty;
+                } else {
+                    items.push({...c});
+                }
+            });
+            return items;
         },
 
         addToTicket(item) {
@@ -358,32 +407,31 @@ function waiterPos() {
             this.calculateTotals();
         },
 
-        removeItem(index) {
-            this.cart.splice(index, 1);
-            this.calculateTotals();
-        },
-
         clearTicket() {
-            if (confirm('Clear current ticket items?')) {
-                this.clearTicketData();
+            if(confirm('Clear unsent items from ticket?')) {
+                this.cart = [];
                 this.calculateTotals();
             }
         },
-
-        clearTicketData() {
-            this.cart = [];
+        
+        resetForm() {
+            this.selectedTableId = null;
+            this.selectedTableName = '';
+            this.activeOrderIds = [];
+            this.activeOrderNumber = '';
             this.customerName = '';
             this.customerPhone = '';
             this.cookingNotes = '';
-            this.activeOrderId = null;
-            this.activeOrderNumber = '';
+            this.cart = [];
+            this.sentItems = [];
             this.activeKotUrl = '';
             this.activeReceiptUrl = '';
             this.discount = 0;
+            this.calculateTotals();
         },
 
         calculateTotals() {
-            this.subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            this.subtotal = this.combinedItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
             this.grandTotal = Math.max(0, this.subtotal - this.discount);
         },
 
@@ -413,69 +461,83 @@ function waiterPos() {
             .then(res => res.json())
             .then(data => {
                 this.loading = false;
-                    if (data.success) {
-                        this.activeOrderId = data.order.id;
-                        this.activeOrderNumber = data.order.order_number;
-                        this.activeKotUrl = data.print_kot_url;
+                if (data.success) {
+                    if(!this.activeOrderIds.includes(data.order.id)) {
+                        this.activeOrderIds.push(data.order.id);
+                    }
+                    this.activeOrderNumber = data.order.order_number;
+                    this.activeKotUrl = data.print_kot_url;
 
-                        // Reload page to reflect updated table status silently without opening print pop-up
-                        window.location.reload();
-                    } else {
+                    this.getTableOrder(this.selectedTableId);
+                    
+                    if (!this.selectedTableId) {
+                        this.cart.forEach(c => this.sentItems.push({...c}));
+                        this.cart = [];
+                        this.calculateTotals();
+                    }
+                } else {
                     alert(data.message || 'Error saving order.');
                 }
             })
             .catch(err => {
                 this.loading = false;
-                alert('An error occurred.');
+                alert('Backend Error:\n' + (err.message ? err.message.substring(0, 500) : 'Unknown error'));
                 console.error(err);
             });
         },
 
         openSettleModal() {
-            if (this.cart.length === 0) return;
+            if (this.combinedItems.length === 0) return;
             this.settleModalOpen = true;
         },
 
         confirmSettle() {
-            if (!this.activeOrderId) {
-                // First save order, then settle
-                this.loading = true;
-                const payload = {
-                    restaurant_table_id: this.selectedTableId,
-                    order_type: this.orderType,
-                    customer_name: this.customerName,
-                    customer_phone: this.customerPhone,
-                    notes: this.cookingNotes,
-                    items: this.cart.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
-                };
-
-                fetch('{{ route("organization.menu.pos.orders.save") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        this.activeOrderId = data.order.id;
-                        this.executeSettle();
-                    } else {
-                        this.loading = false;
-                        alert(data.message || 'Error saving order.');
-                    }
-                });
-            } else {
+            if (this.cart.length > 0) {
+                this.saveOrderAndSettle();
+            } else if (this.activeOrderIds.length > 0) {
                 this.executeSettle();
+            } else {
+                alert("Nothing to settle.");
             }
+        },
+        
+        saveOrderAndSettle() {
+            this.loading = true;
+            const payload = {
+                restaurant_table_id: this.selectedTableId,
+                order_type: this.orderType,
+                customer_name: this.customerName,
+                customer_phone: this.customerPhone,
+                notes: this.cookingNotes,
+                items: this.cart.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
+            };
+
+            fetch('{{ route("organization.menu.pos.orders.save") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if(!this.activeOrderIds.includes(data.order.id)) {
+                        this.activeOrderIds.push(data.order.id);
+                    }
+                    this.executeSettle();
+                } else {
+                    this.loading = false;
+                    alert(data.message || 'Error saving order.');
+                }
+            });
         },
 
         executeSettle() {
             this.loading = true;
-            fetch(`/organization/menu/pos/orders/${this.activeOrderId}/settle`, {
+            fetch(`/organization/menu/pos/orders/${this.activeOrderIds[0]}/settle`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -484,15 +546,21 @@ function waiterPos() {
                 },
                 body: JSON.stringify({
                     payment_method: this.paymentMethod,
-                    discount: this.discount
+                    discount: this.discount,
+                    extra_order_ids: this.activeOrderIds.slice(1)
                 })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    return res.text().then(text => { throw new Error(text); });
+                }
+                return res.json();
+            })
             .then(data => {
                 this.loading = false;
                 if (data.success) {
                     this.settleModalOpen = false;
-                    this.clearTicketData();
+                    this.resetForm();
                     window.open(data.print_receipt_url, '_blank');
                     window.location.reload();
                 } else {
@@ -506,11 +574,11 @@ function waiterPos() {
         },
 
         cancelOrder() {
-            if (!this.activeOrderId) return;
+            if (!this.activeOrderIds[0]) return;
 
             if (confirm(`Are you sure you want to cancel Order #${this.activeOrderNumber}? This will vacate the table.`)) {
                 this.loading = true;
-                fetch(`/organization/menu/pos/orders/${this.activeOrderId}/cancel`, {
+                fetch(`/organization/menu/pos/orders/${this.activeOrderIds[0]}/cancel`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -523,7 +591,7 @@ function waiterPos() {
                     this.loading = false;
                     if (data.success) {
                         alert(data.message || 'Order cancelled successfully.');
-                        this.clearTicketData();
+                        this.resetForm();
                         window.location.reload();
                     } else {
                         alert(data.message || 'Error cancelling order.');
