@@ -24,7 +24,12 @@
     <tr>
         <td width="50%">
             @if($organization->logo)
-                <img src="{{ public_path('storage/'.$organization->logo) }}" class="logo">
+                @php
+                    $logoPath = file_exists(public_path('storage/'.$organization->logo)) 
+                        ? public_path('storage/'.$organization->logo) 
+                        : storage_path('app/public/'.$organization->logo);
+                @endphp
+                <img src="{{ $logoPath }}" class="logo">
             @else
                 <h2>{{ $organization->name }}</h2>
             @endif

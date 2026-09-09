@@ -11,6 +11,37 @@ Route::get('/', function () {
     return view('welcome', compact('plans'));
 })->name('welcome');
 
+Route::get('/set-locale/{lang}', [\App\Http\Controllers\LanguageController::class, 'switchLanguage'])->name('set-locale');
+
+// Live Server Storage Fallback Route & Link Creation Helper
+Route::get('/link-storage', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('storage:link');
+        return '<div style="font-family:sans-serif; padding:40px; text-align:center;">'
+            . '<h1 style="color:#16a34a;">✅ Storage link created successfully!</h1>'
+            . '<p><a href="/" style="color:#4f46e5;">Return to Homepage</a></p>'
+            . '</div>';
+    } catch (\Exception $e) {
+        return '<div style="font-family:sans-serif; padding:40px; text-align:center;">'
+            . '<h1 style="color:#dc2626;">❌ Error creating storage link:</h1>'
+            . '<p>' . e($e->getMessage()) . '</p>'
+            . '</div>';
+    }
+})->name('storage.link');
+
+Route::get('/storage/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    if (!file_exists($filePath)) {
+        $filePath = storage_path('app/' . $path);
+    }
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+    
+    $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+    return response()->file($filePath, ['Content-Type' => $mimeType]);
+})->where('path', '.*')->name('storage.fallback');
+
 Route::view('/features', 'pages.features')->name('public.features');
 Route::view('/restaurant', 'pages.restaurant')->name('public.restaurant');
 Route::view('/payments', 'pages.payments')->name('public.payments');

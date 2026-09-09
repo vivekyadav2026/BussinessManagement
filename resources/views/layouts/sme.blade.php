@@ -514,6 +514,42 @@
                 </div>
 
                 <div class="ml-4 flex items-center md:ml-6 gap-3">
+                    <!-- Language Switcher Dropdown -->
+                    @php
+                        $currentLocale = app()->getLocale();
+                    @endphp
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none transition-colors border border-gray-200 shadow-2xs" title="Change Language / ભાષા બદલો">
+                            @if($currentLocale === 'gu')
+                                <span class="text-sm">🇮🇳</span> <span class="text-indigo-700 font-extrabold">ગુજરાતી</span>
+                            @elseif($currentLocale === 'hi')
+                                <span class="text-sm">🇮🇳</span> <span class="text-amber-700 font-extrabold">हिंदी</span>
+                            @else
+                                <span class="text-sm">🇬🇧</span> <span class="text-slate-800 font-bold">English</span>
+                            @endif
+                            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+
+                        <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-52 origin-top-right rounded-xl bg-white py-1.5 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-30 border border-gray-100" style="display: none;">
+                            <div class="px-3.5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">Select Language</div>
+                            
+                            <a href="{{ route('set-locale', 'en') }}" onclick="switchPanelLanguage('en')" class="flex items-center justify-between px-3.5 py-2 text-xs font-semibold {{ $currentLocale === 'en' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-gray-50' }}">
+                                <span class="flex items-center gap-2"><span class="text-sm">🇬🇧</span> English</span>
+                                @if($currentLocale === 'en') <span class="text-indigo-600 font-bold">✓</span> @endif
+                            </a>
+
+                            <a href="{{ route('set-locale', 'gu') }}" onclick="switchPanelLanguage('gu')" class="flex items-center justify-between px-3.5 py-2 text-xs font-semibold {{ $currentLocale === 'gu' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-gray-50' }}">
+                                <span class="flex items-center gap-2"><span class="text-sm">🇮🇳</span> ગુજરાતી (Gujarati)</span>
+                                @if($currentLocale === 'gu') <span class="text-indigo-600 font-bold">✓</span> @endif
+                            </a>
+
+                            <a href="{{ route('set-locale', 'hi') }}" onclick="switchPanelLanguage('hi')" class="flex items-center justify-between px-3.5 py-2 text-xs font-semibold {{ $currentLocale === 'hi' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-gray-50' }}">
+                                <span class="flex items-center gap-2"><span class="text-sm">🇮🇳</span> हिंदी (Hindi)</span>
+                                @if($currentLocale === 'hi') <span class="text-indigo-600 font-bold">✓</span> @endif
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Theme Switcher Dropdown -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition-colors">
@@ -828,6 +864,139 @@
     });
     </script>
 
+    <!-- Google Translate / Panel Multi-Language Engine Bridge -->
+    <div id="google_translate_element" style="display: none !important;"></div>
+    <style>
+        .goog-te-banner-frame, .skiptranslate, #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+        body { top: 0px !important; }
+        .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+    </style>
+    <script type="text/javascript">
+        function setGoogTransCookie(lang) {
+            var val = (lang === 'en') ? '/en/en' : '/en/' + lang;
+            document.cookie = "googtrans=" + val + "; path=/;";
+            document.cookie = "googtrans=" + val + "; path=/; domain=" + window.location.hostname + ";";
+        }
+
+        function switchPanelLanguage(lang) {
+            localStorage.setItem('panel_language', lang);
+            setGoogTransCookie(lang);
+        }
+
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,gu,hi',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+            
+            const currentSessionLocale = "{{ app()->getLocale() }}";
+            applyPanelLanguage(currentSessionLocale);
+        }
+
+        function applyPanelLanguage(lang) {
+            if (!lang) return;
+            setGoogTransCookie(lang);
+            const selectEl = document.querySelector('.goog-te-combo');
+            if (selectEl) {
+                if (selectEl.value !== lang) {
+                    selectEl.value = lang;
+                    selectEl.dispatchEvent(new Event('change'));
+                }
+            } else {
+                setTimeout(function() { applyPanelLanguage(lang); }, 300);
+            }
+        }
+
+        // Instant Dictionary Fallback Translator for UI
+        const panelDict = {
+            gu: {
+                "Dashboard": "ડેશબોર્ડ",
+                "Administration": "વહીવટ",
+                "Organization": "સંસ્થા",
+                "Employees": "કર્મચારીઓ",
+                "Roles & Permissions": "ભૂમિકાઓ અને પરવાનગીઓ",
+                "Locations (Branches)": "શાખાઓ",
+                "Operations": "કામગીરી",
+                "Products Catalog": "ઉત્પાદનો કેટલોગ",
+                "Inventory Stock": "ઇન્વેન્ટરી સ્ટોક",
+                "Clients": "ગ્રાહકો",
+                "Invoices": "ઇનવોઇસ",
+                "Receivables": "લેણાં",
+                "HR & Payroll": "એચઆર અને પગારપત્રક",
+                "Attendance": "હાજરી",
+                "Payroll": "પગારપત્રક",
+                "Search invoices, products, clients...": "ઇનવોઇસ, ઉત્પાદનો, ગ્રાહકો શોધો...",
+                "Create Invoice": "ઇનવોઇસ બનાવો",
+                "Print A4 Invoice": "એ4 ઇનવોઇસ પ્રિન્ટ કરો",
+                "Thermal Receipt": "થર્મલ રસીદ",
+                "Record Payment": "ચુકવણી નોંધો",
+                "Subtotal": "સબટોટલ",
+                "Grand Total": "કુલ રકમ",
+                "Amount Paid": "ચૂકવેલ રકમ",
+                "Balance Due": "બાકી રકમ",
+                "Actions": "ક્રિયાઓ"
+            },
+            hi: {
+                "Dashboard": "डैशबोर्ड",
+                "Administration": "प्रशासन",
+                "Organization": "संगठन",
+                "Employees": "कर्मचारी",
+                "Roles & Permissions": "भूमिकाएं और अनुमतियां",
+                "Locations (Branches)": "शाखाएं",
+                "Operations": "संचालन",
+                "Products Catalog": "उत्पाद सूची",
+                "Inventory Stock": "इन्वेंट्री स्टॉक",
+                "Clients": "ग्राहक",
+                "Invoices": "चालान (इनवॉइस)",
+                "Receivables": "प्राप्य राशियां",
+                "HR & Payroll": "एचआर और पेरोल",
+                "Attendance": "उपस्थिति",
+                "Payroll": "पेरोल",
+                "Search invoices, products, clients...": "इनवॉइस, उत्पाद, ग्राहक खोजें...",
+                "Create Invoice": "इनवॉइस बनाएं",
+                "Print A4 Invoice": "ए4 इनवॉइस प्रिंट करें",
+                "Thermal Receipt": "थर्मल रसीद",
+                "Record Payment": "भुगतान दर्ज करें",
+                "Subtotal": "उप-योग",
+                "Grand Total": "कुल राशि",
+                "Amount Paid": "भुगतान की गई राशि",
+                "Balance Due": "बकाया राशि",
+                "Actions": "कार्रवाई"
+            }
+        };
+
+        function translateUIElements(lang) {
+            if (!panelDict[lang]) return;
+            const dict = panelDict[lang];
+            
+            // Translate placeholders
+            const searchInput = document.getElementById('search');
+            if (searchInput && dict["Search invoices, products, clients..."]) {
+                searchInput.placeholder = dict["Search invoices, products, clients..."];
+            }
+
+            // Translate text nodes in nav and headings
+            const textNodes = document.querySelectorAll('nav a, nav div, .eyebrow, h1, button, a.btn');
+            textNodes.forEach(el => {
+                const text = el.innerText ? el.innerText.trim() : '';
+                if (dict[text]) {
+                    el.innerText = dict[text];
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('panel_language') || "{{ app()->getLocale() }}";
+            if (savedLang && savedLang !== 'en') {
+                translateUIElements(savedLang);
+                setGoogTransCookie(savedLang);
+                setTimeout(function() { applyPanelLanguage(savedLang); }, 300);
+            }
+        });
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
 </html>
