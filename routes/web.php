@@ -185,6 +185,7 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class])->group(
         Route::post('/', [\App\Http\Controllers\Organization\InvoiceController::class, 'store'])->name('store');
         Route::get('{invoice}', [\App\Http\Controllers\Organization\InvoiceController::class, 'show'])->name('show');
         Route::get('{invoice}/print', [\App\Http\Controllers\Organization\InvoiceController::class, 'print'])->name('print');
+        Route::get('{invoice}/receipt', [\App\Http\Controllers\Organization\InvoiceController::class, 'receipt'])->name('receipt');
         Route::post('{invoice}/cancel', [\App\Http\Controllers\Organization\InvoiceController::class, 'cancel'])->name('cancel')->middleware('permission:invoices.cancel');
         
         // Payments against invoice

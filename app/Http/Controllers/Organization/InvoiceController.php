@@ -114,6 +114,13 @@ class InvoiceController extends Controller
         return view('organization.invoices.print', compact('invoice'));
     }
 
+    public function receipt(Invoice $invoice)
+    {
+        abort_if($invoice->organization_id !== auth()->user()->organization_id, 403);
+        $invoice->load(['client', 'items.product', 'organization', 'location']);
+        return view('organization.invoices.receipt', compact('invoice'));
+    }
+
     public function cancel(Invoice $invoice)
     {
         abort_if($invoice->organization_id !== auth()->user()->organization_id, 403);

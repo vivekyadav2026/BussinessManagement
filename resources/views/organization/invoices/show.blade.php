@@ -12,7 +12,10 @@
     <div class="flex items-center gap-2 w-full sm:w-auto">
         <a href="{{ route('organization.invoices.print', $invoice) }}" target="_blank" class="btn border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 btn-sm flex items-center gap-2 shadow-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-            Print / PDF
+            Print A4 Invoice
+        </a>
+        <a href="{{ route('organization.invoices.receipt', $invoice) }}" target="_blank" class="btn border border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 btn-sm flex items-center gap-1.5 shadow-sm font-bold">
+            <span>🧾 Thermal Receipt</span>
         </a>
         @if($invoice->status !== 'Cancelled')
             <form action="{{ route('organization.invoices.cancel', $invoice) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this invoice? Stock will be reversed.');" class="m-0">
