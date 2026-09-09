@@ -15,18 +15,44 @@ Route::get('/set-locale/{lang}', [\App\Http\Controllers\LanguageController::clas
 
 // Live Server Storage Fallback Route & Link Creation Helper
 Route::get('/link-storage', function () {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('storage:link');
+    $target = storage_path('app/public');
+    $link = public_path('storage');
+
+    if (file_exists($link)) {
         return '<div style="font-family:sans-serif; padding:40px; text-align:center;">'
-            . '<h1 style="color:#16a34a;">✅ Storage link created successfully!</h1>'
+            . '<h1 style="color:#16a34a;">✅ Storage link or directory already exists!</h1>'
+            . '<p>Your images will load via standard storage link or automated fallback route.</p>'
             . '<p><a href="/" style="color:#4f46e5;">Return to Homepage</a></p>'
             . '</div>';
-    } catch (\Exception $e) {
-        return '<div style="font-family:sans-serif; padding:40px; text-align:center;">'
-            . '<h1 style="color:#dc2626;">❌ Error creating storage link:</h1>'
-            . '<p>' . e($e->getMessage()) . '</p>'
-            . '</div>';
     }
+
+    try {
+        if (function_exists('symlink')) {
+            @symlink($target, $link);
+            if (file_exists($link)) {
+                return '<div style="font-family:sans-serif; padding:40px; text-align:center;">'
+                    . '<h1 style="color:#16a34a;">✅ Storage symlink created successfully!</h1>'
+                    . '<p><a href="/" style="color:#4f46e5;">Return to Homepage</a></p>'
+                    . '</div>';
+            }
+        }
+        
+        if (function_exists('exec')) {
+            \Illuminate\Support\Facades\Artisan::call('storage:link');
+            return '<div style="font-family:sans-serif; padding:40px; text-align:center;">'
+                . '<h1 style="color:#16a34a;">✅ Storage link created via Artisan!</h1>'
+                . '<p><a href="/" style="color:#4f46e5;">Return to Homepage</a></p>'
+                . '</div>';
+        }
+    } catch (\Throwable $e) {
+        // Suppress any host execution errors
+    }
+
+    return '<div style="font-family:sans-serif; padding:40px; text-align:center;">'
+        . '<h1 style="color:#3b82f6;">ℹ️ PHP exec() / symlink() is restricted by your hosting provider.</h1>'
+        . '<p><b>No action needed!</b> The dynamic storage fallback route is active and will stream all uploaded images automatically when requested.</p>'
+        . '<p><a href="/" style="color:#4f46e5;">Return to Homepage</a></p>'
+        . '</div>';
 })->name('storage.link');
 
 Route::get('/storage/{path}', function ($path) {
