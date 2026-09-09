@@ -18,20 +18,15 @@ Route::get('/link-storage', function () {
     $target = storage_path('app/public');
     $link = public_path('storage');
 
-    if (file_exists($link)) {
-        return '<div style="font-family:sans-serif; padding:40px; text-align:center;">'
-            . '<h1 style="color:#16a34a;">✅ Storage link or directory already exists!</h1>'
-            . '<p>Your images will load via standard storage link or automated fallback route.</p>'
-            . '<p><a href="/" style="color:#4f46e5;">Return to Homepage</a></p>'
-            . '</div>';
-    }
-
     try {
         if (function_exists('symlink')) {
+            if (is_link($link) || file_exists($link)) {
+                @unlink($link);
+            }
             @symlink($target, $link);
             if (file_exists($link)) {
                 return '<div style="font-family:sans-serif; padding:40px; text-align:center;">'
-                    . '<h1 style="color:#16a34a;">✅ Storage symlink created successfully!</h1>'
+                    . '<h1 style="color:#16a34a;">✅ Storage symlink created successfully via PHP symlink()!</h1>'
                     . '<p><a href="/" style="color:#4f46e5;">Return to Homepage</a></p>'
                     . '</div>';
             }
@@ -48,9 +43,17 @@ Route::get('/link-storage', function () {
         // Suppress any host execution errors
     }
 
+    // If symlinks cannot be created, remove any broken link or empty folder so Apache routes /storage/... to Laravel
+    if (is_link($link)) {
+        @unlink($link);
+    } elseif (is_dir($link) && count(scandir($link)) <= 2) {
+        @rmdir($link);
+    }
+
     return '<div style="font-family:sans-serif; padding:40px; text-align:center;">'
         . '<h1 style="color:#3b82f6;">ℹ️ PHP exec() / symlink() is restricted by your hosting provider.</h1>'
-        . '<p><b>No action needed!</b> The dynamic storage fallback route is active and will stream all uploaded images automatically when requested.</p>'
+        . '<p><b>Dynamic Fallback Activated:</b> Any empty/broken storage folder was removed so your live server automatically routes all image requests to Laravel fallback engine.</p>'
+        . '<p style="color:#16a34a; font-weight:bold;">All your uploaded photos, logos, and product images will now stream smoothly!</p>'
         . '<p><a href="/" style="color:#4f46e5;">Return to Homepage</a></p>'
         . '</div>';
 })->name('storage.link');
