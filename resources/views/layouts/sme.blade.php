@@ -396,8 +396,7 @@
     </div>
 
     <!-- Static sidebar for desktop -->
-    <div :class="sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'" class="hidden md:fixed md:inset-y-0 md:flex md:flex-col transition-all duration-300 z-30">
-
+    <div :class="sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'" class="sidebar-expanded md:w-64 hidden md:fixed md:inset-y-0 md:flex md:flex-col transition-all duration-300 z-30">
         <div class="flex min-h-0 flex-1 flex-col" style="background-color: var(--theme-bg);">
             <div class="flex flex-1 flex-col overflow-y-auto sidebar-scroll pt-5 pb-6">
                 <div class="flex flex-shrink-0 items-center justify-between px-4 mb-3">
@@ -441,7 +440,7 @@
     </div>
 
     <!-- Main Container -->
-    <div :class="sidebarCollapsed ? 'main-collapsed' : 'main-expanded'" class="flex flex-1 flex-col transition-all duration-300">
+    <div :class="sidebarCollapsed ? 'main-collapsed' : 'main-expanded'" class="main-expanded md:pl-64 flex flex-1 flex-col transition-all duration-300">
 
         <div class="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white shadow-sm border-b border-gray-200">
             <!-- Mobile Open Button -->
