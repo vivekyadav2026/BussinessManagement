@@ -7,13 +7,14 @@ use Illuminate\Http\Request;
 use App\Services\AnalyticsService;
 use App\Services\BusinessHealthService;
 use App\Models\Location;
+use App\Models\Invoice;
+use App\Models\RestaurantOrder;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
         $orgId = auth()->user()->organization_id;
-        // The active location is handled by session, or explicit request override
         $locationId = session('active_location_id'); 
 
         $sales = AnalyticsService::getSalesAndProfitMetrics($orgId, $locationId);
@@ -26,9 +27,25 @@ class DashboardController extends Controller
         
         $health = BusinessHealthService::calculateScore($orgId, $locationId, $sales, $inventory, $receivables, $customers);
 
+        // Fetch recent invoices & restaurant/counter orders
+        $recentInvoices = Invoice::with('client')
+            ->where('organization_id', $orgId)
+            ->when($locationId, fn($q) => $q->where('location_id', $locationId))
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $recentOrders = RestaurantOrder::with('items')
+            ->where('organization_id', $orgId)
+            ->when($locationId, fn($q) => $q->where('location_id', $locationId))
+            ->latest()
+            ->take(5)
+            ->get();
+
         return view('organization.dashboard', compact(
             'sales', 'inventory', 'receivables', 'customers', 
-            'invoiceStatuses', 'dailySales', 'health'
+            'invoiceStatuses', 'dailySales', 'health',
+            'recentInvoices', 'recentOrders'
         ));
     }
 }
