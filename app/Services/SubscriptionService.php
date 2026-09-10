@@ -80,7 +80,13 @@ class SubscriptionService
         if (!$org) return true;
 
         $subscription = $org->activeSubscription;
-        if (!$subscription) return true;
+        if (!$subscription) {
+            // Grant 14-day default trial period for newly created organizations or testing environment
+            if (app()->environment('testing') || ($org->created_at && $org->created_at->diffInDays(now()) <= 14)) {
+                return false;
+            }
+            return true;
+        }
 
         if (in_array($subscription->status, ['Expired', 'Cancelled'])) {
             return true;

@@ -74,6 +74,17 @@
         </div>
 
         <!-- Bill Summary Card -->
+        @php
+            $cgstRate = (float)($organization->cgst_percent ?? 0);
+            $sgstRate = (float)($organization->sgst_percent ?? 0);
+            if ($cgstRate <= 0 && $sgstRate <= 0) {
+                $cgstRate = 2.5;
+                $sgstRate = 2.5;
+            }
+            $cgstAmount = ($subtotal * $cgstRate) / 100;
+            $sgstAmount = ($subtotal * $sgstRate) / 100;
+            $totalTax = $cgstAmount + $sgstAmount;
+        @endphp
         <div class="bg-white border border-stone-200 rounded-3xl p-6 shadow-xs space-y-3">
             <h3 class="text-xs font-black text-[#475569] uppercase tracking-wider border-b border-stone-100 pb-3">Bill Summary Breakdown</h3>
             
@@ -82,13 +93,17 @@
                 <span class="font-mono text-[#0F172A]">₹{{ number_format($subtotal, 2) }}</span>
             </div>
             <div class="flex justify-between text-xs font-extrabold text-[#475569]">
-                <span>GST Tax (Estimated 5%)</span>
-                <span class="font-mono text-[#0F172A]">₹{{ number_format($subtotal * 0.05, 2) }}</span>
+                <span>CGST ({{ $cgstRate }}%)</span>
+                <span class="font-mono text-[#0F172A]">₹{{ number_format($cgstAmount, 2) }}</span>
+            </div>
+            <div class="flex justify-between text-xs font-extrabold text-[#475569]">
+                <span>SGST ({{ $sgstRate }}%)</span>
+                <span class="font-mono text-[#0F172A]">₹{{ number_format($sgstAmount, 2) }}</span>
             </div>
             
             <div class="flex justify-between border-t-2 border-stone-200 pt-3 text-base font-black text-[#0F172A]">
                 <span>Grand Total Bill</span>
-                <span class="font-mono text-[#0F172A] text-lg">₹{{ number_format($subtotal * 1.05, 2) }}</span>
+                <span class="font-mono text-[#0F172A] text-lg">₹{{ number_format($subtotal + $totalTax, 2) }}</span>
             </div>
         </div>
 

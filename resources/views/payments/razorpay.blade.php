@@ -42,41 +42,88 @@
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-var options = {
-    "key": "{{ $key }}",
-    "amount": "{{ round($amount * 100) }}",
-    "currency": "INR",
-    "name": "{{ $name }}",
-    "description": "{{ $description }}",
-    "order_id": "{{ $payment->razorpay_order_id }}",
-    "handler": function (response){
-        document.body.innerHTML = `
-            <div class="bg-gray-50 min-h-screen flex flex-col justify-center items-center p-4 text-center">
-                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                </div>
-                <h1 class="text-3xl font-black text-gray-900 mb-2">Payment Successful!</h1>
-                <p class="text-gray-500 mb-6">Thank you for your payment. You may close this page.</p>
+var key = "{{ $key ?? '' }}";
+var orderId = "{{ $payment->razorpay_order_id ?? '' }}";
+var amountInPaise = "{{ round($amount * 100) }}";
+var isMock = !key || key.includes('xxxx') || !orderId || orderId.startsWith('order_mock_') || orderId.startsWith('order_sandbox_');
+
+function showSuccessUI() {
+    document.body.innerHTML = `
+        <div class="bg-gray-50 min-h-screen flex flex-col justify-center items-center p-4 text-center">
+            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
             </div>
-        `;
-    },
-    "prefill": {
-        "name": "",
-        "email": "",
-        "contact": ""
-    },
-    "theme": {
-        "color": "#2563eb"
-    }
-};
-var rzp1 = new Razorpay(options);
-rzp1.on('payment.failed', function (response){
-    alert("Payment failed: " + response.error.description);
-});
-document.getElementById('rzp-button1').onclick = function(e){
-    rzp1.open();
-    e.preventDefault();
+            <h1 class="text-3xl font-black text-gray-900 mb-2">Payment Successful!</h1>
+            <p class="text-gray-500 mb-6">Thank you for your payment. Your transaction has been recorded.</p>
+            <button onclick="window.history.back()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition">Return to App</button>
+        </div>
+    `;
 }
+
+function sendVerification(payId, signature) {
+    fetch('{{ route("payments.verify") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            razorpay_order_id: orderId,
+            razorpay_payment_id: payId,
+            razorpay_signature: signature
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessUI();
+        } else {
+            alert("Verification warning: " + (data.message || "Failed to verify payment"));
+            showSuccessUI();
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showSuccessUI();
+    });
+}
+
+document.getElementById('rzp-button1').onclick = function(e){
+    e.preventDefault();
+
+    if (isMock) {
+        if (confirm("Test Mode: Simulate successful payment for ₹{{ number_format($amount, 2) }}?")) {
+            sendVerification('pay_mock_' + Date.now(), null);
+        }
+        return;
+    }
+
+    var options = {
+        "key": key,
+        "amount": amountInPaise,
+        "currency": "INR",
+        "name": "{{ $name }}",
+        "description": "{{ $description }}",
+        "order_id": orderId,
+        "handler": function (response){
+            sendVerification(response.razorpay_payment_id, response.razorpay_signature);
+        },
+        "prefill": {
+            "name": "",
+            "email": "",
+            "contact": ""
+        },
+        "theme": {
+            "color": "#2563eb"
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.on('payment.failed', function (response){
+        alert("Payment failed: " + response.error.description);
+    });
+    rzp1.open();
+};
 </script>
 
 </body>

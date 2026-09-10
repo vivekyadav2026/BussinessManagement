@@ -159,10 +159,36 @@
 
     <div class="divider"></div>
 
+    @php
+        $orgUpi = $order->organization->upi_id ?? 'pay@upi';
+        $orderUpiString = "upi://pay?pa=" . rawurlencode($orgUpi) . "&pn=" . rawurlencode($order->organization->name ?? 'POS') . "&am=" . number_format($order->total, 2, '.', '') . "&cu=INR&tn=" . rawurlencode('Order #' . $order->order_number);
+    @endphp
+
+    <div class="text-center" style="margin-top: 6px;">
+        <div style="font-size: 9px; font-weight: bold;">SCAN TO PAY EXACT BILL AMOUNT</div>
+        <div style="font-size: 12px; font-weight: 900; margin-top: 2px;">₹{{ number_format($order->total, 2) }}</div>
+        <div id="orderUpiQrCode" style="display: flex; justify-content: center; margin: 4px 0;"></div>
+        <div style="font-size: 8px; color: #333;">GPay | PhonePe | Paytm | BHIM</div>
+    </div>
+
     <div class="text-center" style="margin-top: 10px;">
         <div class="bold">Thank you for dining with us!</div>
         <div style="font-size: 10px; margin-top: 3px;">Please Visit Again 🙏</div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        new QRCode(document.getElementById("orderUpiQrCode"), {
+            text: "{{ $orderUpiString }}",
+            width: 72,
+            height: 72,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.M
+        });
+    });
+    </script>
 
 </body>
 </html>

@@ -30,7 +30,7 @@ class CheckSubscriptionValidity
         }
 
         // Allow subscription page, logout, and profile routes
-        if ($request->routeIs('organization.subscription.*') || $request->routeIs('logout') || $request->routeIs('profile.*')) {
+        if ($request->routeIs('organization.subscription.*') || $request->routeIs('logout') || $request->routeIs('profile.*') || $request->routeIs('organization.profile*')) {
             return $next($request);
         }
 

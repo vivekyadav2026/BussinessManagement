@@ -143,4 +143,44 @@ class RazorpayPaymentTest extends TestCase
         // Balance should NOT increase again
         $this->assertEquals(1000, $invoice->fresh()->amount_paid);
     }
+
+    public function test_direct_payment_verification_endpoint_updates_invoice_and_order()
+    {
+        $org = Organization::create(['name' => 'Test Org']);
+        $client = \App\Models\Client::create(['organization_id' => $org->id, 'name' => 'John Doe']);
+        $loc = \App\Models\Location::create(['organization_id' => $org->id, 'name' => 'HQ', 'is_active' => true]);
+
+        $invoice = Invoice::create([
+            'organization_id' => $org->id,
+            'location_id' => $loc->id,
+            'client_id' => $client->id,
+            'invoice_number' => 'INV-VERIFY-01',
+            'invoice_date' => now(),
+            'grand_total' => 500,
+            'amount_paid' => 0,
+            'status' => 'Due'
+        ]);
+
+        $gatewayPayment = GatewayPayment::create([
+            'entity_id' => $invoice->id,
+            'entity_type' => Invoice::class,
+            'amount' => 500,
+            'currency' => 'INR',
+            'razorpay_order_id' => 'order_mock_12345',
+            'status' => 'created'
+        ]);
+
+        $response = $this->postJson('/payments/verify', [
+            'razorpay_order_id' => 'order_mock_12345',
+            'razorpay_payment_id' => 'pay_mock_99999',
+            'razorpay_signature' => null
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        $this->assertEquals('captured', $gatewayPayment->fresh()->status);
+        $this->assertEquals('Paid', $invoice->fresh()->status);
+        $this->assertEquals(500, $invoice->fresh()->amount_paid);
+    }
 }

@@ -33,7 +33,9 @@ class CounterBillingController extends Controller
            ->orderBy('sort_order')
            ->get();
 
-        return view('organization.menu.counter', compact('categories'));
+        $org = \App\Models\Organization::find($orgId);
+
+        return view('organization.menu.counter', compact('categories', 'org'));
     }
 
     public function fetchActiveOrders()
@@ -133,14 +135,14 @@ class CounterBillingController extends Controller
                 }
 
                 $org = \App\Models\Organization::find($orgId);
-                $cgstPercent = $org ? (float)$org->cgst_percent : 0;
-                $sgstPercent = $org ? (float)$org->sgst_percent : 0;
+                $cgstPercent = ($org && $org->cgst_percent !== null && $org->cgst_percent > 0) ? (float)$org->cgst_percent : 2.5;
+                $sgstPercent = ($org && $org->sgst_percent !== null && $org->sgst_percent > 0) ? (float)$org->sgst_percent : 2.5;
 
-                $cgstAmount = ($subtotal * $cgstPercent) / 100;
-                $sgstAmount = ($subtotal * $sgstPercent) / 100;
+                $cgstAmount = round(($subtotal * $cgstPercent) / 100, 2);
+                $sgstAmount = round(($subtotal * $sgstPercent) / 100, 2);
 
                 $tax = $cgstAmount + $sgstAmount;
-                $grandTotal = $subtotal + $tax;
+                $grandTotal = round($subtotal + $tax, 2);
 
                 $order->update([
                     'subtotal' => $subtotal,

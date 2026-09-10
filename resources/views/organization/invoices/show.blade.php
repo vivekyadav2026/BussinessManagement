@@ -180,16 +180,28 @@
                     <span>Subtotal</span>
                     <span class="font-semibold text-white">₹{{ number_format($invoice->subtotal, 2) }}</span>
                 </div>
-                @if($invoice->cgst > 0)
+                @php
+                    $cgstVal = $invoice->effective_cgst;
+                    $sgstVal = $invoice->effective_sgst;
+                    $cgstRate = (float)($invoice->organization->cgst_percent ?? 0);
+                    $sgstRate = (float)($invoice->organization->sgst_percent ?? 0);
+                    if ($cgstRate <= 0 && $invoice->subtotal > 0 && $cgstVal > 0) {
+                        $cgstRate = round(($cgstVal / $invoice->subtotal) * 100, 2);
+                    }
+                    if ($sgstRate <= 0 && $invoice->subtotal > 0 && $sgstVal > 0) {
+                        $sgstRate = round(($sgstVal / $invoice->subtotal) * 100, 2);
+                    }
+                @endphp
+                @if($cgstVal > 0)
                 <div class="flex justify-between">
-                    <span>CGST ({{ (float)$invoice->organization->cgst_percent }}%)</span>
-                    <span class="font-semibold text-white">₹{{ number_format($invoice->cgst, 2) }}</span>
+                    <span>CGST ({{ $cgstRate }}%)</span>
+                    <span class="font-semibold text-white">₹{{ number_format($cgstVal, 2) }}</span>
                 </div>
                 @endif
-                @if($invoice->sgst > 0)
+                @if($sgstVal > 0)
                 <div class="flex justify-between">
-                    <span>SGST ({{ (float)$invoice->organization->sgst_percent }}%)</span>
-                    <span class="font-semibold text-white">₹{{ number_format($invoice->sgst, 2) }}</span>
+                    <span>SGST ({{ $sgstRate }}%)</span>
+                    <span class="font-semibold text-white">₹{{ number_format($sgstVal, 2) }}</span>
                 </div>
                 @endif
                 @if($invoice->discount > 0)

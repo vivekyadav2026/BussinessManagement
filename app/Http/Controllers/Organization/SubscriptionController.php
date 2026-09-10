@@ -85,12 +85,14 @@ class SubscriptionController extends Controller
         $plan = Plan::findOrFail($request->plan_id);
 
         if ($request->razorpay_order_id) {
-            $gatewayPayment = GatewayPayment::where('razorpay_order_id', $request->razorpay_order_id)->first();
-            if ($gatewayPayment) {
-                $gatewayPayment->update([
-                    'razorpay_payment_id' => $request->razorpay_payment_id,
-                    'status' => 'captured',
-                ]);
+            try {
+                RazorpayPaymentService::verifyAndProcessPayment(
+                    $request->razorpay_order_id,
+                    $request->razorpay_payment_id,
+                    $request->razorpay_signature
+                );
+            } catch (\Exception $e) {
+                Log::warning('Subscription payment verification warning: ' . $e->getMessage());
             }
         }
 

@@ -87,11 +87,39 @@
         <td width="15%" class="label">Subtotal:</td>
         <td width="15%">{{ number_format($invoice->subtotal, 2) }}</td>
     </tr>
+    @php
+        $cgstVal = $invoice->effective_cgst;
+        $sgstVal = $invoice->effective_sgst;
+        $cgstRate = (float)($invoice->organization->cgst_percent ?? 0);
+        $sgstRate = (float)($invoice->organization->sgst_percent ?? 0);
+        if ($cgstRate <= 0 && $invoice->subtotal > 0 && $cgstVal > 0) {
+            $cgstRate = round(($cgstVal / $invoice->subtotal) * 100, 2);
+        }
+        if ($sgstRate <= 0 && $invoice->subtotal > 0 && $sgstVal > 0) {
+            $sgstRate = round(($sgstVal / $invoice->subtotal) * 100, 2);
+        }
+    @endphp
+    @if($cgstVal > 0)
+    <tr>
+        <td></td>
+        <td class="label">CGST ({{ $cgstRate }}%):</td>
+        <td>{{ number_format($cgstVal, 2) }}</td>
+    </tr>
+    @endif
+    @if($sgstVal > 0)
+    <tr>
+        <td></td>
+        <td class="label">SGST ({{ $sgstRate }}%):</td>
+        <td>{{ number_format($sgstVal, 2) }}</td>
+    </tr>
+    @endif
+    @if($cgstVal <= 0 && $sgstVal <= 0 && $invoice->tax > 0)
     <tr>
         <td></td>
         <td class="label">Tax:</td>
         <td>{{ number_format($invoice->tax, 2) }}</td>
     </tr>
+    @endif
     <tr>
         <td></td>
         <td class="label">Discount:</td>

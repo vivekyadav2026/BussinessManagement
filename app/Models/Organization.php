@@ -12,12 +12,27 @@ class Organization extends Model
         'phone',
         'address',
         'gst_number', 'cgst_percent', 'sgst_percent',
+        'upi_id',
         'logo',
         'default_check_in',
         'default_check_out',
         'is_active',
     ];
 
+
+    public function getLogoUrlAttribute()
+    {
+        if (!$this->logo) {
+            return null;
+        }
+        if (str_starts_with($this->logo, 'http://') || str_starts_with($this->logo, 'https://')) {
+            return $this->logo;
+        }
+        if (file_exists(public_path('uploads/' . $this->logo))) {
+            return asset('uploads/' . $this->logo);
+        }
+        return asset('storage/' . $this->logo);
+    }
 
     public function users()
     {

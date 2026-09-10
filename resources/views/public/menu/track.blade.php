@@ -92,10 +92,32 @@
                 <span>Subtotal</span>
                 <span class="font-mono text-[#0F172A] font-bold">₹{{ number_format($order->subtotal, 2) }}</span>
             </div>
+            @php
+                $cgstRate = (float)($organization->cgst_percent ?? 0);
+                $sgstRate = (float)($organization->sgst_percent ?? 0);
+                if ($cgstRate <= 0 && $sgstRate <= 0) {
+                    $cgstRate = 2.5;
+                    $sgstRate = 2.5;
+                }
+                $cgstAmount = round(($order->subtotal * $cgstRate) / 100, 2);
+                $sgstAmount = round(($order->subtotal * $sgstRate) / 100, 2);
+                if ($order->tax > 0 && ($cgstAmount + $sgstAmount) <= 0) {
+                    $cgstAmount = round($order->tax / 2, 2);
+                    $sgstAmount = round($order->tax / 2, 2);
+                }
+            @endphp
+            @if($cgstAmount > 0)
             <div class="flex justify-between text-[#475569]">
-                <span>GST Tax</span>
-                <span class="font-mono text-[#0F172A] font-bold">₹{{ number_format($order->tax, 2) }}</span>
+                <span>CGST ({{ $cgstRate }}%)</span>
+                <span class="font-mono text-[#0F172A] font-bold">₹{{ number_format($cgstAmount, 2) }}</span>
             </div>
+            @endif
+            @if($sgstAmount > 0)
+            <div class="flex justify-between text-[#475569]">
+                <span>SGST ({{ $sgstRate }}%)</span>
+                <span class="font-mono text-[#0F172A] font-bold">₹{{ number_format($sgstAmount, 2) }}</span>
+            </div>
+            @endif
             <div class="flex justify-between font-black text-base text-[#0F172A] pt-3 border-t border-stone-200">
                 <span>Total Bill</span>
                 <span class="font-mono text-[#0F172A] text-lg">₹{{ number_format($order->total, 2) }}</span>
@@ -131,10 +153,39 @@ document.addEventListener('DOMContentLoaded', function () {
     var btn = document.getElementById('rzp-order-pay-btn');
     if (!btn) return;
 
+    var isMock = !key || key.includes('xxxx') || !orderId || orderId.startsWith('order_mock_') || orderId.startsWith('order_sandbox_');
+
+    function verifyAndComplete(payId, signature) {
+        fetch('{{ route("payments.verify") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                razorpay_order_id: orderId,
+                razorpay_payment_id: payId,
+                razorpay_signature: signature
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            window.location.reload();
+        })
+        .catch(err => {
+            console.error(err);
+            window.location.reload();
+        });
+    }
+
     btn.onclick = function(e) {
         e.preventDefault();
-        if (!key || key === 'rzp_test_xxxxxxxxx' || !orderId) {
-            window.location.href = "{{ route('payment.order', $order->id) }}";
+
+        if (isMock) {
+            if (confirm("Test Mode: Simulate online payment completion for Order #{{ $order->order_number }}?")) {
+                verifyAndComplete('pay_mock_' + Date.now(), null);
+            }
             return;
         }
 
@@ -151,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             "theme": { "color": "#0F172A" },
             "handler": function (response) {
-                location.reload();
+                verifyAndComplete(response.razorpay_payment_id, response.razorpay_signature);
             }
         };
         var rzp = new Razorpay(options);

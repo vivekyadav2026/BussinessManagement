@@ -37,8 +37,14 @@
             
             <div class="flex items-center gap-2">
                 @if(session('restaurant_table_id'))
-                    <div class="px-3 py-1 bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] rounded-full text-xs font-black shadow-2xs font-mono uppercase tracking-wider">
-                        🪑 Table {{ \App\Models\RestaurantTable::find(session('restaurant_table_id'))->name ?? '' }}
+                    @php
+                        $tableObj = \App\Models\RestaurantTable::find(session('restaurant_table_id'));
+                        $tableName = $tableObj ? $tableObj->name : '';
+                        $displayName = preg_match('/^table\s*/i', $tableName) ? $tableName : 'Table ' . $tableName;
+                    @endphp
+                    <div class="px-3.5 py-1.5 bg-amber-50 text-amber-900 border border-amber-200/90 rounded-full text-xs font-black shadow-2xs font-mono uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="text-xs">🪑</span>
+                        <span>{{ $displayName }}</span>
                     </div>
                 @endif
             </div>

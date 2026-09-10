@@ -1,64 +1,120 @@
 @extends('layouts.sme')
 
-@section('title', 'Counter Billing Mode')
+@section('title', 'Counter Billing & QSR Express')
 
 @section('content')
-<div class="space-y-6" x-data="counterBilling()">
+<div class="space-y-6" x-data="counterBilling()" x-init="init()">
     
-    <!-- Top Bar -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
-        <div>
-            <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <span>🛒 Counter Billing Mode</span>
-            </h1>
-            <p class="text-xs text-gray-500 mt-0.5">Quick-service ordering & billing for non-dining outlets</p>
+    <!-- Minimalist Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white px-5 py-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 font-bold flex items-center justify-center text-lg shrink-0">
+                🛒
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-base font-bold text-gray-900 tracking-tight" style="color: #0f172a !important;">Counter Billing</h1>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                        <span class="w-1.5 h-1.5 mr-1 rounded-full bg-emerald-500 animate-pulse"></span> QSR Mode
+                    </span>
+                </div>
+                <p class="text-xs text-gray-500 mt-0.5" style="color: #64748b !important;">Quick-service token ordering & express checkout</p>
+            </div>
         </div>
-        <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
-            <button @click="activeTab = 'new'" :class="activeTab === 'new' ? 'bg-white shadow-sm font-bold text-indigo-600' : 'text-gray-600 hover:bg-gray-200'" class="px-4 py-2 rounded-lg text-sm transition">
-                ➕ New Order
-            </button>
-            <button @click="activeTab = 'current'" :class="activeTab === 'current' ? 'bg-white shadow-sm font-bold text-indigo-600' : 'text-gray-600 hover:bg-gray-200'" class="px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
-                ⏳ Current Orders <span class="bg-indigo-100 text-indigo-800 text-[10px] px-2 py-0.5 rounded-full" x-text="activeOrders.length">0</span>
-            </button>
-            <button @click="activeTab = 'completed'" :class="activeTab === 'completed' ? 'bg-white shadow-sm font-bold text-indigo-600' : 'text-gray-600 hover:bg-gray-200'" class="px-4 py-2 rounded-lg text-sm transition">
-                ✅ Completed
-            </button>
+
+        <div class="flex items-center gap-3 flex-wrap">
+            <div class="hidden sm:flex items-center gap-3 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-200/60 text-xs">
+                <span class="text-gray-500 font-medium">Tokens: <strong class="text-amber-600 font-bold" x-text="activeOrders.length">0</strong></span>
+                <span class="text-gray-300">|</span>
+                <span class="text-gray-500 font-medium">Completed: <strong class="text-emerald-600 font-bold" x-text="completedOrders.length">0</strong></span>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200/60">
+                <button type="button" @click="activeTab = 'new'" 
+                        :class="activeTab === 'new' ? 'bg-white text-indigo-600 font-bold shadow-2xs' : 'text-gray-600 hover:text-gray-900'" 
+                        class="px-3 py-1.5 rounded-lg text-xs transition">
+                    ➕ New Order
+                </button>
+                <button type="button" @click="activeTab = 'current'" 
+                        :class="activeTab === 'current' ? 'bg-white text-indigo-600 font-bold shadow-2xs' : 'text-gray-600 hover:text-gray-900'" 
+                        class="px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1.5">
+                    <span>⏳ Tokens</span>
+                    <span class="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold" x-text="activeOrders.length">0</span>
+                </button>
+                <button type="button" @click="activeTab = 'completed'" 
+                        :class="activeTab === 'completed' ? 'bg-white text-indigo-600 font-bold shadow-2xs' : 'text-gray-600 hover:text-gray-900'" 
+                        class="px-3 py-1.5 rounded-lg text-xs transition">
+                    📜 Completed
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- NEW ORDER TAB -->
+    <!-- 1. NEW ORDER TAB -->
     <div x-show="activeTab === 'new'" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- Left: Menu Grid -->
-        <div class="lg:col-span-7 xl:col-span-8 bg-white p-5 rounded-2xl border border-gray-100 shadow-xs space-y-4">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 border-b pb-3">
-                <div class="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1">
-                    <button type="button" @click="selectedCategory = 'all'" :class="selectedCategory === 'all' ? 'bg-indigo-600 text-white font-bold' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" class="px-3 py-1.5 rounded-xl text-xs whitespace-nowrap transition">
+        
+        <!-- Left Column: Menu Items Grid (8 Cols) -->
+        <div class="lg:col-span-7 xl:col-span-8 bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-4">
+            
+            <!-- Filter & Search Bar -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                
+                <!-- Category Pills -->
+                <div class="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 scrollbar-none">
+                    <button type="button" @click="selectedCategory = 'all'" 
+                            :class="selectedCategory === 'all' ? 'bg-indigo-600 text-white font-bold shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" 
+                            class="px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition">
                         All Items
                     </button>
                     @foreach($categories as $cat)
-                        <button type="button" @click="selectedCategory = {{ $cat->id }}" :class="selectedCategory === {{ $cat->id }} ? 'bg-indigo-600 text-white font-bold' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" class="px-3 py-1.5 rounded-xl text-xs whitespace-nowrap transition">
-                            {{ $cat->name }}
+                        <button type="button" @click="selectedCategory = {{ $cat->id }}" 
+                                :class="selectedCategory === {{ $cat->id }} ? 'bg-indigo-600 text-white font-bold shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" 
+                                class="px-3.5 py-1.5 rounded-xl text-xs whitespace-nowrap transition">
+                            {{ $cat->name }} ({{ $cat->items->count() }})
                         </button>
                     @endforeach
                 </div>
-                <div class="w-full sm:w-48 shrink-0">
-                    <input type="text" x-model="searchQuery" placeholder="🔍 Search food item..." class="w-full text-xs border-gray-300 rounded-xl py-1.5 px-3 focus:border-indigo-500">
+
+                <!-- Item Search -->
+                <div class="w-full sm:w-56 shrink-0 relative">
+                    <input type="text" x-model="searchQuery" x-ref="searchInput" placeholder="🔍 Search item name..." 
+                           class="w-full text-xs border border-gray-200 rounded-xl py-2 pl-3 pr-8 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-2xs">
+                    <button type="button" x-show="searchQuery" @click="searchQuery = ''" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto p-1">
+            <!-- Quick Note Preset Tags -->
+            <div class="flex items-center gap-2 overflow-x-auto text-[11px] pb-1">
+                <span class="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Quick Tag:</span>
+                <button type="button" @click="appendPresetNote('📦 Takeaway')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition border border-slate-200/60">📦 Takeaway</button>
+                <button type="button" @click="appendPresetNote('🍽️ Counter Dine-in')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition border border-slate-200/60">🍽️ Counter Dine-in</button>
+                <button type="button" @click="appendPresetNote('🌶️ Spicy')" class="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-semibold transition border border-red-200/60">🌶️ Spicy</button>
+                <button type="button" @click="appendPresetNote('🚫 Less Sugar')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 font-semibold transition border border-amber-200/60">🚫 Less Sugar</button>
+            </div>
+
+            <!-- Items Cards Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[540px] overflow-y-auto pr-1">
                 @foreach($categories as $cat)
                     @foreach($cat->items as $item)
-                        <div x-show="(selectedCategory === 'all' || selectedCategory === {{ $cat->id }}) && ('{{ strtolower($item->name) }}'.includes(searchQuery.toLowerCase()) || '{{ strtolower($cat->name) }}'.includes(searchQuery.toLowerCase()))"
+                        <div x-show="(selectedCategory === 'all' || selectedCategory === {{ $cat->id }}) && ('{{ strtolower(addslashes($item->name)) }}'.includes(searchQuery.toLowerCase()) || '{{ strtolower(addslashes($cat->name)) }}'.includes(searchQuery.toLowerCase()))"
                             @click="addToCart({{ json_encode($item) }})"
-                            class="bg-white border border-gray-200 hover:border-indigo-500 rounded-xl p-3 cursor-pointer transition transform hover:-translate-y-0.5 shadow-xs flex flex-col justify-between group">
-                            <div>
-                                <div class="text-xs font-bold text-gray-900 group-hover:text-indigo-600 transition line-clamp-2">{{ $item->name }}</div>
-                                <div class="text-[10px] text-gray-400 mt-0.5">{{ $cat->name }}</div>
+                            class="bg-white border border-gray-200 hover:border-indigo-500 rounded-xl p-3 cursor-pointer transition-all transform hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between group relative overflow-hidden">
+                            
+                            <div class="space-y-1">
+                                <div class="flex items-start justify-between gap-1">
+                                    <span class="text-xs font-bold text-gray-900 group-hover:text-indigo-600 transition line-clamp-2 leading-tight">
+                                        {{ $item->name }}
+                                    </span>
+                                </div>
+                                <div class="text-[10px] font-semibold text-gray-400">{{ $cat->name }}</div>
                             </div>
+
                             <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
-                                <span class="text-xs font-black text-indigo-700">₹{{ number_format($item->price, 2) }}</span>
-                                <span class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center font-bold text-xs transition">+</span>
+                                <span class="text-xs font-black text-slate-900 group-hover:text-indigo-600 transition">₹{{ number_format($item->price, 2) }}</span>
+                                <span class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center font-bold text-xs transition shadow-2xs">
+                                    +
+                                </span>
                             </div>
                         </div>
                     @endforeach
@@ -66,93 +122,156 @@
             </div>
         </div>
 
-        <!-- Right: Cart & Billing -->
-        <div class="lg:col-span-5 xl:col-span-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm sticky top-4 space-y-4">
-            <div class="flex items-center justify-between border-b pb-3">
-                <h3 class="font-bold text-base text-gray-900 flex items-center gap-1.5">
-                    🛒 <span x-text="editingOrderId ? 'Edit Order #' + editingOrderNumber : 'New Counter Order'"></span>
-                </h3>
-                <button type="button" @click="clearCart()" class="text-xs text-rose-500 hover:text-rose-700 font-semibold" x-show="cart.length > 0">Clear</button>
-            </div>
-
+        <!-- Right Column: Cart & Billing Ticket (4 Cols) -->
+        <div class="lg:col-span-5 xl:col-span-4 bg-white p-5 rounded-2xl border border-gray-200/80 shadow-md sticky top-4 space-y-4 flex flex-col justify-between">
             <div>
-                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Customer Name / Token #</label>
-                <input type="text" x-model="customerName" placeholder="e.g. Token 12 or John" class="w-full border-gray-300 rounded-lg text-sm py-2 px-3 focus:border-indigo-500 bg-white">
-            </div>
-
-            <div class="space-y-2 max-h-60 overflow-y-auto min-h-[200px] pr-1">
-                <template x-if="cart.length === 0">
-                    <div class="text-center py-10 text-gray-400 text-xs font-medium">
-                        <p>No items in cart.</p>
-                        <p class="text-[10px] text-gray-300 mt-1">Tap items from the left to add.</p>
+                <!-- Ticket Header -->
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <div>
+                        <h3 class="font-black text-base text-slate-900 flex items-center gap-1.5">
+                            <span x-text="editingOrderId ? '✏️ Edit Token #' + editingOrderNumber : '🛒 New Counter Ticket'"></span>
+                        </h3>
+                        <p class="text-[10px] text-gray-400 font-semibold mt-0.5">Counter express checkout</p>
                     </div>
-                </template>
+                    <button type="button" @click="clearCart()" class="text-xs text-rose-600 hover:text-rose-700 font-bold hover:underline" x-show="cart.length > 0">
+                        Clear All
+                    </button>
+                </div>
 
-                <template x-for="(item, index) in cart" :key="item.id">
-                    <div class="flex items-center justify-between p-2 rounded-xl bg-gray-50/80 border border-gray-100 text-xs">
-                        <div class="flex-1 pr-2 min-w-0">
-                            <div class="font-bold text-gray-800 truncate" x-text="item.name"></div>
-                            <div class="text-[10px] text-gray-500 font-semibold">₹<span x-text="item.price.toFixed(2)"></span> x <span x-text="item.qty"></span></div>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <button type="button" @click="updateQty(index, -1)" class="w-6 h-6 rounded bg-gray-200 hover:bg-gray-300 font-bold text-gray-700 flex items-center justify-center text-sm">-</button>
-                            <span class="w-6 text-center font-bold text-sm" x-text="item.qty"></span>
-                            <button type="button" @click="updateQty(index, 1)" class="w-6 h-6 rounded bg-gray-200 hover:bg-gray-300 font-bold text-gray-700 flex items-center justify-center text-sm">+</button>
-                        </div>
+                <!-- Customer Name / Token Input -->
+                <div class="pt-3 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Customer / Token #</label>
+                        <button type="button" @click="generateQuickToken()" class="text-[10px] text-indigo-600 font-bold hover:underline">
+                            ⚡ Auto Token
+                        </button>
                     </div>
-                </template>
-            </div>
+                    <input type="text" x-model="customerName" placeholder="e.g. Token 105 or Customer Name" 
+                           class="w-full border-gray-200 rounded-xl text-xs py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-gray-50/50 font-bold">
+                </div>
 
-            <div class="border-t border-gray-100 pt-3 space-y-1.5 text-xs">
-                <div class="flex justify-between items-baseline pt-2 text-sm font-black text-gray-900">
-                    <span>Total Amount</span>
-                    <span class="text-xl text-indigo-700">₹<span x-text="cartTotal.toFixed(2)">0.00</span></span>
+                <!-- Cart Items Scroll List -->
+                <div class="space-y-2 max-h-[240px] overflow-y-auto min-h-[160px] my-3 pr-1 divide-y divide-gray-100">
+                    <template x-if="cart.length === 0">
+                        <div class="text-center py-12 text-gray-400 text-xs font-medium space-y-1">
+                            <div class="text-3xl opacity-40">🛒</div>
+                            <p class="font-bold text-gray-500">Cart is empty</p>
+                            <p class="text-[10px] text-gray-400">Click items on the left to add to bill.</p>
+                        </div>
+                    </template>
+
+                    <template x-for="(item, index) in cart" :key="item.id">
+                        <div class="pt-2 flex items-center justify-between gap-2 text-xs">
+                            <div class="flex-1 pr-1 min-w-0">
+                                <div class="font-bold text-slate-800 truncate" x-text="item.name"></div>
+                                <div class="text-[10px] text-gray-500 font-semibold">
+                                    ₹<span x-text="item.price.toFixed(2)"></span> × <span x-text="item.qty"></span>
+                                    <span class="text-indigo-600 font-bold ml-1">= ₹<span x-text="(item.price * item.qty).toFixed(2)"></span></span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 bg-gray-100 p-0.5 rounded-lg border border-gray-200/60">
+                                <button type="button" @click="updateQty(index, -1)" class="w-6 h-6 rounded bg-white hover:bg-gray-200 font-bold text-gray-700 flex items-center justify-center text-xs shadow-2xs">-</button>
+                                <span class="w-5 text-center font-black text-xs" x-text="item.qty"></span>
+                                <button type="button" @click="updateQty(index, 1)" class="w-6 h-6 rounded bg-white hover:bg-gray-200 font-bold text-gray-700 flex items-center justify-center text-xs shadow-2xs">+</button>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 pt-2">
-                <button type="button" @click="saveHoldOrder()" :disabled="cart.length === 0 || loading" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition flex justify-center items-center gap-1">
-                    ⏳ Save / Hold
-                </button>
-                <button type="button" @click="openSettleModal()" :disabled="cart.length === 0 || loading" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex justify-center items-center gap-1">
-                    💳 Bill & Complete
-                </button>
+            <!-- Total Breakdown & Action Buttons -->
+            <div class="border-t border-gray-200 pt-3 space-y-2">
+                <div class="space-y-1 text-xs text-gray-600">
+                    <div class="flex justify-between">
+                        <span>Subtotal</span>
+                        <span class="font-semibold text-slate-800">₹<span x-text="cartSubtotal.toFixed(2)">0.00</span></span>
+                    </div>
+                    <div class="flex justify-between text-[11px] text-gray-500">
+                        <span>CGST (<span x-text="cgstPercent"></span>%)</span>
+                        <span>₹<span x-text="cartCgst.toFixed(2)">0.00</span></span>
+                    </div>
+                    <div class="flex justify-between text-[11px] text-gray-500">
+                        <span>SGST (<span x-text="sgstPercent"></span>%)</span>
+                        <span>₹<span x-text="cartSgst.toFixed(2)">0.00</span></span>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-baseline pt-2 border-t border-dashed border-gray-200">
+                    <span class="text-xs font-bold text-slate-900 uppercase">Grand Total</span>
+                    <span class="text-2xl font-black text-indigo-700">₹<span x-text="cartTotal.toFixed(2)">0.00</span></span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 pt-2">
+                    <button type="button" @click="saveHoldOrder()" :disabled="cart.length === 0 || loading" 
+                            class="py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition shadow-xs flex justify-center items-center gap-1.5">
+                        <span x-show="!loading">⏳ Hold Token</span>
+                        <span x-show="loading" class="animate-spin text-xs">🌀</span>
+                    </button>
+                    <button type="button" @click="openSettleModal()" :disabled="cart.length === 0 || loading" 
+                            class="py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition shadow-sm flex justify-center items-center gap-1.5">
+                        <span x-show="!loading">💳 Pay & Print</span>
+                        <span x-show="loading" class="animate-spin text-xs">🌀</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- CURRENT ORDERS TAB -->
-    <div x-show="activeTab === 'current'" class="bg-white rounded-2xl border border-gray-100 shadow-xs p-6" style="display: none;">
-        <h2 class="text-lg font-bold text-gray-900 mb-4">Live / Hold Orders</h2>
+    <!-- 2. ACTIVE HOLD TOKENS QUEUE TAB -->
+    <div x-show="activeTab === 'current'" class="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 space-y-4" style="display: none;">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-4">
+            <div>
+                <h2 class="text-lg font-black text-slate-900">Live Active Tokens Queue</h2>
+                <p class="text-xs text-gray-500">Hold orders waiting for billing or order modification</p>
+            </div>
+            <button type="button" @click="fetchActiveOrders()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100">
+                🔄 Refresh Queue
+            </button>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             
-            <!-- Quick Add New Order Card -->
-            <div @click="resetCartForm(); activeTab = 'new'" class="border-2 border-dashed border-gray-300 bg-gray-50/50 rounded-xl p-4 flex flex-col items-center justify-center text-gray-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 cursor-pointer transition min-h-[140px] group shadow-sm">
-                <div class="w-12 h-12 rounded-full bg-white border border-gray-200 group-hover:border-indigo-300 group-hover:bg-indigo-100 flex items-center justify-center mb-3 shadow-xs transition">
+            <!-- Quick Add Card -->
+            <div @click="resetCartForm(); activeTab = 'new'" 
+                 class="border-2 border-dashed border-gray-300 bg-gray-50/60 rounded-2xl p-5 flex flex-col items-center justify-center text-gray-500 hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50/40 cursor-pointer transition min-h-[160px] group shadow-xs">
+                <div class="w-12 h-12 rounded-full bg-white border border-gray-200 group-hover:border-indigo-400 group-hover:bg-indigo-100 flex items-center justify-center mb-3 shadow-2xs transition">
                     <svg class="w-6 h-6 text-gray-400 group-hover:text-indigo-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 </div>
-                <span class="font-bold text-sm tracking-wide">Start New Order</span>
+                <span class="font-extrabold text-sm tracking-wide">Create New Token</span>
+                <span class="text-[10px] text-gray-400 mt-1">Start fresh counter order</span>
             </div>
 
+            <!-- Active Token Cards -->
             <template x-for="order in activeOrders" :key="order.id">
-                <div class="border border-gray-200 rounded-xl p-4 flex flex-col justify-between hover:border-indigo-300 hover:shadow-md transition">
+                <div class="border border-gray-200 rounded-2xl p-4 flex flex-col justify-between hover:border-indigo-400 hover:shadow-md transition bg-white space-y-3">
                     <div>
                         <div class="flex justify-between items-start mb-2">
-                            <span class="font-bold text-lg text-gray-900 truncate pr-2" x-text="order.customer_name"></span>
-                            <span class="text-[10px] text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded" x-text="order.order_number"></span>
+                            <div>
+                                <span class="font-black text-base text-slate-900 truncate block" x-text="order.customer_name"></span>
+                                <span class="text-[10px] text-gray-400 font-mono" x-text="new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
+                            </div>
+                            <span class="text-xs font-mono font-bold bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg border border-indigo-100" x-text="order.order_number"></span>
                         </div>
-                        <div class="text-xs text-gray-500 mb-3" x-text="'Items: ' + order.items.length + ' | Total: ₹' + parseFloat(order.total).toFixed(2)"></div>
+                        
+                        <div class="bg-gray-50 p-2.5 rounded-xl border border-gray-100 space-y-1 text-xs">
+                            <div class="flex justify-between font-semibold text-gray-700">
+                                <span>Items Summary</span>
+                                <span class="text-gray-500" x-text="order.items.length + ' items'"></span>
+                            </div>
+                            <div class="text-[11px] text-gray-500 truncate" x-text="order.items.map(i => i.quantity + 'x ' + i.name_snapshot).join(', ')"></div>
+                            <div class="flex justify-between items-center pt-1 border-t border-gray-200/60 font-black">
+                                <span class="text-slate-700">Total</span>
+                                <span class="text-indigo-700 text-sm">₹<span x-text="parseFloat(order.total).toFixed(2)"></span></span>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="flex gap-2 mt-auto pt-3 border-t border-gray-100">
-                        <button type="button" @click="editOrder(order)" class="flex-1 py-2 bg-white border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 text-gray-700 hover:text-indigo-700 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                            Add More
+                    <div class="flex gap-2 pt-1">
+                        <button type="button" @click="editOrder(order)" class="flex-1 py-2 bg-white border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 text-gray-700 hover:text-indigo-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+                            ✏️ Edit Items
                         </button>
-                        <button type="button" @click="openSettleModalForOrder(order)" class="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-sm rounded-lg text-xs font-bold transition flex items-center justify-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            Bill Now
+                        <button type="button" @click="openSettleModalForOrder(order)" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+                            💳 Bill Now
                         </button>
                     </div>
                 </div>
@@ -160,38 +279,46 @@
         </div>
     </div>
 
-    <!-- COMPLETED ORDERS TAB -->
-    <div x-show="activeTab === 'completed'" class="bg-white rounded-2xl border border-gray-100 shadow-xs p-6" style="display: none;">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold text-gray-900">Today's Completed Counter Orders</h2>
-            <button @click="fetchCompletedOrders()" class="text-xs text-indigo-600 font-bold hover:underline">Refresh</button>
+    <!-- 3. COMPLETED ORDERS TAB -->
+    <div x-show="activeTab === 'completed'" class="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 space-y-4" style="display: none;">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-4">
+            <div>
+                <h2 class="text-lg font-black text-slate-900">Today's Completed Counter Bills</h2>
+                <p class="text-xs text-gray-500">Historical view of settled counter orders and receipts</p>
+            </div>
+            <button type="button" @click="fetchCompletedOrders()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100">
+                🔄 Refresh Receipts
+            </button>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-gray-600">
-                <thead class="bg-gray-50 text-xs uppercase text-gray-500 font-bold">
+                <thead class="bg-slate-50 text-xs uppercase text-slate-500 font-bold border-b border-slate-200">
                     <tr>
                         <th class="px-4 py-3 rounded-tl-xl">Order #</th>
                         <th class="px-4 py-3">Customer / Token</th>
                         <th class="px-4 py-3">Items</th>
-                        <th class="px-4 py-3">Total Amount</th>
+                        <th class="px-4 py-3">Grand Total</th>
                         <th class="px-4 py-3">Time</th>
-                        <th class="px-4 py-3 rounded-tr-xl">Action</th>
+                        <th class="px-4 py-3 rounded-tr-xl text-right">Action</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-gray-100 text-xs">
                     <template x-if="completedOrders.length === 0">
-                        <tr><td colspan="6" class="text-center py-6 text-gray-400">No completed orders today.</td></tr>
+                        <tr><td colspan="6" class="text-center py-10 text-gray-400 font-medium">No completed orders today.</td></tr>
                     </template>
                     <template x-for="order in completedOrders" :key="order.id">
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3 font-mono text-xs font-bold" x-text="order.order_number"></td>
-                            <td class="px-4 py-3 font-bold text-gray-800" x-text="order.customer_name"></td>
-                            <td class="px-4 py-3 text-xs" x-text="order.items.length + ' items'"></td>
-                            <td class="px-4 py-3 font-bold text-emerald-600">₹<span x-text="parseFloat(order.total).toFixed(2)"></span></td>
-                            <td class="px-4 py-3 text-xs" x-text="new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></td>
-                            <td class="px-4 py-3">
-                                <a :href="'/organization/menu/pos/orders/' + order.id + '/print-receipt'" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs">Print Bill</a>
+                        <tr class="hover:bg-slate-50/80 transition">
+                            <td class="px-4 py-3 font-mono font-bold text-slate-900" x-text="order.order_number"></td>
+                            <td class="px-4 py-3 font-bold text-slate-800" x-text="order.customer_name"></td>
+                            <td class="px-4 py-3 text-gray-500" x-text="order.items.length + ' items'"></td>
+                            <td class="px-4 py-3 font-black text-emerald-600 text-sm">₹<span x-text="parseFloat(order.total).toFixed(2)"></span></td>
+                            <td class="px-4 py-3 text-gray-500" x-text="new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></td>
+                            <td class="px-4 py-3 text-right">
+                                <a :href="'/organization/menu/pos/orders/' + order.id + '/print-receipt'" target="_blank" 
+                                   class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition shadow-2xs">
+                                    🖨️ Print Receipt
+                                </a>
                             </td>
                         </tr>
                     </template>
@@ -200,40 +327,90 @@
         </div>
     </div>
 
-    <!-- Settlement / Payment Modal -->
-    <div x-show="settleModalOpen" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" style="display: none;">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
-            <div class="flex items-center justify-between border-b pb-3">
-                <h3 class="font-bold text-lg text-gray-900">Checkout & Settle</h3>
-                <button type="button" @click="settleModalOpen = false" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
-            </div>
-
-            <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3 text-center">
-                <div class="text-xs text-indigo-700 font-medium">Final Amount Payable</div>
-                <div class="text-3xl font-black text-indigo-900 mt-0.5">₹<span x-text="modalGrandTotal.toFixed(2)"></span></div>
-            </div>
-
-            <div class="space-y-3">
+    <!-- Settlement / Quick Payment Modal -->
+    <div x-show="settleModalOpen" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 border border-gray-100" @click.away="settleModalOpen = false">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 mb-1">Select Payment Method</label>
-                    <select x-model="paymentMethod" class="w-full border-gray-300 rounded-xl text-sm font-bold py-2">
-                        <option value="Cash">💵 Cash Payment</option>
-                        <option value="UPI">📱 UPI / QR Code Direct</option>
-                        <option value="Card">💳 Card Payment (POS Machine)</option>
-                    </select>
+                    <h3 class="font-black text-lg text-slate-900">Checkout & Settle Bill</h3>
+                    <p class="text-xs text-gray-400">Select payment method & calculate change</p>
+                </div>
+                <button type="button" @click="settleModalOpen = false" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold flex items-center justify-center text-sm transition">✕</button>
+            </div>
+
+            <!-- Grand Total Box -->
+            <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-2xl p-4 text-center shadow-md">
+                <div class="text-xs text-indigo-200 uppercase tracking-wider font-bold">Final Amount Payable</div>
+                <div class="text-4xl font-black text-white mt-1">₹<span x-text="modalGrandTotal.toFixed(2)"></span></div>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Payment Method Cards -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Payment Method</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" @click="paymentMethod = 'Cash'" 
+                                :class="paymentMethod === 'Cash' ? 'border-2 border-emerald-600 bg-emerald-50 text-emerald-900 font-black shadow-2xs' : 'border border-gray-200 text-gray-700 hover:bg-gray-50'" 
+                                class="py-2.5 px-2 rounded-xl text-xs text-center transition flex flex-col items-center gap-1">
+                            <span class="text-lg">💵</span>
+                            <span>Cash</span>
+                        </button>
+                        <button type="button" @click="paymentMethod = 'UPI'" 
+                                :class="paymentMethod === 'UPI' ? 'border-2 border-indigo-600 bg-indigo-50 text-indigo-900 font-black shadow-2xs' : 'border border-gray-200 text-gray-700 hover:bg-gray-50'" 
+                                class="py-2.5 px-2 rounded-xl text-xs text-center transition flex flex-col items-center gap-1">
+                            <span class="text-lg">📱</span>
+                            <span>UPI / QR</span>
+                        </button>
+                        <button type="button" @click="paymentMethod = 'Card'" 
+                                :class="paymentMethod === 'Card' ? 'border-2 border-purple-600 bg-purple-50 text-purple-900 font-black shadow-2xs' : 'border border-gray-200 text-gray-700 hover:bg-gray-50'" 
+                                class="py-2.5 px-2 rounded-xl text-xs text-center transition flex flex-col items-center gap-1">
+                            <span class="text-lg">💳</span>
+                            <span>Card POS</span>
+                        </button>
+                    </div>
                 </div>
 
+                <!-- Cash Tender & Change Calculator -->
+                <div x-show="paymentMethod === 'Cash'" class="bg-gray-50 p-3 rounded-2xl border border-gray-200/80 space-y-2">
+                    <label class="block text-xs font-bold text-gray-700">Cash Tendered (Customer Paid)</label>
+                    
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-bold text-gray-500">₹</span>
+                        <input type="number" step="1" x-model.number="cashTendered" placeholder="e.g. 500" 
+                               class="w-full border-gray-300 rounded-xl text-sm font-bold py-1.5 px-3 focus:border-emerald-500">
+                    </div>
+
+                    <!-- Preset Cash Buttons -->
+                    <div class="flex flex-wrap gap-1.5 pt-1">
+                        <button type="button" @click="cashTendered = modalGrandTotal" class="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-[11px] font-bold hover:bg-gray-100">Exact</button>
+                        <button type="button" @click="cashTendered = 100" class="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-[11px] font-bold hover:bg-gray-100">₹100</button>
+                        <button type="button" @click="cashTendered = 200" class="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-[11px] font-bold hover:bg-gray-100">₹200</button>
+                        <button type="button" @click="cashTendered = 500" class="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-[11px] font-bold hover:bg-gray-100">₹500</button>
+                        <button type="button" @click="cashTendered = 2000" class="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-[11px] font-bold hover:bg-gray-100">₹2000</button>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-200 text-xs font-bold">
+                        <span class="text-gray-600">Change Return:</span>
+                        <span :class="cashChange >= 0 ? 'text-emerald-700 text-sm font-black' : 'text-rose-600'" 
+                              x-text="'₹' + cashChange.toFixed(2)">₹0.00</span>
+                    </div>
+                </div>
+
+                <!-- Discount Amount -->
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">Discount Amount (₹)</label>
-                    <input type="number" min="0" step="0.01" x-model.number="discount" @input="calculateModalTotal()" class="w-full border-gray-300 rounded-xl text-sm py-2 px-3">
+                    <input type="number" min="0" step="1" x-model.number="discount" @input="calculateModalTotal()" 
+                           placeholder="0.00" class="w-full border-gray-200 rounded-xl text-xs py-2 px-3 focus:border-indigo-500">
                 </div>
             </div>
 
             <div class="flex gap-2 pt-2">
-                <button type="button" @click="confirmSettle()" :disabled="loading" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition shadow-xs">
-                    ✓ Print Bill & Complete
+                <button type="button" @click="confirmSettle()" :disabled="loading" 
+                        class="flex-1 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl text-sm font-black transition shadow-md flex justify-center items-center gap-2">
+                    <span x-show="!loading">✓ Print & Complete Bill</span>
+                    <span x-show="loading" class="animate-spin text-xs">🌀</span>
                 </button>
-                <button type="button" @click="settleModalOpen = false" class="py-3 px-4 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold">Cancel</button>
+                <button type="button" @click="settleModalOpen = false" class="py-3.5 px-4 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-200">Cancel</button>
             </div>
         </div>
     </div>
@@ -243,10 +420,14 @@
 <script>
 function counterBilling() {
     return {
-        activeTab: 'new', // new, current, completed
+        activeTab: 'new',
         selectedCategory: 'all',
         searchQuery: '',
         
+        // Tax Rates from Org
+        cgstPercent: {{ $org->cgst_percent ?? 2.5 }},
+        sgstPercent: {{ $org->sgst_percent ?? 2.5 }},
+
         // Cart / Order State
         editingOrderId: null,
         editingOrderNumber: '',
@@ -257,6 +438,7 @@ function counterBilling() {
         settleModalOpen: false,
         paymentMethod: 'Cash',
         discount: 0,
+        cashTendered: 0,
         orderToSettle: null,
         modalGrandTotal: 0,
         
@@ -269,12 +451,29 @@ function counterBilling() {
             this.fetchActiveOrders();
             this.fetchCompletedOrders();
             
-            // Auto refresh active orders every 30s
-            setInterval(() => this.fetchActiveOrders(), 30000);
+            // Auto refresh active queue every 20s
+            setInterval(() => this.fetchActiveOrders(), 20000);
+        },
+
+        get cartSubtotal() {
+            return this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        },
+
+        get cartCgst() {
+            return (this.cartSubtotal * this.cgstPercent) / 100;
+        },
+
+        get cartSgst() {
+            return (this.cartSubtotal * this.sgstPercent) / 100;
         },
 
         get cartTotal() {
-            return this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            return this.cartSubtotal + this.cartCgst + this.cartSgst;
+        },
+
+        get cashChange() {
+            if (!this.cashTendered || this.cashTendered < this.modalGrandTotal) return 0;
+            return this.cashTendered - this.modalGrandTotal;
         },
 
         addToCart(item) {
@@ -299,7 +498,7 @@ function counterBilling() {
         },
 
         clearCart() {
-            if(confirm('Clear current items?')) {
+            if(confirm('Clear current items in cart?')) {
                 this.resetCartForm();
             }
         },
@@ -309,6 +508,19 @@ function counterBilling() {
             this.customerName = '';
             this.editingOrderId = null;
             this.editingOrderNumber = '';
+        },
+
+        generateQuickToken() {
+            const tokenNum = Math.floor(100 + Math.random() * 900);
+            this.customerName = 'Token #' + tokenNum;
+        },
+
+        appendPresetNote(tag) {
+            if (!this.customerName) {
+                this.customerName = tag;
+            } else if (!this.customerName.includes(tag)) {
+                this.customerName += ' | ' + tag;
+            }
         },
 
         fetchActiveOrders() {
@@ -329,7 +541,7 @@ function counterBilling() {
 
             const payload = {
                 order_id: this.editingOrderId,
-                customer_name: this.customerName,
+                customer_name: this.customerName || ('Token ' + Math.floor(100 + Math.random() * 900)),
                 items: this.cart.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
             };
 
@@ -346,7 +558,7 @@ function counterBilling() {
                     this.fetchActiveOrders();
                     this.activeTab = 'current';
                 } else {
-                    alert(data.message || 'Error saving order.');
+                    alert(data.message || 'Error saving token order.');
                 }
             }).catch(err => { this.loading = false; });
         },
@@ -369,6 +581,7 @@ function counterBilling() {
             this.orderToSettle = 'current_cart';
             this.discount = 0;
             this.modalGrandTotal = this.cartTotal;
+            this.cashTendered = Math.ceil(this.modalGrandTotal);
             this.settleModalOpen = true;
         },
 
@@ -376,21 +589,21 @@ function counterBilling() {
             this.orderToSettle = order;
             this.discount = 0;
             this.modalGrandTotal = parseFloat(order.total);
+            this.cashTendered = Math.ceil(this.modalGrandTotal);
             this.settleModalOpen = true;
         },
 
         calculateModalTotal() {
             let base = this.orderToSettle === 'current_cart' ? this.cartTotal : parseFloat(this.orderToSettle.total);
-            this.modalGrandTotal = Math.max(0, base - this.discount);
+            this.modalGrandTotal = Math.max(0, base - (this.discount || 0));
         },
 
         confirmSettle() {
             if (this.orderToSettle === 'current_cart') {
-                // Save first, then settle
                 this.loading = true;
                 const payload = {
                     order_id: this.editingOrderId,
-                    customer_name: this.customerName,
+                    customer_name: this.customerName || ('Token ' + Math.floor(100 + Math.random() * 900)),
                     items: this.cart.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
                 };
 
@@ -404,9 +617,10 @@ function counterBilling() {
                     if (data.success) {
                         this.executeSettle(data.order.id);
                     } else {
-                        this.loading = false; alert(data.message);
+                        this.loading = false; 
+                        alert(data.message);
                     }
-                });
+                }).catch(err => { this.loading = false; });
             } else {
                 this.executeSettle(this.orderToSettle.id);
             }
@@ -432,7 +646,7 @@ function counterBilling() {
                 } else {
                     alert(data.message);
                 }
-            });
+            }).catch(err => { this.loading = false; });
         }
     }
 }

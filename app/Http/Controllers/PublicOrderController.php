@@ -101,7 +101,16 @@ class PublicOrderController extends Controller
                 $subtotal += $item->price * $cartItem['quantity'];
             }
 
-            $tax = $subtotal * 0.05; // Dummy 5% tax
+            $cgstPercent = (float)($organization->cgst_percent ?? 0);
+            $sgstPercent = (float)($organization->sgst_percent ?? 0);
+            if ($cgstPercent <= 0 && $sgstPercent <= 0) {
+                $cgstPercent = 2.5;
+                $sgstPercent = 2.5;
+            }
+
+            $cgstAmount = ($subtotal * $cgstPercent) / 100;
+            $sgstAmount = ($subtotal * $sgstPercent) / 100;
+            $tax = $cgstAmount + $sgstAmount;
             $total = $subtotal + $tax;
 
             $order = RestaurantOrder::create([

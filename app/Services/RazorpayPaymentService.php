@@ -98,6 +98,53 @@ class RazorpayPaymentService
     }
 
     /**
+     * Verify payment response (signature / order / mock) and apply payment to entity.
+     */
+    public static function verifyAndProcessPayment(string $orderId, ?string $paymentId, ?string $signature = null): GatewayPayment
+    {
+        $gatewayPayment = GatewayPayment::where('razorpay_order_id', $orderId)->first();
+
+        if (!$gatewayPayment) {
+            throw new \Exception('Gateway payment record not found for order: ' . $orderId);
+        }
+
+        // Idempotency check: if already captured or refunded, return immediately
+        if (in_array($gatewayPayment->status, ['captured', 'refunded'])) {
+            return $gatewayPayment;
+        }
+
+        $secret = config('services.razorpay.secret');
+        $isMockOrder = str_starts_with($orderId, 'order_mock_') || str_starts_with($orderId, 'order_sandbox_');
+
+        // Signature verification if real signature & secret present
+        if (!$isMockOrder && $signature && !empty($secret) && !str_contains($secret, 'xxxx')) {
+            $expectedSignature = hash_hmac('sha256', $orderId . '|' . $paymentId, $secret);
+            if (!hash_equals($expectedSignature, $signature)) {
+                throw new \Exception('Invalid payment signature verification failed.');
+            }
+        }
+
+        $effectivePaymentId = $paymentId ?: ('pay_mock_' . uniqid());
+
+        DB::transaction(function () use ($gatewayPayment, $effectivePaymentId) {
+            $lockedGateway = GatewayPayment::where('id', $gatewayPayment->id)->lockForUpdate()->first();
+
+            if ($lockedGateway->status === 'captured') {
+                return;
+            }
+
+            $lockedGateway->update([
+                'razorpay_payment_id' => $effectivePaymentId,
+                'status' => 'captured',
+            ]);
+
+            self::applyPaymentToEntity($lockedGateway);
+        });
+
+        return $gatewayPayment->fresh();
+    }
+
+    /**
      * Process incoming webhook securely and idempotently.
      */
     public static function processWebhook($payload, $signature)
@@ -107,52 +154,27 @@ class RazorpayPaymentService
         }
 
         $data = json_decode($payload, true);
-        $event = $data['event'];
+        $event = $data['event'] ?? '';
 
         if ($event === 'payment.captured') {
             $paymentObj = $data['payload']['payment']['entity'];
             $orderId = $paymentObj['order_id'];
             $paymentId = $paymentObj['id'];
 
-            // Find our local gateway payment
-            $gatewayPayment = GatewayPayment::where('razorpay_order_id', $orderId)->first();
-
-            if (!$gatewayPayment) {
-                Log::warning('Razorpay webhook received for unknown order_id: ' . $orderId);
-                return;
-            }
-
-            // IDEMPOTENCY CHECK
-            if (in_array($gatewayPayment->status, ['captured', 'refunded'])) {
-                Log::info('Razorpay webhook already processed for payment_id: ' . $paymentId);
-                return;
-            }
-
-            DB::transaction(function () use ($gatewayPayment, $paymentId, $event) {
-                // Lock row to prevent concurrent webhook processing
-                $lockedGateway = GatewayPayment::where('id', $gatewayPayment->id)->lockForUpdate()->first();
-
-                if ($lockedGateway->status === 'captured') {
-                    return; // Another thread processed it
-                }
-
-                $lockedGateway->update([
-                    'razorpay_payment_id' => $paymentId,
-                    'status' => 'captured',
-                    'webhook_event' => $event,
-                ]);
-
-                self::applyPaymentToEntity($lockedGateway);
-            });
+            self::verifyAndProcessPayment($orderId, $paymentId);
         } elseif ($event === 'payment.failed') {
-            // Handle failure similarly...
+            $paymentObj = $data['payload']['payment']['entity'];
+            $orderId = $paymentObj['order_id'] ?? null;
+            if ($orderId) {
+                GatewayPayment::where('razorpay_order_id', $orderId)->update(['status' => 'failed']);
+            }
         }
     }
 
     /**
      * Apply the verified payment securely to the respective system.
      */
-    private static function applyPaymentToEntity(GatewayPayment $gatewayPayment)
+    public static function applyPaymentToEntity(GatewayPayment $gatewayPayment)
     {
         $entityClass = $gatewayPayment->entity_type;
         $entity = $entityClass::find($gatewayPayment->entity_id);
@@ -160,30 +182,59 @@ class RazorpayPaymentService
         if (!$entity) return;
 
         if ($entity instanceof Invoice) {
-            PaymentService::processPayment($entity, [
-                'amount' => $gatewayPayment->amount,
-                'payment_method' => 'Razorpay',
-                'reference_number' => $gatewayPayment->razorpay_payment_id,
-                'payment_date' => now()->toDateString(),
-                'notes' => 'Paid via Razorpay Webhook. Order: ' . $gatewayPayment->razorpay_order_id,
-            ]);
+            if ($entity->status !== 'Paid') {
+                PaymentService::processPayment($entity, [
+                    'amount' => $gatewayPayment->amount,
+                    'payment_method' => 'Razorpay',
+                    'reference_number' => $gatewayPayment->razorpay_payment_id,
+                    'payment_date' => now()->toDateString(),
+                    'notes' => 'Paid via Razorpay. Order: ' . $gatewayPayment->razorpay_order_id,
+                ]);
+            }
         } elseif ($entity instanceof RestaurantOrder) {
-            // Update Restaurant Order directly if it hasn't been invoiced yet
-            // Though theoretically, it might have an invoice_id if served.
             $entity->update([
                 'payment_status' => 'Paid',
             ]);
 
-            // If it has a related invoice, pay that too (or it was paid through the invoice branch)
-            if ($entity->invoice_id) {
+            // Auto-create invoice & transaction if not already invoiced
+            if (!$entity->invoice_id) {
+                try {
+                    $invoiceItems = [];
+                    foreach ($entity->items as $item) {
+                        $invoiceItems[] = [
+                            'name' => $item->name_snapshot,
+                            'unit_price' => $item->price_snapshot,
+                            'quantity' => $item->quantity,
+                            'tax_rate' => 0
+                        ];
+                    }
+
+                    $invoiceData = [
+                        'organization_id' => $entity->organization_id,
+                        'location_id' => $entity->location_id,
+                        'client_id' => null,
+                        'invoice_date' => now()->toDateString(),
+                        'items' => $invoiceItems,
+                        'discount' => 0,
+                        'amount_paid' => $entity->total,
+                        'status' => 'Paid',
+                        'notes' => "Online Customer Order #{$entity->order_number} ({$entity->customer_name})"
+                    ];
+
+                    $invoice = \App\Services\InvoiceService::createInvoice($invoiceData);
+                    $entity->update(['invoice_id' => $invoice->id]);
+                } catch (\Throwable $ex) {
+                    Log::error('Auto invoice creation for paid restaurant order failed: ' . $ex->getMessage());
+                }
+            } else {
                 $invoice = Invoice::find($entity->invoice_id);
-                if ($invoice) {
+                if ($invoice && $invoice->status !== 'Paid') {
                     PaymentService::processPayment($invoice, [
                         'amount' => $gatewayPayment->amount,
                         'payment_method' => 'Razorpay',
                         'reference_number' => $gatewayPayment->razorpay_payment_id,
                         'payment_date' => now()->toDateString(),
-                        'notes' => 'Restaurant KOT Paid via Razorpay Webhook.',
+                        'notes' => 'Restaurant Order #' . $entity->order_number . ' Paid via Razorpay.',
                     ]);
                 }
             }

@@ -204,16 +204,28 @@
                 <td class="text-left">Subtotal:</td>
                 <td class="text-right font-bold">₹{{ number_format($invoice->subtotal, 2) }}</td>
             </tr>
-            @if($invoice->cgst > 0)
+            @php
+                $cgstVal = $invoice->effective_cgst;
+                $sgstVal = $invoice->effective_sgst;
+                $cgstRate = (float)($invoice->organization->cgst_percent ?? 0);
+                $sgstRate = (float)($invoice->organization->sgst_percent ?? 0);
+                if ($cgstRate <= 0 && $invoice->subtotal > 0 && $cgstVal > 0) {
+                    $cgstRate = round(($cgstVal / $invoice->subtotal) * 100, 2);
+                }
+                if ($sgstRate <= 0 && $invoice->subtotal > 0 && $sgstVal > 0) {
+                    $sgstRate = round(($sgstVal / $invoice->subtotal) * 100, 2);
+                }
+            @endphp
+            @if($cgstVal > 0)
             <tr>
-                <td class="text-left">CGST ({{ (float)$invoice->organization->cgst_percent }}%):</td>
-                <td class="text-right">₹{{ number_format($invoice->cgst, 2) }}</td>
+                <td class="text-left">CGST ({{ $cgstRate }}%):</td>
+                <td class="text-right">₹{{ number_format($cgstVal, 2) }}</td>
             </tr>
             @endif
-            @if($invoice->sgst > 0)
+            @if($sgstVal > 0)
             <tr>
-                <td class="text-left">SGST ({{ (float)$invoice->organization->sgst_percent }}%):</td>
-                <td class="text-right">₹{{ number_format($invoice->sgst, 2) }}</td>
+                <td class="text-left">SGST ({{ $sgstRate }}%):</td>
+                <td class="text-right">₹{{ number_format($sgstVal, 2) }}</td>
             </tr>
             @endif
             @if($invoice->discount > 0)
@@ -245,10 +257,21 @@
 
         <div class="divider"></div>
 
-        <!-- Digital Verification QR & Footer -->
+        @php
+            $upiVpa = $invoice->organization->upi_id ?? 'pay@upi';
+            $payAmount = $invoice->amount_due > 0 ? $invoice->amount_due : $invoice->grand_total;
+            $upiNote = 'Invoice ' . $invoice->invoice_number;
+            $thermalUpiString = "upi://pay?pa=" . rawurlencode($upiVpa) . "&pn=" . rawurlencode($invoice->organization->name) . "&am=" . number_format($payAmount, 2, '.', '') . "&cu=INR&tn=" . rawurlencode($upiNote);
+        @endphp
+
+        <!-- Dynamic UPI Payment QR & Footer -->
         <div class="text-center" style="margin-top: 6px;">
-            <div id="receiptQrCode" style="display: flex; justify-content: center; margin: 4px 0;"></div>
-            <div style="font-size: 9px; font-weight: bold; margin-top: 2px;">Thank you for your business!</div>
+            <div style="font-size: 9px; font-weight: bold;">SCAN TO PAY EXACT AMOUNT</div>
+            <div style="font-size: 11px; font-weight: 900;">₹{{ number_format($payAmount, 2) }}</div>
+            <div id="receiptUpiQrCode" style="display: flex; justify-content: center; margin: 4px 0;"></div>
+            <div style="font-size: 8px; color: #333;">GPay | PhonePe | Paytm | BHIM</div>
+            
+            <div style="font-size: 9px; font-weight: bold; margin-top: 6px;">Thank you for your business!</div>
             <div style="font-size: 8px; color: #333; margin-top: 2px;">E.&O.E. | Computer Generated Receipt</div>
         </div>
 
@@ -256,10 +279,10 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        new QRCode(document.getElementById("receiptQrCode"), {
-            text: "{{ route('organization.invoices.show', $invoice) }}",
-            width: 54,
-            height: 54,
+        new QRCode(document.getElementById("receiptUpiQrCode"), {
+            text: "{{ $thermalUpiString }}",
+            width: 68,
+            height: 68,
             colorDark : "#000000",
             colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.M

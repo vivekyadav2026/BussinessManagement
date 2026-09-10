@@ -127,16 +127,42 @@ document.addEventListener('DOMContentLoaded', function () {
     var orderId = "{{ $payment->razorpay_order_id ?? '' }}";
     var invoiceId = "{{ $invoice->id }}";
     var amountInPaise = "{{ round($invoice->amount_due * 100) }}";
+    var isMock = !key || key.includes('xxxx') || !orderId || orderId.startsWith('order_mock_') || orderId.startsWith('order_sandbox_');
 
     var payButton = document.getElementById('rzp-pay-button');
     if (!payButton) return;
 
+    function verifyAndComplete(payId, signature) {
+        fetch('{{ route("payments.verify") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                razorpay_order_id: orderId,
+                razorpay_payment_id: payId,
+                razorpay_signature: signature
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            window.location.reload();
+        })
+        .catch(err => {
+            console.error(err);
+            window.location.reload();
+        });
+    }
+
     payButton.onclick = function(e) {
         e.preventDefault();
 
-        if (!key || key === 'rzp_test_xxxxxxxxx' || !orderId) {
-            // Fallback to direct checkout route if order couldn't be auto-created
-            window.location.href = "{{ route('payment.invoice', $invoice->id) }}";
+        if (isMock) {
+            if (confirm("Test Mode: Simulate payment completion for Invoice #{{ $invoice->invoice_number }}?")) {
+                verifyAndComplete('pay_mock_' + Date.now(), null);
+            }
             return;
         }
 
@@ -156,16 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 "color": "#4f46e5"
             },
             "handler": function (response) {
-                document.body.innerHTML = `
-                    <div class="bg-gray-50 h-screen flex flex-col justify-center items-center p-4 text-center">
-                        <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        </div>
-                        <h1 class="text-3xl font-black text-gray-900 mb-2">Payment Completed!</h1>
-                        <p class="text-gray-500 mb-6">Thank you for your payment. Your invoice will update shortly.</p>
-                        <a href="${window.location.href}" class="bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow">View Updated Invoice</a>
-                    </div>
-                `;
+                verifyAndComplete(response.razorpay_payment_id, response.razorpay_signature);
             }
         };
 

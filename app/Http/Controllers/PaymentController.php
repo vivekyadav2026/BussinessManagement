@@ -45,4 +45,33 @@ class PaymentController extends Controller
             'description' => 'Payment for Order ' . $order->order_number,
         ]);
     }
+
+    public function verifyPayment(Request $request)
+    {
+        $request->validate([
+            'razorpay_order_id' => 'required|string',
+            'razorpay_payment_id' => 'nullable|string',
+            'razorpay_signature' => 'nullable|string',
+        ]);
+
+        try {
+            $gatewayPayment = RazorpayPaymentService::verifyAndProcessPayment(
+                $request->razorpay_order_id,
+                $request->razorpay_payment_id,
+                $request->razorpay_signature
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment verified & recorded successfully!',
+                'status' => $gatewayPayment->status,
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Payment Verification Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
+    }
 }

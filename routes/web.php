@@ -124,9 +124,10 @@ Route::get('/dashboard', function () {
 // Razorpay Webhook
 Route::post('webhook/razorpay', [\App\Http\Controllers\RazorpayWebhookController::class, 'handleWebhook']);
 
-// Payment Checkout
+// Payment Checkout & Verification
 Route::get('pay/invoice/{invoice}/checkout', [\App\Http\Controllers\PaymentController::class, 'checkoutInvoice'])->name('payment.invoice');
 Route::get('pay/order/{order}', [\App\Http\Controllers\PaymentController::class, 'checkoutRestaurantOrder'])->name('payment.order');
+Route::post('payments/verify', [\App\Http\Controllers\PaymentController::class, 'verifyPayment'])->name('payments.verify');
 
 Route::middleware(['auth', 'role:Super Admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
     Route::get('/', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('dashboard');

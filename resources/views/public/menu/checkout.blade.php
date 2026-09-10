@@ -99,18 +99,30 @@
         </div>
 
         <!-- Bill Breakdown & Final Payment Card -->
+        @php
+            $cgstRate = (float)($organization->cgst_percent ?? 0);
+            $sgstRate = (float)($organization->sgst_percent ?? 0);
+            if ($cgstRate <= 0 && $sgstRate <= 0) {
+                $cgstRate = 2.5;
+                $sgstRate = 2.5;
+            }
+            $cgstAmount = ($subtotal * $cgstRate) / 100;
+            $sgstAmount = ($subtotal * $sgstRate) / 100;
+            $totalTax = $cgstAmount + $sgstAmount;
+            $total = $subtotal + $totalTax;
+        @endphp
         <div class="bg-[#0F172A] text-white rounded-3xl p-6 shadow-xl space-y-3 border border-slate-800">
-            @php 
-                $tax = $subtotal * 0.05;
-                $total = $subtotal + $tax;
-            @endphp
             <div class="flex justify-between text-xs text-slate-300 font-semibold">
                 <span>Items Subtotal</span>
                 <span class="font-mono font-bold">₹{{ number_format($subtotal, 2) }}</span>
             </div>
             <div class="flex justify-between text-xs text-slate-300 font-semibold">
-                <span>GST Tax (5%)</span>
-                <span class="font-mono font-bold">₹{{ number_format($tax, 2) }}</span>
+                <span>CGST ({{ $cgstRate }}%)</span>
+                <span class="font-mono font-bold">₹{{ number_format($cgstAmount, 2) }}</span>
+            </div>
+            <div class="flex justify-between text-xs text-slate-300 font-semibold">
+                <span>SGST ({{ $sgstRate }}%)</span>
+                <span class="font-mono font-bold">₹{{ number_format($sgstAmount, 2) }}</span>
             </div>
             <div class="flex justify-between border-t border-slate-800 pt-3 text-lg font-black text-white">
                 <span>Total Amount to Pay</span>

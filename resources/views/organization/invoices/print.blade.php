@@ -150,16 +150,27 @@
                 @endif
             </div>
 
-            <!-- Ship To & Warehouse Card -->
-            <div class="p-4 bg-white space-y-1 flex flex-col justify-between">
+            <!-- Ship To & Warehouse Card + Dynamic UPI QR -->
+            <div class="p-4 bg-white space-y-2 flex flex-col justify-between">
                 <div>
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-1 mb-2">Dispatch Branch & QR Verification</div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-1 mb-2">Dispatch Branch & Payment QR</div>
                     <div class="text-xs font-semibold text-slate-800">Dispatch Location: <b>{{ $invoice->location->name ?? 'Head Office' }}</b></div>
                 </div>
                 
-                <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                    <div class="text-[10px] text-slate-400">Scan to Verify Digital Receipt</div>
-                    <div id="invoiceQrCode" class="p-1 bg-white border border-slate-200 rounded"></div>
+                @php
+                    $upiVpa = $invoice->organization->upi_id ?? 'pay@upi';
+                    $payAmount = $invoice->amount_due > 0 ? $invoice->amount_due : $invoice->grand_total;
+                    $upiNote = 'Invoice ' . $invoice->invoice_number;
+                    $upiString = "upi://pay?pa=" . rawurlencode($upiVpa) . "&pn=" . rawurlencode($invoice->organization->name) . "&am=" . number_format($payAmount, 2, '.', '') . "&cu=INR&tn=" . rawurlencode($upiNote);
+                @endphp
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-100 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
+                    <div>
+                        <div class="text-[10px] font-black text-slate-900 uppercase">Scan to Pay Exact Amount</div>
+                        <div class="text-[11px] font-black text-emerald-700 font-mono">₹{{ number_format($payAmount, 2) }}</div>
+                        <div class="text-[9px] text-slate-500 mt-0.5">GPay | PhonePe | Paytm | BHIM</div>
+                    </div>
+                    <div id="upiPayQrCode" class="p-1 bg-white border border-slate-300 rounded-lg shadow-2xs"></div>
                 </div>
             </div>
         </div>
@@ -239,17 +250,29 @@
                     <span class="font-bold text-slate-900">₹{{ number_format($invoice->subtotal, 2) }}</span>
                 </div>
                 
-                @if($invoice->cgst > 0)
+                @php
+                    $cgstVal = $invoice->effective_cgst;
+                    $sgstVal = $invoice->effective_sgst;
+                    $cgstRate = (float)($invoice->organization->cgst_percent ?? 0);
+                    $sgstRate = (float)($invoice->organization->sgst_percent ?? 0);
+                    if ($cgstRate <= 0 && $invoice->subtotal > 0 && $cgstVal > 0) {
+                        $cgstRate = round(($cgstVal / $invoice->subtotal) * 100, 2);
+                    }
+                    if ($sgstRate <= 0 && $invoice->subtotal > 0 && $sgstVal > 0) {
+                        $sgstRate = round(($sgstVal / $invoice->subtotal) * 100, 2);
+                    }
+                @endphp
+                @if($cgstVal > 0)
                 <div class="flex justify-between text-slate-600 font-medium">
-                    <span>CGST ({{ (float)$invoice->organization->cgst_percent }}%)</span>
-                    <span class="font-bold text-slate-900">₹{{ number_format($invoice->cgst, 2) }}</span>
+                    <span>CGST ({{ $cgstRate }}%)</span>
+                    <span class="font-bold text-slate-900">₹{{ number_format($cgstVal, 2) }}</span>
                 </div>
                 @endif
                 
-                @if($invoice->sgst > 0)
+                @if($sgstVal > 0)
                 <div class="flex justify-between text-slate-600 font-medium">
-                    <span>SGST ({{ (float)$invoice->organization->sgst_percent }}%)</span>
-                    <span class="font-bold text-slate-900">₹{{ number_format($invoice->sgst, 2) }}</span>
+                    <span>SGST ({{ $sgstRate }}%)</span>
+                    <span class="font-bold text-slate-900">₹{{ number_format($sgstVal, 2) }}</span>
                 </div>
                 @endif
 
@@ -294,14 +317,17 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        new QRCode(document.getElementById("invoiceQrCode"), {
-            text: "{{ route('organization.invoices.show', $invoice) }}",
-            width: 50,
-            height: 50,
-            colorDark : "#0f172a",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.M
-        });
+        const upiEl = document.getElementById("upiPayQrCode");
+        if (upiEl) {
+            new QRCode(upiEl, {
+                text: "{{ $upiString }}",
+                width: 58,
+                height: 58,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M
+            });
+        }
     });
     </script>
 </body>

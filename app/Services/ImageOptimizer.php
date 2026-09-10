@@ -74,8 +74,21 @@ class ImageOptimizer
         // Resample with high anti-aliasing quality
         imagecopyresampled($dstImage, $srcImage, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
 
-        // Save as compressed JPEG with 75% quality
+        // Save as compressed JPEG with requested quality
         imagejpeg($dstImage, $destinationPath, $quality);
+
+        // Copy to public/storage and storage/app/public for universal URL resolution
+        $storagePublicDir = public_path("storage/{$relativeFolder}");
+        if (!file_exists($storagePublicDir)) {
+            @mkdir($storagePublicDir, 0755, true);
+        }
+        @copy($destinationPath, "{$storagePublicDir}/{$filename}");
+
+        $appPublicDir = storage_path("app/public/{$relativeFolder}");
+        if (!file_exists($appPublicDir)) {
+            @mkdir($appPublicDir, 0755, true);
+        }
+        @copy($destinationPath, "{$appPublicDir}/{$filename}");
 
         // Clean up GD memory buffers
         imagedestroy($srcImage);

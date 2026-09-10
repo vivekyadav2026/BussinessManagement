@@ -48,6 +48,14 @@
                     @error('gst_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
+                <!-- Merchant UPI ID / VPA -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Merchant UPI ID / VPA (GPay / PhonePe / Paytm)</label>
+                    <input type="text" name="upi_id" value="{{ old('upi_id', $organization->upi_id) }}" placeholder="e.g., merchant@upi or 9876543210@paytm" class="w-full border border-gray-200 focus:border-[var(--theme-active)] focus:ring-2 focus:ring-[var(--theme-active)]/20 rounded-xl px-4 py-2.5 text-sm outline-none transition @error('upi_id') border-red-300 @enderror">
+                    <p class="text-[10px] text-gray-400 mt-1">Used to generate Dynamic UPI QR Codes with exact bill amounts for GPay/PhonePe/Paytm.</p>
+                    @error('upi_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
                 <!-- CGST % -->
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">CGST %</label>
