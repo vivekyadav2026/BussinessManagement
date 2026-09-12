@@ -59,7 +59,6 @@ class BusinessHealthService
                 $insights[] = "Warning: More than 30% of inventory is low on stock.";
             }
         } else {
-            // No inventory data, give neutral points so we don't punish service businesses
             $score += 20;
         }
 
@@ -78,7 +77,7 @@ class BusinessHealthService
                 $insights[] = "High risk: Over 30% of outstanding balance is overdue!";
             }
         } else {
-            $score += 20; // No outstanding money is good money
+            $score += 20;
         }
 
         // 5. Customer Growth (20 points)
@@ -90,20 +89,44 @@ class BusinessHealthService
             $score += 5;
             $insights[] = "No new customers acquired this month.";
         } else {
-            $score += 10; // Neutral fallback
+            $score += 10;
         }
+
+        $status = self::getHealthStatus($score);
 
         return [
             'score' => $score,
-            'color' => self::getScoreColor($score),
+            'label' => $status['label'],
+            'border_color' => $status['border_color'],
+            'text_color' => $status['text_color'],
+            'badge_class' => $status['badge_class'],
             'insights' => $insights
         ];
     }
 
-    private static function getScoreColor($score)
+    private static function getHealthStatus($score)
     {
-        if ($score >= 80) return 'text-green-500';
-        if ($score >= 50) return 'text-yellow-500';
-        return 'text-red-500';
+        if ($score >= 80) {
+            return [
+                'label' => 'Strong Performance',
+                'border_color' => 'border-emerald-500',
+                'text_color' => 'text-emerald-600',
+                'badge_class' => 'bg-emerald-100 text-emerald-800'
+            ];
+        }
+        if ($score >= 50) {
+            return [
+                'label' => 'Moderate Performance',
+                'border_color' => 'border-amber-500',
+                'text_color' => 'text-amber-600',
+                'badge_class' => 'bg-amber-100 text-amber-800'
+            ];
+        }
+        return [
+            'label' => 'Needs Attention',
+            'border_color' => 'border-rose-500',
+            'text_color' => 'text-rose-600',
+            'badge_class' => 'bg-rose-100 text-rose-800'
+        ];
     }
 }

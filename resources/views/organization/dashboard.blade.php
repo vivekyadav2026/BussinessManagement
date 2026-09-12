@@ -3,6 +3,12 @@
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+@php
+    $orgId = auth()->user()->organization_id;
+    $hasRestaurant = \App\Services\SubscriptionService::hasFeature($orgId, 'module_restaurant');
+    $hasRetail = \App\Services\SubscriptionService::hasFeature($orgId, 'module_retail');
+@endphp
+
 <div class="space-y-6">
     
     <!-- Minimalist Dashboard Header -->
@@ -23,12 +29,20 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <a href="{{ route('organization.invoices.create') }}" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-2xs flex items-center gap-1">
-                <span>➕ Create Invoice</span>
-            </a>
-            <a href="{{ route('organization.menu.pos.index') }}" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-xs transition shadow-2xs flex items-center gap-1">
-                <span>🍽️ Open POS</span>
-            </a>
+            @if($hasRetail)
+                <a href="{{ route('organization.invoices.create') }}" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-2xs flex items-center gap-1">
+                    <span>➕ Create Invoice</span>
+                </a>
+                <a href="{{ route('organization.products.index') }}" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl text-xs transition shadow-2xs flex items-center gap-1 border border-gray-200">
+                    <span>📦 Products</span>
+                </a>
+            @endif
+
+            @if($hasRestaurant)
+                <a href="{{ route('organization.menu.pos.index') }}" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-xs transition shadow-2xs flex items-center gap-1">
+                    <span>🍽️ Open POS</span>
+                </a>
+            @endif
         </div>
     </div>
 
@@ -37,12 +51,12 @@
         <div class="md:w-1/4 p-5 flex flex-col justify-center items-center bg-gray-50/50 border-b md:border-b-0 md:border-r border-gray-100">
             <h2 class="text-[10px] uppercase tracking-wider text-gray-400 font-extrabold mb-2">Business Health Score</h2>
             <div class="relative flex items-center justify-center">
-                <div class="w-20 h-20 rounded-full border-4 border-emerald-500 flex flex-col items-center justify-center bg-emerald-50/30">
-                    <span class="text-2xl font-black text-emerald-600">{{ $health['score'] }}</span>
+                <div class="w-20 h-20 rounded-full border-4 {{ $health['border_color'] }} flex flex-col items-center justify-center bg-gray-50/50">
+                    <span class="text-2xl font-black {{ $health['text_color'] }}">{{ $health['score'] }}</span>
                     <span class="text-[9px] text-gray-400 font-medium">/ 100</span>
                 </div>
             </div>
-            <span class="mt-2 text-[10px] font-bold px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">Strong Performance</span>
+            <span class="mt-2 text-[10px] font-bold px-2.5 py-0.5 {{ $health['badge_class'] }} rounded-full">{{ $health['label'] }}</span>
         </div>
         <div class="md:w-3/4 p-5 flex flex-col justify-center">
             <h3 class="font-extrabold text-slate-900 text-xs uppercase tracking-wider mb-2">Diagnostic Insights</h3>
@@ -152,7 +166,7 @@
         </div>
     </div>
 
-    <!-- Live Dynamic Tables: Recent Invoices & Restaurant/Counter Orders -->
+    <!-- Dynamic Tables Section (Module Specific) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         <!-- Recent Invoices Table -->
@@ -162,9 +176,11 @@
                     <h3 class="font-black text-base text-slate-900">Recent Tax Invoices</h3>
                     <p class="text-xs text-gray-400">Latest customer invoices issued</p>
                 </div>
-                <a href="{{ route('organization.invoices.index') }}" class="text-xs font-bold text-indigo-600 hover:underline">
-                    View All &rarr;
-                </a>
+                @if($hasRetail)
+                    <a href="{{ route('organization.invoices.index') }}" class="text-xs font-bold text-indigo-600 hover:underline">
+                        View All &rarr;
+                    </a>
+                @endif
             </div>
 
             <div class="overflow-x-auto">
@@ -213,61 +229,121 @@
             </div>
         </div>
 
-        <!-- Recent Restaurant / Counter Orders Table -->
-        <div class="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-2xs space-y-4">
-            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-                <div>
-                    <h3 class="font-black text-base text-slate-900">Recent POS & Counter Orders</h3>
-                    <p class="text-xs text-gray-400">Live order queue & receipts</p>
+        <!-- Conditional Second Table (Restaurant Orders vs Low Stock Inventory) -->
+        @if($hasRestaurant)
+            <!-- Recent Restaurant / Counter Orders Table -->
+            <div class="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-2xs space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <div>
+                        <h3 class="font-black text-base text-slate-900">Recent POS & Counter Orders</h3>
+                        <p class="text-xs text-gray-400">Live order queue & receipts</p>
+                    </div>
+                    <a href="{{ route('organization.menu.pos.index') }}" class="text-xs font-bold text-indigo-600 hover:underline">
+                        Go to POS &rarr;
+                    </a>
                 </div>
-                <a href="{{ route('organization.menu.pos.index') }}" class="text-xs font-bold text-indigo-600 hover:underline">
-                    Go to POS &rarr;
-                </a>
-            </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-gray-50 uppercase text-gray-500 font-extrabold border-b border-gray-100">
-                        <tr>
-                            <th class="px-3 py-2.5 rounded-tl-xl">Order #</th>
-                            <th class="px-3 py-2.5">Table / Token</th>
-                            <th class="px-3 py-2.5">Total</th>
-                            <th class="px-3 py-2.5">Status</th>
-                            <th class="px-3 py-2.5 text-right rounded-tr-xl">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 font-medium">
-                        @forelse($recentOrders as $order)
-                            <tr class="hover:bg-gray-50/80 transition">
-                                <td class="px-3 py-2.5 font-mono font-bold text-slate-900">
-                                    {{ $order->order_number }}
-                                </td>
-                                <td class="px-3 py-2.5 font-bold text-slate-800">
-                                    {{ $order->table ? $order->table->name : ($order->customer_name ?? 'Counter Token') }}
-                                </td>
-                                <td class="px-3 py-2.5 font-black text-emerald-600">
-                                    ₹{{ number_format($order->total, 2) }}
-                                </td>
-                                <td class="px-3 py-2.5">
-                                    @if($order->payment_status === 'Paid' || $order->status === 'Completed')
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Completed</span>
-                                    @else
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Pending</span>
-                                    @endif
-                                </td>
-                                <td class="px-3 py-2.5 text-right">
-                                    <a href="{{ route('organization.menu.pos.orders.print-receipt', $order) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs">Print Bill &rarr;</a>
-                                </td>
-                            </tr>
-                        @empty
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-gray-50 uppercase text-gray-500 font-extrabold border-b border-gray-100">
                             <tr>
-                                <td colspan="5" class="text-center py-6 text-gray-400">No recent orders.</td>
+                                <th class="px-3 py-2.5 rounded-tl-xl">Order #</th>
+                                <th class="px-3 py-2.5">Table / Token</th>
+                                <th class="px-3 py-2.5">Total</th>
+                                <th class="px-3 py-2.5">Status</th>
+                                <th class="px-3 py-2.5 text-right rounded-tr-xl">Action</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 font-medium">
+                            @forelse($recentOrders as $order)
+                                <tr class="hover:bg-gray-50/80 transition">
+                                    <td class="px-3 py-2.5 font-mono font-bold text-slate-900">
+                                        {{ $order->order_number }}
+                                    </td>
+                                    <td class="px-3 py-2.5 font-bold text-slate-800">
+                                        {{ $order->table ? $order->table->name : ($order->customer_name ?? 'Counter Token') }}
+                                    </td>
+                                    <td class="px-3 py-2.5 font-black text-emerald-600">
+                                        ₹{{ number_format($order->total, 2) }}
+                                    </td>
+                                    <td class="px-3 py-2.5">
+                                        @if($order->payment_status === 'Paid' || $order->status === 'Completed')
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Completed</span>
+                                        @else
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Pending</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2.5 text-right">
+                                        <a href="{{ route('organization.menu.pos.orders.print-receipt', $order) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs">Print Bill &rarr;</a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center py-6 text-gray-400">No recent orders.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        @else
+            <!-- Retail / Inventory Plan: Low Stock Inventory Items Alert Table -->
+            <div class="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-2xs space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <div>
+                        <h3 class="font-black text-base text-slate-900">Low Stock Inventory Alerts</h3>
+                        <p class="text-xs text-gray-400">Products requiring restock attention</p>
+                    </div>
+                    @if($hasRetail)
+                        <a href="{{ route('organization.inventory.index') }}" class="text-xs font-bold text-indigo-600 hover:underline">
+                            Manage Stock &rarr;
+                        </a>
+                    @endif
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-gray-50 uppercase text-gray-500 font-extrabold border-b border-gray-100">
+                            <tr>
+                                <th class="px-3 py-2.5 rounded-tl-xl">Product Name</th>
+                                <th class="px-3 py-2.5">Current Stock</th>
+                                <th class="px-3 py-2.5">Min Stock Level</th>
+                                <th class="px-3 py-2.5 text-right rounded-tr-xl">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 font-medium">
+                            @forelse($lowStockItems as $item)
+                                <tr class="hover:bg-gray-50/80 transition">
+                                    <td class="px-3 py-2.5 font-bold text-slate-900">
+                                        {{ $item->name }}
+                                        @if($item->sku)
+                                            <span class="text-[10px] font-mono text-gray-400 block">SKU: {{ $item->sku }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2.5 font-black text-rose-600">
+                                        {{ number_format($item->quantity) }} units
+                                    </td>
+                                    <td class="px-3 py-2.5 text-gray-500 font-semibold">
+                                        {{ number_format($item->min_stock_level) }} units
+                                    </td>
+                                    <td class="px-3 py-2.5 text-right">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                            Reorder Soon
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center py-6 text-emerald-600 font-semibold">
+                                        ✓ All product inventory levels are healthy!
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
 
     </div>
 
