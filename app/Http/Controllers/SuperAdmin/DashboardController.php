@@ -18,8 +18,11 @@ class DashboardController extends Controller
         $orgCount = Organization::count();
         $userCount = User::count();
         $activeOrgs = Organization::where('is_active', true)->count();
-        $trialOrgs = Organization::whereNotNull('trial_ends_at')->where('trial_ends_at', '>=', now())->count();
-        $expiredOrgs = Organization::where('is_active', false)->count();
+        $trialOrgs = OrganizationSubscription::where('status', 'Trial')
+            ->where(function($q) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()->toDateString());
+            })->count();
+        $expiredOrgs = OrganizationSubscription::whereIn('status', ['Expired', 'Cancelled'])->count();
 
         // Platform Revenue from Paid Invoices
         $totalRevenue = (float) Invoice::where('status', 'Paid')->sum('amount_paid');
