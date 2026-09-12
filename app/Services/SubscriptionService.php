@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Organization;
+use App\Models\OrganizationSubscription;
+use App\Models\SystemSetting;
 
 class SubscriptionService
 {
@@ -11,8 +13,19 @@ class SubscriptionService
      */
     public static function getActiveSubscription($orgId)
     {
-        $org = Organization::with(['activeSubscription.plan.features'])->find($orgId);
-        return $org ? $org->activeSubscription : null;
+        $subscription = OrganizationSubscription::with(['plan.features'])
+            ->where('organization_id', $orgId)
+            ->latest()
+            ->first();
+
+        if ($subscription && in_array($subscription->status, ['Active', 'Trial'])) {
+            if ($subscription->ends_at && $subscription->ends_at->isPast() && !$subscription->ends_at->isToday()) {
+                return null;
+            }
+            return $subscription;
+        }
+
+        return null;
     }
 
     /**
@@ -79,24 +92,38 @@ class SubscriptionService
         $org = Organization::find($orgId);
         if (!$org) return true;
 
-        $subscription = $org->activeSubscription;
-        if (!$subscription) {
-            // Grant 14-day default trial period for newly created organizations or testing environment
-            if (app()->environment('testing') || ($org->created_at && $org->created_at->diffInDays(now()) <= 14)) {
+        $subscription = OrganizationSubscription::where('organization_id', $orgId)->latest()->first();
+
+        if ($subscription) {
+            if (in_array($subscription->status, ['Expired', 'Cancelled'])) {
+                return true;
+            }
+
+            if (in_array($subscription->status, ['Trial', 'Active'])) {
+                if ($subscription->ends_at && $subscription->ends_at->isPast() && !$subscription->ends_at->isToday()) {
+                    return true;
+                }
                 return false;
             }
+        }
+
+        // If no subscription record exists at all:
+        $enableTrial = SystemSetting::get('enable_free_trial', '1');
+        $trialDays = (int) SystemSetting::get('trial_days', 14);
+
+        if ($enableTrial === '0' || $trialDays <= 0) {
             return true;
         }
 
-        if (in_array($subscription->status, ['Expired', 'Cancelled'])) {
-            return true;
+        if (app()->environment('testing')) {
+            return false;
         }
 
-        if ($subscription->ends_at && $subscription->ends_at->isPast() && !$subscription->ends_at->isToday()) {
-            return true;
+        if ($org->created_at && $org->created_at->diffInDays(now()) <= $trialDays) {
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     /**

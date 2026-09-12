@@ -39,7 +39,6 @@ class Organization extends Model
         return $this->hasMany(User::class);
     }
 
-    // Placeholder relationships for future modules
     public function employees()
     {
         return $this->hasMany(Employee::class);
@@ -48,10 +47,15 @@ class Organization extends Model
     public function activeSubscription()
     {
         return $this->hasOne(OrganizationSubscription::class)
-            ->where('status', 'Active')
+            ->whereIn('status', ['Active', 'Trial'])
             ->where(function($q) {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()->toDateString());
             })->latest();
+    }
+
+    public function latestSubscription()
+    {
+        return $this->hasOne(OrganizationSubscription::class)->latest();
     }
 
     public function products()

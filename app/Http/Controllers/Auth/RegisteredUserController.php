@@ -78,7 +78,7 @@ class RegisteredUserController extends Controller
 
             if ($enableTrial === '0' || $trialDays <= 0) {
                 $status = 'Expired';
-                $endsAt = now();
+                $endsAt = now()->subDay();
             } else {
                 $status = 'Trial';
                 $endsAt = now()->addDays($trialDays);
@@ -99,6 +99,10 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        if (\App\Services\SubscriptionService::isExpired($user->organization_id)) {
+            return redirect(route('organization.subscription.index'))->with('error', 'Free trial is disabled or expired. Please select a subscription plan to activate your account.');
+        }
 
         return redirect(route('dashboard', absolute: false));
     }
