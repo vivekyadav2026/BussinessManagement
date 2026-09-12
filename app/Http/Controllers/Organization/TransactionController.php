@@ -7,9 +7,17 @@ use Illuminate\Http\Request;
 use App\Models\Invoice;
 use App\Models\Transaction;
 use App\Services\PaymentService;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class TransactionController extends Controller
+class TransactionController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:invoices.payment', only: ['store']),
+        ];
+    }
     public function store(Request $request, Invoice $invoice)
     {
         abort_if($invoice->organization_id !== auth()->user()->organization_id, 403);

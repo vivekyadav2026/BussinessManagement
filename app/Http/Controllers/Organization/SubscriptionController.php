@@ -27,10 +27,12 @@ class SubscriptionController extends Controller
     public function initiatePayment(Request $request, Plan $plan)
     {
         $org = auth()->user()->organization;
+        $cycle = $request->input('billing_cycle', 'monthly');
+        $price = $cycle === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
 
         // If plan is free, activate directly
-        if ($plan->price_monthly <= 0) {
-            $this->activatePlan($org, $plan);
+        if ($price <= 0) {
+            $this->activatePlan($org, $plan, $cycle);
             return response()->json([
                 'success' => true,
                 'is_free' => true,
@@ -47,19 +49,19 @@ class SubscriptionController extends Controller
             ], 400);
         }
 
-
         try {
-            $payment = RazorpayPaymentService::createOrder($plan, $plan->price_monthly);
+            $payment = RazorpayPaymentService::createOrder($plan, $price);
 
             return response()->json([
                 'success' => true,
                 'is_free' => false,
                 'key' => $key,
                 'order_id' => $payment->razorpay_order_id,
-                'amount' => round($plan->price_monthly * 100),
+                'amount' => round($price * 100),
                 'currency' => 'INR',
-                'plan_name' => $plan->name,
+                'plan_name' => $plan->name . ' (' . ucfirst($cycle) . ')',
                 'plan_id' => $plan->id,
+                'billing_cycle' => $cycle,
                 'org_name' => $org->name,
                 'user_name' => auth()->user()->name,
                 'user_email' => auth()->user()->email,
@@ -77,12 +79,14 @@ class SubscriptionController extends Controller
     {
         $request->validate([
             'plan_id' => 'required|exists:plans,id',
+            'billing_cycle' => 'nullable|in:monthly,yearly',
             'razorpay_order_id' => 'nullable|string',
             'razorpay_payment_id' => 'nullable|string',
         ]);
 
         $org = auth()->user()->organization;
         $plan = Plan::findOrFail($request->plan_id);
+        $cycle = $request->input('billing_cycle', 'monthly');
 
         if ($request->razorpay_order_id) {
             try {
@@ -96,7 +100,7 @@ class SubscriptionController extends Controller
             }
         }
 
-        $this->activatePlan($org, $plan);
+        $this->activatePlan($org, $plan, $cycle);
 
         return response()->json([
             'success' => true,
@@ -104,15 +108,28 @@ class SubscriptionController extends Controller
         ]);
     }
 
-    private function activatePlan($org, Plan $plan)
+    private function activatePlan($org, Plan $plan, $cycle = 'monthly')
     {
-        // Cancel old subscription
-        if ($org->activeSubscription) {
-            $org->activeSubscription->update([
-                'status' => 'Cancelled',
-                'ends_at' => Carbon::today()
-            ]);
+        // Cancel old subscription of the same type (base or specific addon)
+        if ($plan->type === 'base') {
+            if ($org->activeSubscription) {
+                $org->activeSubscription->update([
+                    'status' => 'Cancelled',
+                    'ends_at' => Carbon::today()
+                ]);
+            }
+        } else {
+            // Cancel existing same addon
+            $existingAddon = $org->activeAddons()->where('plan_id', $plan->id)->first();
+            if ($existingAddon) {
+                $existingAddon->update([
+                    'status' => 'Cancelled',
+                    'ends_at' => Carbon::today()
+                ]);
+            }
         }
+
+        $endsAt = $cycle === 'yearly' ? Carbon::today()->addYear() : Carbon::today()->addMonth();
 
         // Create new active subscription
         OrganizationSubscription::create([
@@ -120,24 +137,28 @@ class SubscriptionController extends Controller
             'plan_id' => $plan->id,
             'status' => 'Active',
             'starts_at' => Carbon::today(),
-            'ends_at' => Carbon::today()->addYear()
+            'ends_at' => $endsAt
         ]);
     }
 
     public function switchPlan(Request $request)
     {
         $request->validate([
-            'plan_id' => 'required|exists:plans,id'
+            'plan_id' => 'required|exists:plans,id',
+            'billing_cycle' => 'nullable|in:monthly,yearly'
         ]);
 
         $org = auth()->user()->organization;
         $newPlan = Plan::findOrFail($request->plan_id);
+        $cycle = $request->input('billing_cycle', 'monthly');
+        
+        $price = $cycle === 'yearly' ? $newPlan->price_yearly : $newPlan->price_monthly;
 
-        if ($newPlan->price_monthly > 0) {
+        if ($price > 0) {
             return back()->with('error', 'Paid plans require online payment via Razorpay. Please click "Switch to ' . $newPlan->name . '" to pay.');
         }
 
-        $this->activatePlan($org, $newPlan);
+        $this->activatePlan($org, $newPlan, $cycle);
 
         return redirect()->route('organization.subscription.index')->with('success', 'Successfully switched to ' . $newPlan->name . ' plan!');
     }

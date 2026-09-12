@@ -5,9 +5,19 @@ namespace App\Http\Controllers\Organization;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Client;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class ClientController extends Controller
+class ClientController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:clients.create', only: ['create', 'store', 'quickStore']),
+            new Middleware('permission:clients.edit', only: ['edit', 'update']),
+            new Middleware('permission:clients.delete', only: ['destroy']),
+        ];
+    }
     public function index(Request $request)
     {
         $query = Client::where('organization_id', auth()->user()->organization_id);

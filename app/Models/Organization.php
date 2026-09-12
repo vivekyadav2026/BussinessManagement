@@ -47,10 +47,30 @@ class Organization extends Model
     public function activeSubscription()
     {
         return $this->hasOne(OrganizationSubscription::class)
+            ->whereHas('plan', function($q) {
+                $q->where('type', 'base');
+            })
             ->whereIn('status', ['Active', 'Trial'])
             ->where(function($q) {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()->toDateString());
             })->latest();
+    }
+    
+    public function activeAddons()
+    {
+        return $this->hasMany(OrganizationSubscription::class)
+            ->whereHas('plan', function($q) {
+                $q->where('type', 'addon');
+            })
+            ->whereIn('status', ['Active', 'Trial'])
+            ->where(function($q) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()->toDateString());
+            });
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(OrganizationSubscription::class);
     }
 
     public function latestSubscription()

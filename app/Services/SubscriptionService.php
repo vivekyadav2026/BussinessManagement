@@ -8,39 +8,68 @@ use App\Models\SystemSetting;
 
 class SubscriptionService
 {
-    /**
-     * Get the active subscription for an organization.
-     */
     public static function getActiveSubscription($orgId)
     {
-        $subscription = OrganizationSubscription::with(['plan.features'])
-            ->where('organization_id', $orgId)
-            ->latest('id')
-            ->first();
+        $org = Organization::find($orgId);
+        return $org ? $org->activeSubscription : null;
+    }
 
-        if ($subscription && in_array($subscription->status, ['Active', 'Trial'])) {
-            if ($subscription->ends_at && $subscription->ends_at->isPast() && !$subscription->ends_at->isToday()) {
-                return null;
-            }
-            return $subscription;
-        }
+    public static function getActiveSubscriptions($orgId)
+    {
+        $org = Organization::find($orgId);
+        if (!$org) return collect();
 
-        return null;
+        $base = $org->activeSubscription;
+        $addons = $org->activeAddons;
+
+        $all = collect();
+        if ($base) $all->push($base);
+        foreach($addons as $addon) $all->push($addon);
+
+        return $all;
     }
 
     /**
-     * Get a specific feature's value from the active plan.
+     * Get a specific feature's value from the active plan and addons.
      */
     public static function getFeatureValue($orgId, $featureCode, $default = 'Unlimited')
     {
-        $subscription = self::getActiveSubscription($orgId);
+        $subscriptions = self::getActiveSubscriptions($orgId);
         
-        if (!$subscription || !$subscription->plan) {
+        if ($subscriptions->isEmpty()) {
             return $default;
         }
 
-        $feature = $subscription->plan->features->where('feature_code', $featureCode)->first();
-        return ($feature && $feature->feature_value !== null && $feature->feature_value !== '') ? $feature->feature_value : $default;
+        $isBoolean = false;
+        $hasTrue = false;
+        $totalNumeric = 0;
+        $hasNumeric = false;
+        $hasUnlimited = false;
+
+        foreach ($subscriptions as $sub) {
+            if (!$sub->plan) continue;
+            
+            $feature = $sub->plan->features->where('feature_code', $featureCode)->first();
+            if ($feature && $feature->feature_value !== null && $feature->feature_value !== '') {
+                $val = strtolower(trim((string)$feature->feature_value));
+                
+                if (in_array($val, ['true', 'yes', 'on'])) {
+                    $isBoolean = true;
+                    $hasTrue = true;
+                } elseif (in_array($val, ['unlimited', 'infinite', 'all', '-1'])) {
+                    $hasUnlimited = true;
+                } elseif (is_numeric($val)) {
+                    $hasNumeric = true;
+                    $totalNumeric += (int)$val;
+                }
+            }
+        }
+
+        if ($hasUnlimited) return 'Unlimited';
+        if ($isBoolean) return $hasTrue ? 'true' : 'false';
+        if ($hasNumeric) return (string)$totalNumeric;
+        
+        return $default;
     }
 
 
@@ -92,18 +121,21 @@ class SubscriptionService
         $org = Organization::find($orgId);
         if (!$org) return true;
 
-        $subscription = OrganizationSubscription::where('organization_id', $orgId)->latest('id')->first();
+        $subscription = self::getActiveSubscription($orgId);
 
         if ($subscription) {
-            if (in_array($subscription->status, ['Expired', 'Cancelled'])) {
+            return false; // Active base plan found (date and status are valid)
+        }
+        
+        $latestSub = OrganizationSubscription::where('organization_id', $orgId)
+            ->whereHas('plan', function($q){ $q->where('type', 'base'); })
+            ->latest('id')->first();
+            
+        if ($latestSub) {
+            // If the latest sub has explicitly expired/cancelled status OR its end date has passed
+            if (in_array($latestSub->status, ['Expired', 'Cancelled']) || 
+                ($latestSub->ends_at && \Carbon\Carbon::parse($latestSub->ends_at)->isPast() && !\Carbon\Carbon::parse($latestSub->ends_at)->isToday())) {
                 return true;
-            }
-
-            if (in_array($subscription->status, ['Trial', 'Active'])) {
-                if ($subscription->ends_at && $subscription->ends_at->isPast() && !$subscription->ends_at->isToday()) {
-                    return true;
-                }
-                return false;
             }
         }
 

@@ -6,9 +6,19 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use Illuminate\Support\Str;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class CategoryController extends Controller
+class CategoryController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:products.create', only: ['store']),
+            new Middleware('permission:products.edit', only: ['update']),
+            new Middleware('permission:products.delete', only: ['destroy']),
+        ];
+    }
     public function index()
     {
         $categories = Category::where('organization_id', auth()->user()->organization_id)->withCount('products')->latest()->paginate(15)->withQueryString();

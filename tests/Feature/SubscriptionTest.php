@@ -56,4 +56,65 @@ class SubscriptionTest extends TestCase
         $this->assertFalse(SubscriptionService::hasReachedLimit($org->id, 'max_employees', 100)); // Unlimited
         $this->assertTrue(SubscriptionService::hasFeature($org->id, 'module_payroll')); // Payroll true
     }
+
+    public function test_can_activate_addons_without_cancelling_base_plan_and_stack_limits()
+    {
+        $org = Organization::create(['name' => 'Addon Test Org', 'business_type' => 'business']);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $role = \App\Models\Role::create(['organization_id' => $org->id, 'name' => 'Organization Admin']);
+        $user->roles()->attach($role);
+
+        $basePlan = Plan::create(['name' => 'Starter Base', 'type' => 'base', 'price_monthly' => 199]);
+        $basePlan->features()->create(['feature_code' => 'max_invoices_per_month', 'feature_value' => '50']);
+        $basePlan->features()->create(['feature_code' => 'module_payroll', 'feature_value' => 'false']);
+        $basePlan->features()->create(['feature_code' => 'advanced_analytics', 'feature_value' => 'false']);
+
+        // Set Base Subscription
+        OrganizationSubscription::create([
+            'organization_id' => $org->id,
+            'plan_id' => $basePlan->id,
+            'status' => 'Active',
+            'starts_at' => Carbon::today(),
+            'ends_at' => Carbon::today()->addYear()
+        ]);
+
+        $invoiceAddon = Plan::create(['name' => 'Extra 5000 Invoices (Add-on)', 'type' => 'addon', 'price_monthly' => 149]);
+        $invoiceAddon->features()->create(['feature_code' => 'max_invoices_per_month', 'feature_value' => '5000']);
+
+        $analyticsAddon = Plan::create(['name' => 'Advanced Analytics (Add-on)', 'type' => 'addon', 'price_monthly' => 99]);
+        $analyticsAddon->features()->create(['feature_code' => 'advanced_analytics', 'feature_value' => 'true']);
+
+        // 1. Initial State
+        $this->assertEquals('Starter Base', $org->activeSubscription->plan->name);
+        $this->assertEquals('50', SubscriptionService::getFeatureValue($org->id, 'max_invoices_per_month'));
+        $this->assertFalse(SubscriptionService::hasFeature($org->id, 'advanced_analytics'));
+
+        // 2. Buy Invoice Add-on
+        $this->actingAs($user);
+        $res1 = $this->postJson(route('organization.subscription.confirm'), ['plan_id' => $invoiceAddon->id]);
+        $res1->assertStatus(200);
+
+        $org->refresh();
+
+        // Verify Base Plan is NOT cancelled
+        $this->assertNotNull($org->activeSubscription);
+        $this->assertEquals('Starter Base', $org->activeSubscription->plan->name);
+        $this->assertEquals('Active', $org->activeSubscription->status);
+        $this->assertCount(1, $org->activeAddons);
+        
+        // Verify Invoice limit stacked (50 + 5000 = 5050)
+        $this->assertEquals('5050', SubscriptionService::getFeatureValue($org->id, 'max_invoices_per_month'));
+
+        // 3. Buy Second Add-on (Analytics)
+        $res2 = $this->postJson(route('organization.subscription.confirm'), ['plan_id' => $analyticsAddon->id]);
+        $res2->assertStatus(200);
+
+        $org->refresh();
+
+        // Verify Base Plan + Both Add-ons are active
+        $this->assertEquals('Starter Base', $org->activeSubscription->plan->name);
+        $this->assertCount(2, $org->activeAddons);
+        $this->assertEquals('5050', SubscriptionService::getFeatureValue($org->id, 'max_invoices_per_month'));
+        $this->assertTrue(SubscriptionService::hasFeature($org->id, 'advanced_analytics'));
+    }
 }

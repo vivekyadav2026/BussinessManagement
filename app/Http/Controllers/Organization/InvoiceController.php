@@ -9,9 +9,19 @@ use App\Models\Client;
 use App\Models\Product;
 use App\Services\InvoiceService;
 use App\Services\LocationManager;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class InvoiceController extends Controller
+class InvoiceController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:invoices.create', only: ['create', 'store', 'apiProductSearch']),
+            new Middleware('permission:invoices.cancel', only: ['cancel']),
+            new Middleware('permission:invoices.download', only: ['print', 'receipt']),
+        ];
+    }
     public function index(Request $request)
     {
         $locationId = LocationManager::getActiveLocationId();

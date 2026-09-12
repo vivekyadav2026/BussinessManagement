@@ -9,7 +9,7 @@
         <h1>Saara business,<br><em>ek jagah.</em></h1>
         <p class="lead">Inventory, billing, staff, payroll aur restaurant orders — sab ek Laravel-powered platform mein. Har invoice ka paisa track ho, har customer ka order kitchen tak pahunche.</p>
         <div class="hero-actions">
-          <a class="btn btn-gold" href="{{ route('register') }}">Get Started</a>
+          <a class="btn btn-gold" href="{{ route('public.pricing') }}?type=business">Get Started</a>
         </div>
         <div class="hero-note">
           <span>No card required</span>
@@ -136,6 +136,9 @@
               </div>
             </li>
           </ul>
+          <div style="margin-top: 30px;">
+            <a class="btn btn-gold" href="{{ route('public.pricing') }}?type=restaurant">View Restaurant Plans</a>
+          </div>
         </div>
       </div>
     </div>
@@ -176,39 +179,8 @@
     </div>
     <div class="wrap plans-container">
       <div class="plans" id="plans-slider">
-        @foreach($plans as $plan)
-          @php
-            $isFeat = ($plan->name === 'Pro Plan');
-            $isEnterprise = ($plan->name === 'Enterprise');
-            $displayFeatures = $plan->features->filter(function($f) {
-                return !in_array($f->feature_code, ['max_employees', 'module_payroll', 'module_restaurant']);
-            });
-          @endphp
-          <div class="plan-card {{ $isFeat ? 'feat' : '' }}">
-            @if($isFeat)
-              <div class="plan-tag">MOST POPULAR</div>
-            @endif
-            <div class="plan-name">{{ $plan->name }}</div>
-            <div class="plan-price">
-              @if($isEnterprise)
-                Custom
-              @else
-                ₹{{ number_format($plan->price_monthly, 0) }}<span> / {{ $plan->name === 'Free' ? 'forever' : 'mo' }}</span>
-              @endif
-            </div>
-            <ul class="plan-feats">
-              @foreach($displayFeatures as $feature)
-                <li>{{ $feature->feature_code }}</li>
-              @endforeach
-            </ul>
-            @if($isEnterprise)
-              <a class="btn btn-ghost" href="{{ route('register') }}" style="width:100%; justify-content:center;">Contact Us</a>
-            @else
-              <a class="btn {{ $isFeat ? 'btn-gold' : 'btn-ghost' }}" href="{{ route('register') }}" style="width:100%; justify-content:center;">
-                Get Started
-              </a>
-            @endif
-          </div>
+        @foreach($plans->where('type', 'base') as $plan)
+          @include('pages.partials.plan_card', ['plan' => $plan])
         @endforeach
       </div>
       <div class="slider-dots" id="plans-dots">

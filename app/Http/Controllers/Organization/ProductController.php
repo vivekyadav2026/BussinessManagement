@@ -8,9 +8,19 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Services\InventoryService;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class ProductController extends Controller
+class ProductController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:products.create', only: ['create', 'store']),
+            new Middleware('permission:products.edit', only: ['edit', 'update']),
+            new Middleware('permission:products.delete', only: ['destroy']),
+        ];
+    }
     public function index(Request $request)
     {
         $query = Product::with('category')->where('organization_id', auth()->user()->organization_id);

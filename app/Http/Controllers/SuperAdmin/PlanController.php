@@ -23,6 +23,8 @@ class PlanController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:base,addon',
+            'category' => 'required|in:business,restaurant,all',
             'price_monthly' => 'required|numeric|min:0',
             'price_yearly' => 'required|numeric|min:0',
             'description' => 'nullable|string',
@@ -31,7 +33,7 @@ class PlanController extends Controller
             'features.*.value' => 'required_with:features|string',
         ]);
 
-        $plan = Plan::create($request->only('name', 'price_monthly', 'price_yearly', 'description', 'is_active'));
+        $plan = Plan::create($request->only('name', 'type', 'category', 'price_monthly', 'price_yearly', 'description', 'is_active'));
 
         if ($request->has('features')) {
             foreach ($request->features as $feature) {
@@ -57,6 +59,8 @@ class PlanController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:base,addon',
+            'category' => 'required|in:business,restaurant,all',
             'price_monthly' => 'required|numeric|min:0',
             'price_yearly' => 'required|numeric|min:0',
             'description' => 'nullable|string',
@@ -65,7 +69,7 @@ class PlanController extends Controller
             'features.*.value' => 'required_with:features|string',
         ]);
 
-        $plan->update($request->only('name', 'price_monthly', 'price_yearly', 'description', 'is_active'));
+        $plan->update($request->only('name', 'type', 'category', 'price_monthly', 'price_yearly', 'description', 'is_active'));
 
         $plan->features()->delete();
         if ($request->has('features')) {
@@ -84,7 +88,7 @@ class PlanController extends Controller
 
     public function show(Plan $plan)
     {
-        $plan->load('features');
+        $plan->load(['features', 'subscriptions.organization']);
         return view('super-admin.plans.show', compact('plan'));
     }
 

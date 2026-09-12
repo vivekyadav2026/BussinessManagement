@@ -80,7 +80,8 @@ Route::view('/payments', 'pages.payments')->name('public.payments');
 
 Route::get('/pricing', function () {
     $plans = \App\Models\Plan::where('is_active', true)->with('features')->get();
-    return view('pages.pricing', compact('plans'));
+    $type = request('type', 'business'); // default to business
+    return view('pages.pricing', compact('plans', 'type'));
 })->name('public.pricing');
 
 // Public Document Endpoints
@@ -197,48 +198,54 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'plan.fe
     Route::post('/tables/{table}/regenerate', [\App\Http\Controllers\Organization\TableController::class, 'regenerateQr'])->name('tables.regenerate')->middleware('permission:restaurant.tables');
     Route::get('/tables/print', [\App\Http\Controllers\Organization\TableController::class, 'printSheet'])->name('tables.print')->middleware('permission:restaurant.view');
     
-    Route::get('/kitchen', [\App\Http\Controllers\Organization\KitchenOrderController::class, 'index'])->name('kitchen.index');
-    Route::get('/kitchen/api/orders', [\App\Http\Controllers\Organization\KitchenOrderController::class, 'fetchOrders'])->name('kitchen.orders.fetch');
-    Route::get('/kitchen/api/today-summary', [\App\Http\Controllers\Organization\KitchenOrderController::class, 'todaySummary'])->name('kitchen.today-summary');
-    Route::post('/kitchen/api/orders/{order}/status', [\App\Http\Controllers\Organization\KitchenOrderController::class, 'updateStatus'])->name('kitchen.orders.status');
+    // Kitchen Display System Routes
+    Route::middleware('permission:restaurant.kitchen')->group(function() {
+        Route::get('/kitchen', [\App\Http\Controllers\Organization\KitchenOrderController::class, 'index'])->name('kitchen.index');
+        Route::get('/kitchen/api/orders', [\App\Http\Controllers\Organization\KitchenOrderController::class, 'fetchOrders'])->name('kitchen.orders.fetch');
+        Route::get('/kitchen/api/today-summary', [\App\Http\Controllers\Organization\KitchenOrderController::class, 'todaySummary'])->name('kitchen.today-summary');
+        Route::post('/kitchen/api/orders/{order}/status', [\App\Http\Controllers\Organization\KitchenOrderController::class, 'updateStatus'])->name('kitchen.orders.status');
+    });
 
     // Waiter POS & Bill Receipt Routes
-    Route::get('/pos', [\App\Http\Controllers\Organization\WaiterPosController::class, 'index'])->name('pos.index');
-    Route::get('/pos/table/{table}', [\App\Http\Controllers\Organization\WaiterPosController::class, 'getTableOrder'])->name('pos.table-order');
-    Route::post('/pos/orders', [\App\Http\Controllers\Organization\WaiterPosController::class, 'saveOrder'])->name('pos.orders.save');
-    Route::post('/pos/orders/{order}/settle', [\App\Http\Controllers\Organization\WaiterPosController::class, 'settleOrder'])->name('pos.orders.settle');
-    Route::post('/pos/orders/{order}/cancel', [\App\Http\Controllers\Organization\WaiterPosController::class, 'cancelOrder'])->name('pos.orders.cancel');
-    Route::get('/pos/orders/{order}/print-receipt', [\App\Http\Controllers\Organization\WaiterPosController::class, 'printReceipt'])->name('pos.orders.print-receipt');
-    Route::get('/pos/orders/{order}/print-kot', [\App\Http\Controllers\Organization\WaiterPosController::class, 'printKot'])->name('pos.orders.print-kot');
+    Route::middleware('permission:restaurant.view')->group(function() {
+        Route::get('/pos', [\App\Http\Controllers\Organization\WaiterPosController::class, 'index'])->name('pos.index');
+        Route::get('/pos/table/{table}', [\App\Http\Controllers\Organization\WaiterPosController::class, 'getTableOrder'])->name('pos.table-order');
+        Route::post('/pos/orders', [\App\Http\Controllers\Organization\WaiterPosController::class, 'saveOrder'])->name('pos.orders.save')->middleware('permission:restaurant.orders');
+        Route::post('/pos/orders/{order}/settle', [\App\Http\Controllers\Organization\WaiterPosController::class, 'settleOrder'])->name('pos.orders.settle')->middleware('permission:restaurant.orders');
+        Route::post('/pos/orders/{order}/cancel', [\App\Http\Controllers\Organization\WaiterPosController::class, 'cancelOrder'])->name('pos.orders.cancel')->middleware('permission:restaurant.cancel_order');
+        Route::get('/pos/orders/{order}/print-receipt', [\App\Http\Controllers\Organization\WaiterPosController::class, 'printReceipt'])->name('pos.orders.print-receipt');
+        Route::get('/pos/orders/{order}/print-kot', [\App\Http\Controllers\Organization\WaiterPosController::class, 'printKot'])->name('pos.orders.print-kot');
+    });
 
     // Counter Billing Mode Routes
-    Route::get('/counter', [\App\Http\Controllers\Organization\CounterBillingController::class, 'index'])->name('counter.index');
-    Route::get('/counter/api/active-orders', [\App\Http\Controllers\Organization\CounterBillingController::class, 'fetchActiveOrders'])->name('counter.orders.active');
-    Route::get('/counter/api/completed-orders', [\App\Http\Controllers\Organization\CounterBillingController::class, 'fetchCompletedOrders'])->name('counter.orders.completed');
-    Route::post('/counter/orders', [\App\Http\Controllers\Organization\CounterBillingController::class, 'saveOrder'])->name('counter.orders.save');
-    Route::post('/counter/orders/{order}/settle', [\App\Http\Controllers\Organization\CounterBillingController::class, 'settleOrder'])->name('counter.orders.settle');
-    Route::post('/counter/orders/{order}/cancel', [\App\Http\Controllers\Organization\CounterBillingController::class, 'cancelOrder'])->name('counter.orders.cancel');
+    Route::middleware('permission:restaurant.counter')->group(function() {
+        Route::get('/counter', [\App\Http\Controllers\Organization\CounterBillingController::class, 'index'])->name('counter.index');
+        Route::get('/counter/api/active-orders', [\App\Http\Controllers\Organization\CounterBillingController::class, 'fetchActiveOrders'])->name('counter.orders.active');
+        Route::get('/counter/api/completed-orders', [\App\Http\Controllers\Organization\CounterBillingController::class, 'fetchCompletedOrders'])->name('counter.orders.completed');
+        Route::post('/counter/orders', [\App\Http\Controllers\Organization\CounterBillingController::class, 'saveOrder'])->name('counter.orders.save');
+        Route::post('/counter/orders/{order}/settle', [\App\Http\Controllers\Organization\CounterBillingController::class, 'settleOrder'])->name('counter.orders.settle');
+        Route::post('/counter/orders/{order}/cancel', [\App\Http\Controllers\Organization\CounterBillingController::class, 'cancelOrder'])->name('counter.orders.cancel')->middleware('permission:restaurant.cancel_order');
+    });
 
     // Restaurant Sales Reports & Analytics Route
-    Route::get('/reports', [\App\Http\Controllers\Organization\RestaurantReportController::class, 'index'])->name('reports.index');
-
+    Route::get('/reports', [\App\Http\Controllers\Organization\RestaurantReportController::class, 'index'])->name('reports.index')->middleware('permission:restaurant.reports');
 
 });
 
-Route::middleware(['auth', 'permission:products.view'])->prefix('organization')->name('organization.')->group(function () {
+Route::middleware(['auth', 'permission:products.view', 'plan.feature:module_retail'])->prefix('organization')->name('organization.')->group(function () {
     Route::resource('categories', \App\Http\Controllers\Organization\CategoryController::class)->except(['create', 'show', 'edit']);
     Route::get('products/{product}/print-barcode', [\App\Http\Controllers\Organization\ProductController::class, 'printBarcode'])->name('products.print-barcode');
     Route::resource('products', \App\Http\Controllers\Organization\ProductController::class);
 });
 
 
-Route::middleware(['auth', 'permission:clients.view'])->prefix('organization')->name('organization.')->group(function () {
+Route::middleware(['auth', 'permission:clients.view', 'plan.feature:module_retail'])->prefix('organization')->name('organization.')->group(function () {
     Route::get('clients/search', [\App\Http\Controllers\Organization\ClientController::class, 'apiSearch'])->name('clients.search');
     Route::post('clients/quick-store', [\App\Http\Controllers\Organization\ClientController::class, 'quickStore'])->name('clients.quick-store');
     Route::resource('clients', \App\Http\Controllers\Organization\ClientController::class);
 });
 
-Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'permission:inventory.view'])->prefix('organization/inventory')->name('organization.inventory.')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'permission:inventory.view', 'plan.feature:module_retail'])->prefix('organization/inventory')->name('organization.inventory.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Organization\InventoryController::class, 'index'])->name('index');
     Route::get('scanner', [\App\Http\Controllers\Organization\InventoryController::class, 'scanner'])->name('scanner');
     Route::post('scanner/process', [\App\Http\Controllers\Organization\InventoryController::class, 'processBarcode'])->name('scanner.process');
@@ -250,7 +257,7 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class])->group(
     Route::post('/organization/set-location', [\App\Http\Controllers\Organization\LocationController::class, 'switchLocation'])->name('organization.set-location');
 
     // Invoices are location-aware
-    Route::middleware('permission:invoices.view')->prefix('organization/invoices')->name('organization.invoices.')->group(function () {
+    Route::middleware(['permission:invoices.view', 'plan.feature:module_retail'])->prefix('organization/invoices')->name('organization.invoices.')->group(function () {
         Route::get('products/search', [\App\Http\Controllers\Organization\InvoiceController::class, 'apiProductSearch'])->name('products.search');
         Route::get('/', [\App\Http\Controllers\Organization\InvoiceController::class, 'index'])->name('index');
         Route::get('create', [\App\Http\Controllers\Organization\InvoiceController::class, 'create'])->name('create');
@@ -268,12 +275,12 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class])->group(
         Route::get('{invoice}/payment-link', [\App\Http\Controllers\Organization\ReminderController::class, 'generateLink'])->name('payment-link');
     });
 
-    Route::middleware('permission:invoices.view')->prefix('organization/transactions')->name('organization.transactions.')->group(function () {
+    Route::middleware(['permission:invoices.view', 'plan.feature:module_retail'])->prefix('organization/transactions')->name('organization.transactions.')->group(function () {
         Route::get('{transaction}/receipt', [\App\Http\Controllers\Organization\TransactionController::class, 'receipt'])->name('receipt');
     });
 
     // Receivables Dashboards
-    Route::middleware('permission:invoices.view')->prefix('organization/receivables')->name('organization.receivables.')->group(function () {
+    Route::middleware(['permission:invoices.view', 'plan.feature:module_retail'])->prefix('organization/receivables')->name('organization.receivables.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Organization\ReceivableController::class, 'dashboard'])->name('index');
         Route::get('client-report', [\App\Http\Controllers\Organization\ReceivableController::class, 'clientReport'])->name('client_report');
         Route::get('overdue-report', [\App\Http\Controllers\Organization\ReceivableController::class, 'overdueReport'])->name('overdue_report');

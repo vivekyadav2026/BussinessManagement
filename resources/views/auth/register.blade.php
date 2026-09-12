@@ -7,7 +7,7 @@
         </p>
     </x-slot>
 
-    <form method="POST" action="{{ route('register') }}" class="space-y-5">
+    <form method="POST" action="{{ route('register') }}" class="space-y-7">
         @csrf
 
         <!-- Organization Name -->
@@ -19,7 +19,23 @@
             <x-input-error :messages="$errors->get('organization_name')" class="mt-1.5" />
         </div>
 
-        <div class="grid grid-cols-1 gap-y-5 gap-x-4 sm:grid-cols-2">
+        <!-- Business Type -->
+        <div>
+            <label for="business_type" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Business Type</label>
+            <div class="mt-1 relative">
+                <select id="business_type" name="business_type" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition bg-white">
+                    <option value="business" {{ request('type') !== 'restaurant' ? 'selected' : '' }}>Retail & General Business</option>
+                    <option value="restaurant" {{ request('type') === 'restaurant' ? 'selected' : '' }}>Restaurant / Cafe / Cloud Kitchen</option>
+                </select>
+                <!-- Custom Arrow -->
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            <x-input-error :messages="$errors->get('business_type')" class="mt-1.5" />
+        </div>
+
+        <div class="grid grid-cols-1 gap-y-7 gap-x-4 sm:grid-cols-2">
             <!-- Name -->
             <div>
                 <label for="name" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Your Full Name</label>
@@ -48,7 +64,7 @@
             <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
         </div>
 
-        <div class="grid grid-cols-1 gap-y-5 gap-x-4 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-y-7 gap-x-4 sm:grid-cols-2">
             <!-- Password -->
             <div x-data="{ show: false }">
                 <label for="password" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Password</label>

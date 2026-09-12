@@ -19,4 +19,13 @@ class OrganizationSubscription extends Model
     {
         return $this->belongsTo(Plan::class);
     }
+
+    public function getBillingCycleAttribute()
+    {
+        if (!$this->starts_at || !$this->ends_at) {
+            return 'monthly';
+        }
+        return $this->starts_at->diffInDays($this->ends_at) > 60 ? 'yearly' : 'monthly';
+    }
 }
+

@@ -226,7 +226,8 @@
     width: 24px;
     border-radius: 6px;
   }
-  .plans{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .plans{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  .addon-plans{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
   .reviews-slider {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -242,15 +243,15 @@
     flex-direction: column;
     gap: 16px;
   }
-  .plan-card{background:var(--paper); border:1px solid var(--border-soft); border-radius:var(--radius); padding:20px 16px; position:relative; display: flex; flex-direction: column; justify-content: space-between;}
-  .plan-card.feat{border:1.5px solid var(--gold); box-shadow:var(--shadow);}
-  .plan-tag{position:absolute; top:-11px; right:20px; background:var(--gold); color:var(--ink); font-family:'IBM Plex Mono'; font-size:10px; font-weight:700; padding:4px 10px; border-radius:100px;}
+  .plan-card{background:#ffffff; border:1px solid var(--border-soft); border-radius:var(--radius); padding:24px 20px; position:relative; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;}
+  .plan-card:hover{border-color:var(--gold); box-shadow:0 8px 24px rgba(23,35,63,0.08); transform: translateY(-2px);}
+  .plan-card.feat{border:2px solid var(--gold); box-shadow:0 8px 24px rgba(217,154,43,0.12);}
+  .plan-tag{position:absolute; top:-12px; right:16px; background:var(--gold); color:var(--ink); font-family:'Space Grotesk', sans-serif; font-size:10px; font-weight:700; padding:4px 10px; border-radius:100px; letter-spacing: 0.04em; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
   .plan-name{font-family:'Space Grotesk'; font-weight:700; font-size:16px; margin-bottom:6px;}
   .plan-price{font-family:'IBM Plex Mono'; font-size:24px; font-weight:600; margin-bottom:18px;}
-  .plan-price span{font-size:12px; color:var(--ink-faint); font-weight:400;}
-  .plan-feats{list-style:none; font-size:12.8px; color:var(--ink-soft); margin-bottom:22px;}
-  .plan-feats li{padding:6px 0; display:flex; gap:8px; border-bottom:1px dashed var(--border-soft);}
-  .plan-feats li::before{content:'—'; color:var(--gold-deep);}
+  .plan-feats{list-style:none; font-size:13px; color:var(--ink-soft); margin-bottom:20px; padding:0;}
+  .plan-feats li{padding:8px 0; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border-soft); font-size:13px; color:var(--ink);}
+  .plan-feats li::before{content:none !important; display:none !important;}
   .cta-banner{
     background: radial-gradient(circle at 10% 20%, rgba(217, 154, 43, 0.15) 0%, transparent 40%), var(--ink);
     border-radius: 20px;
@@ -288,31 +289,35 @@
   footer.site{padding:44px 0; border-top:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center; color:var(--ink-faint); font-size:13px;}
 
   @media(max-width:900px){
-    .slider-dots { display: flex !important; }
+    .slider-dots { display: flex !important; justify-content: center !important; gap: 8px !important; margin-top: 12px !important; }
     .hero-grid, .rest-split, .payment-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
     .feat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
     .grid-2-cards { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
     .side-cards-list { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
-    .plans {
+    .plans, .addon-plans {
       display: flex !important;
+      flex-direction: row !important;
       flex-wrap: nowrap !important;
       overflow-x: auto !important;
       scroll-snap-type: x mandatory !important;
       gap: 16px !important;
-      padding: 16px 12px 28px !important;
+      padding: 16px 16px 28px !important;
       margin: 0 !important;
       -webkit-overflow-scrolling: touch !important;
       scrollbar-width: none !important;
       width: 100% !important;
+      box-sizing: border-box !important;
     }
-    .plans::-webkit-scrollbar {
+    .plans::-webkit-scrollbar, .addon-plans::-webkit-scrollbar {
       display: none !important;
     }
-    .plan-card {
+    .plan-card, .addon-card {
       flex: 0 0 85% !important;
+      min-width: 270px !important;
       max-width: 320px !important;
       scroll-snap-align: center !important;
       box-shadow: 0 4px 20px rgba(23,35,63,.08) !important;
+      box-sizing: border-box !important;
     }
     .reviews-slider {
       display: flex !important;
@@ -458,7 +463,14 @@
     }
   }
   @media(max-width:600px){
-    .plan-card { padding: 20px 16px !important; flex: 0 0 100% !important; scroll-snap-align: center !important; }
+    .plan-card, .addon-card { 
+      padding: 20px 16px !important; 
+      flex: 0 0 88% !important; 
+      min-width: 260px !important; 
+      max-width: 300px !important; 
+      scroll-snap-align: center !important; 
+      box-sizing: border-box !important;
+    }
     .reviews-slider .feat-card { flex: 0 0 100% !important; scroll-snap-align: center !important; }
     .plan-feats { font-size: 12.8px !important; }
     .feat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
@@ -499,7 +511,7 @@
             <a class="btn btn-ghost btn-sm" href="{{ route('dashboard') }}">See Dashboard</a>
         @else
             <a class="btn btn-ghost btn-sm" href="{{ route('login') }}">Log in</a>
-            <a class="btn btn-gold btn-sm" href="{{ route('register') }}">Get Started</a>
+            <a class="btn btn-gold btn-sm" href="{{ route('public.pricing') }}">Get Started</a>
         @endauth
       </div>
       
@@ -523,7 +535,7 @@
           <a class="btn btn-ghost" href="{{ route('dashboard') }}">See Dashboard</a>
       @else
           <a class="btn btn-ghost" href="{{ route('login') }}">Log in</a>
-          <a class="btn btn-gold" href="{{ route('register') }}">Get Started</a>
+          <a class="btn btn-gold" href="{{ route('public.pricing') }}">Get Started</a>
       @endauth
     </div>
   </div>
@@ -536,7 +548,7 @@
 
   <footer class="site">
     <div class="wrap" style="width: 100%; display: flex; justify-content: space-between;">
-      <div>© {{ date('Y') }} {{ config('app.name', 'Vyapaargo') }} · Laravel · MySQL · Razorpay</div>
+      <div>© {{ date('Y') }} {{ config('app.name', 'Vyapaargo') }}  </div>
     </div>
   </footer>
 
@@ -624,8 +636,16 @@
         }
       }
       
-      setupSliderDots('plans-slider', 'plans-dots');
-      setupSliderDots('reviews-slider', 'reviews-dots');
+      function initAllSliders() {
+        setupSliderDots('plans-slider', 'plans-dots');
+        setupSliderDots('plans-business-slider', 'plans-business-dots');
+        setupSliderDots('plans-restaurant-slider', 'plans-restaurant-dots');
+        setupSliderDots('plans-addon-slider', 'plans-addon-dots');
+        setupSliderDots('reviews-slider', 'reviews-dots');
+      }
+
+      window.reinitSliders = initAllSliders;
+      initAllSliders();
     });
   </script>
 

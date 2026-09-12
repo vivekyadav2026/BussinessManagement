@@ -31,6 +31,24 @@
                     <input type="text" name="name" value="{{ old('name', $plan->name) }}" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
                 </div>
                 <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Plan Type</label>
+                    <select name="type" class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                        <option value="base" {{ $plan->type === 'base' ? 'selected' : '' }}>Base Plan</option>
+                        <option value="addon" {{ $plan->type === 'addon' ? 'selected' : '' }}>Add-on Module</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Target Audience (Category)</label>
+                    <select name="category" class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                        <option value="business" {{ $plan->category === 'business' ? 'selected' : '' }}>Retail & Business</option>
+                        <option value="restaurant" {{ $plan->category === 'restaurant' ? 'selected' : '' }}>Restaurant POS</option>
+                        <option value="all" {{ $plan->category === 'all' ? 'selected' : '' }}>All / Both</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Status</label>
                     <select name="is_active" class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
                         <option value="1" {{ $plan->is_active ? 'selected' : '' }}>Active</option>
@@ -66,84 +84,98 @@
                             'label' => 'Retail & Inventory ERP',
                             'type' => 'boolean',
                             'default' => 'true',
+                            'category' => 'business',
                             'desc' => 'Products catalog, stock movements, inventory tracking & barcode scanner.'
                         ],
                         'module_payroll' => [
                             'label' => 'HR & Payroll Module',
                             'type' => 'boolean',
                             'default' => 'true',
+                            'category' => 'all',
                             'desc' => 'Employee attendance logging, monthly payroll generation & payslip PDF downloads.'
                         ],
                         'module_restaurant' => [
                             'label' => 'Restaurant POS & KOT',
                             'type' => 'boolean',
                             'default' => 'false',
+                            'category' => 'restaurant',
                             'desc' => 'Restaurant menu builder, dining tables management & kitchen orders.'
                         ],
                         'digital_qr_menu' => [
                             'label' => 'Digital QR Menu',
                             'type' => 'boolean',
                             'default' => 'false',
+                            'category' => 'restaurant',
                             'desc' => 'Contactless smartphone QR code scanning for customers to view digital food menu.'
                         ],
                         'kitchen_display' => [
                             'label' => 'Kitchen Display System (KDS)',
                             'type' => 'boolean',
                             'default' => 'false',
+                            'category' => 'restaurant',
                             'desc' => 'Real-time kitchen order screen for chefs & kitchen staff to manage KOT tickets.'
                         ],
                         'table_management' => [
                             'label' => 'Table Management',
                             'type' => 'boolean',
                             'default' => 'false',
+                            'category' => 'restaurant',
                             'desc' => 'Dine-in seating management, dynamic QR code generation & printable table sheets.'
                         ],
                         'payment_gateway' => [
                             'label' => 'Razorpay Payment Gateway',
                             'type' => 'boolean',
                             'default' => 'true',
+                            'category' => 'all',
                             'desc' => 'Enables online Razorpay checkout modal for instant plan upgrades & renewals.'
                         ],
                         'barcode_scanning' => [
                             'label' => 'Barcode Scanner Integration',
                             'type' => 'boolean',
                             'default' => 'true',
+                            'category' => 'all',
                             'desc' => 'Enables live barcode scanner camera & hardware reader in inventory/invoicing.'
                         ],
                         'max_clients' => [
                             'label' => 'Max Clients / Customers Quota',
                             'type' => 'text',
                             'default' => 'Unlimited',
+                            'category' => 'all',
                             'desc' => 'Maximum client/customer records an organization can store (e.g. 50, 500, Unlimited).'
                         ],
                         'max_tables' => [
                             'label' => 'Max Restaurant Tables Quota',
                             'type' => 'text',
                             'default' => 'Unlimited',
+                            'category' => 'restaurant',
                             'desc' => 'Maximum restaurant tables allowed for dine-in management (e.g. 10, 50, Unlimited).'
                         ],
                         'max_employees' => [
                             'label' => 'Max Employees Limit',
                             'type' => 'text',
-                            'default' => '50',
-                            'desc' => 'Maximum active employees an organization can create (e.g. 1, 5, 50, Unlimited).'
+                            'default' => 'Unlimited',
+                            'category' => 'all',
+                            'desc' => 'Maximum employees / staff members allowed (e.g. 5, 20, Unlimited).'
                         ],
                         'max_invoices_per_month' => [
                             'label' => 'Monthly Invoice Limit',
                             'type' => 'text',
                             'default' => 'Unlimited',
+                            'category' => 'all',
                             'desc' => 'Maximum sales invoices generated per calendar month (e.g. 50, 500, Unlimited).'
                         ],
                         'max_locations' => [
                             'label' => 'Multi-Location Limit',
                             'type' => 'text',
                             'default' => '1',
+                            'category' => 'all',
                             'desc' => 'Maximum branch locations an organization can create & manage (e.g. 1, 3, Unlimited).'
                         ],
                         'max_products' => [
                             'label' => 'Max Products Catalog Limit',
                             'type' => 'text',
                             'default' => 'Unlimited',
+                            'category' => 'all',
                             'desc' => 'Maximum inventory products allowed in catalog (e.g. 100, 1000, Unlimited).'
                         ],
                     ];
@@ -156,7 +188,7 @@
                     @php
                         $val = isset($definedFeatures[$code]) ? $definedFeatures[$code]->feature_value : $meta['default'];
                     @endphp
-                    <div class="flex items-start justify-between bg-gray-50/80 p-4 rounded-xl border border-gray-100 gap-4">
+                    <div class="feature-row flex items-start justify-between bg-gray-50/80 p-4 rounded-xl border border-gray-100 gap-4" data-category="{{ $meta['category'] }}">
                         <div class="w-7/12">
                             <label class="text-sm font-bold text-gray-900 block">{{ $meta['label'] }}</label>
                             <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">{{ $meta['desc'] }}</p>
@@ -179,7 +211,7 @@
                 
                 @foreach($definedFeatures as $code => $feature)
                     @if(!array_key_exists($code, $defaultFeatures))
-                        <div class="flex gap-4 items-center mt-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
+                        <div class="feature-row flex gap-4 items-center mt-3 bg-gray-50 p-3 rounded-xl border border-gray-200" data-category="all">
                             <input type="text" name="features[{{ $index }}][code]" value="{{ $code }}" class="w-1/2 border-gray-300 rounded-lg px-3 py-1.5 text-xs font-bold">
                             <input type="text" name="features[{{ $index }}][value]" value="{{ $feature->feature_value }}" class="w-1/2 border-gray-300 rounded-lg px-3 py-1.5 text-xs font-bold">
                             <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2">&times;</button>
@@ -215,7 +247,8 @@
     function addFeatureRow() {
         const container = document.getElementById('features-container');
         const row = document.createElement('div');
-        row.className = 'flex gap-4 items-center mt-3 bg-indigo-50/30 p-3 rounded-xl border border-indigo-200';
+        row.className = 'feature-row flex gap-4 items-center mt-3 bg-indigo-50/30 p-3 rounded-xl border border-indigo-200';
+        row.setAttribute('data-category', 'all');
         row.innerHTML = `
             <div class="w-1/2">
                 <input type="text" name="features[${featureIndex}][code]" placeholder="Feature Code (e.g. max_clients, max_tables)" class="w-full border-gray-300 rounded-lg px-3 py-1.5 text-xs font-bold">
@@ -229,5 +262,27 @@
         container.appendChild(row);
         featureIndex++;
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const categorySelect = document.querySelector('select[name="category"]');
+        const rows = document.querySelectorAll('.feature-row');
+
+        function filterFeatures() {
+            const selectedCategory = categorySelect.value;
+            rows.forEach(row => {
+                const rowCat = row.getAttribute('data-category');
+                if (selectedCategory === 'all' || rowCat === 'all' || rowCat === selectedCategory) {
+                    row.style.display = 'flex';
+                } else {
+                    row.style.display = 'none';
+                    // Do NOT set value to 'false' automatically on edit page to prevent data loss 
+                    // when simply toggling the category dropdown to see what happens.
+                }
+            });
+        }
+
+        categorySelect.addEventListener('change', filterFeatures);
+        filterFeatures(); // run on load
+    });
 </script>
 @endsection

@@ -10,9 +10,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class EmployeeController extends Controller
+class EmployeeController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:employees.create', only: ['create', 'store']),
+            new Middleware('permission:employees.edit', only: ['edit', 'update', 'toggleStatus']),
+            new Middleware('permission:employees.delete', only: ['destroy']),
+        ];
+    }
     public function index(Request $request)
     {
         $query = Employee::with('user.roles');
