@@ -9,7 +9,7 @@
         <h1>Saara business,<br><em>ek jagah.</em></h1>
         <p class="lead">Inventory, billing, staff, payroll aur restaurant orders — sab ek Laravel-powered platform mein. Har invoice ka paisa track ho, har customer ka order kitchen tak pahunche.</p>
         <div class="hero-actions">
-          <a class="btn btn-gold" href="{{ route('register') }}">Start Free Trial</a>
+          <a class="btn btn-gold" href="{{ route('register') }}">Get Started</a>
         </div>
         <div class="hero-note">
           <span>No card required</span>
@@ -172,7 +172,7 @@
     <div class="wrap text-center" style="max-width:700px; margin:0 auto; margin-bottom:60px;">
       <div class="eyebrow">Pricing Plans</div>
       <h2>Simple pricing, no hidden fees.</h2>
-      <p style="color:var(--ink-soft); font-size:15.5px; line-height:1.6;">Start for free and upgrade as your business grows. Cancel anytime.</p>
+      <p style="color:var(--ink-soft); font-size:15.5px; line-height:1.6;">Flexible plans tailored for your business needs. Upgrade anytime.</p>
     </div>
     <div class="wrap plans-container">
       <div class="plans" id="plans-slider">
@@ -205,7 +205,7 @@
               <a class="btn btn-ghost" href="{{ route('register') }}" style="width:100%; justify-content:center;">Contact Us</a>
             @else
               <a class="btn {{ $isFeat ? 'btn-gold' : 'btn-ghost' }}" href="{{ route('register') }}" style="width:100%; justify-content:center;">
-                {{ $plan->name === 'Free' ? 'Get Started' : 'Start Free Trial' }}
+                Get Started
               </a>
             @endif
           </div>

@@ -47,12 +47,12 @@ class SubscriptionTest extends TestCase
 
         // User switches to Pro plan
         $this->actingAs($user);
-        $response = $this->post(route('organization.subscription.switch'), ['plan_id' => $proPlan->id]);
-        $response->assertRedirect(route('organization.subscription.index'));
+        $response = $this->postJson(route('organization.subscription.confirm'), ['plan_id' => $proPlan->id]);
+        $response->assertStatus(200);
 
         // Refresh org
         $org->refresh();
-
+        
         $this->assertFalse(SubscriptionService::hasReachedLimit($org->id, 'max_employees', 100)); // Unlimited
         $this->assertTrue(SubscriptionService::hasFeature($org->id, 'module_payroll')); // Payroll true
     }

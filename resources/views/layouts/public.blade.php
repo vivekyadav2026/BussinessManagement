@@ -208,21 +208,23 @@
   .slider-dots {
     display: none;
     justify-content: center;
+    align-items: center;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 16px;
     padding-bottom: 8px;
   }
   .slider-dots .dot {
-    width: 8px;
-    height: 8px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: var(--border);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
   }
   .slider-dots .dot.active {
     background: var(--gold);
-    width: 20px;
-    border-radius: 4px;
+    width: 24px;
+    border-radius: 6px;
   }
   .plans{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
   .reviews-slider {
@@ -297,7 +299,7 @@
       overflow-x: auto !important;
       scroll-snap-type: x mandatory !important;
       gap: 16px !important;
-      padding: 16px 0 24px !important;
+      padding: 16px 12px 28px !important;
       margin: 0 !important;
       -webkit-overflow-scrolling: touch !important;
       scrollbar-width: none !important;
@@ -307,8 +309,10 @@
       display: none !important;
     }
     .plan-card {
-      flex: 0 0 100% !important;
+      flex: 0 0 85% !important;
+      max-width: 320px !important;
       scroll-snap-align: center !important;
+      box-shadow: 0 4px 20px rgba(23,35,63,.08) !important;
     }
     .reviews-slider {
       display: flex !important;
@@ -316,7 +320,7 @@
       overflow-x: auto !important;
       scroll-snap-type: x mandatory !important;
       gap: 16px !important;
-      padding: 16px 0 24px !important;
+      padding: 16px 12px 28px !important;
       margin: 0 !important;
       -webkit-overflow-scrolling: touch !important;
       scrollbar-width: none !important;
@@ -326,14 +330,18 @@
       display: none !important;
     }
     .reviews-slider .feat-card {
-      flex: 0 0 100% !important;
+      flex: 0 0 85% !important;
+      max-width: 320px !important;
       scroll-snap-align: center !important;
       margin-bottom: 0 !important;
     }
     .hero { padding: 32px 0 16px !important; }
     .hero h1 { font-size: 34px !important; margin-bottom: 12px !important; }
     .hero p.lead { font-size: 15px !important; margin-bottom: 16px !important; }
-    .nav { padding: 12px 20px !important; }
+    header.site { min-height: 72px !important; }
+    .nav { padding: 18px 20px !important; min-height: 72px !important; display: flex !important; align-items: center !important; }
+    .logo { font-size: 20px !important; gap: 10px !important; }
+    .logo .mark { width: 28px !important; height: 28px !important; }
     .nav-links { display: none !important; }
     .nav-cta { display: none !important; }
     .invoice-mock { margin: 24px auto 0 !important; width: 100% !important; max-width: 380px !important; }
@@ -356,8 +364,8 @@
       display: flex !important;
       flex-direction: column;
       justify-content: space-between;
-      width: 24px;
-      height: 18px;
+      width: 28px !important;
+      height: 22px !important;
       background: transparent;
       border: none;
       cursor: pointer;
@@ -367,8 +375,9 @@
     }
     .menu-toggle span {
       width: 100%;
-      height: 2px;
+      height: 2.5px !important;
       background: var(--ink);
+      border-radius: 2px;
       transition: all 0.25s ease-in-out;
     }
     .mobile-menu-backdrop {
@@ -490,7 +499,7 @@
             <a class="btn btn-ghost btn-sm" href="{{ route('dashboard') }}">See Dashboard</a>
         @else
             <a class="btn btn-ghost btn-sm" href="{{ route('login') }}">Log in</a>
-            <a class="btn btn-gold btn-sm" href="{{ route('register') }}">Start Free</a>
+            <a class="btn btn-gold btn-sm" href="{{ route('register') }}">Get Started</a>
         @endauth
       </div>
       
@@ -514,7 +523,7 @@
           <a class="btn btn-ghost" href="{{ route('dashboard') }}">See Dashboard</a>
       @else
           <a class="btn btn-ghost" href="{{ route('login') }}">Log in</a>
-          <a class="btn btn-gold" href="{{ route('register') }}">Start Free Trial</a>
+          <a class="btn btn-gold" href="{{ route('register') }}">Get Started</a>
       @endauth
     </div>
   </div>
@@ -563,22 +572,55 @@
         });
       }
 
-      // Slider dots navigation sync
+      // Dynamic & Clickable Slider dots navigation sync
       function setupSliderDots(sliderId, dotsId) {
         const slider = document.getElementById(sliderId);
         const dotsContainer = document.getElementById(dotsId);
         if (slider && dotsContainer) {
-          const dots = dotsContainer.querySelectorAll('.dot');
-          slider.addEventListener('scroll', function() {
-            const index = Math.round(slider.scrollLeft / slider.offsetWidth);
-            dots.forEach((dot, idx) => {
-              if (idx === index) {
-                dot.classList.add('active');
-              } else {
-                dot.classList.remove('active');
-              }
+          const cards = Array.from(slider.children).filter(el => el.classList.contains('plan-card') || el.classList.contains('feat-card'));
+          if (cards.length > 0) {
+            dotsContainer.innerHTML = '';
+            cards.forEach((card, i) => {
+              const dot = document.createElement('span');
+              dot.className = 'dot' + (i === 0 ? ' active' : '');
+              dot.style.cursor = 'pointer';
+              dot.setAttribute('title', 'Slide to item ' + (i + 1));
+              dot.addEventListener('click', function(e) {
+                e.preventDefault();
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+              });
+              dotsContainer.appendChild(dot);
             });
-          });
+
+            const dots = dotsContainer.querySelectorAll('.dot');
+            
+            let isScrolling;
+            slider.addEventListener('scroll', function() {
+              window.clearTimeout(isScrolling);
+              isScrolling = setTimeout(function() {
+                const sliderCenter = slider.scrollLeft + (slider.offsetWidth / 2);
+                let closestIndex = 0;
+                let minDistance = Infinity;
+
+                cards.forEach((card, idx) => {
+                  const cardCenter = card.offsetLeft - slider.offsetLeft + (card.offsetWidth / 2);
+                  const distance = Math.abs(sliderCenter - cardCenter);
+                  if (distance < minDistance) {
+                    minDistance = distance;
+                    closestIndex = idx;
+                  }
+                });
+
+                dots.forEach((dot, idx) => {
+                  if (idx === closestIndex) {
+                    dot.classList.add('active');
+                  } else {
+                    dot.classList.remove('active');
+                  }
+                });
+              }, 40);
+            }, { passive: true });
+          }
         }
       }
       

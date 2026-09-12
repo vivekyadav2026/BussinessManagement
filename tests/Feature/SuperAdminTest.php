@@ -27,7 +27,7 @@ class SuperAdminTest extends TestCase
         $response = $this->actingAs($superAdmin)->get('/super-admin');
 
         $response->assertStatus(200);
-        $response->assertSee('Platform Overview');
+        $response->assertSee('Platform Analytics');
     }
 
     public function test_organization_admin_cannot_access_super_admin_dashboard()

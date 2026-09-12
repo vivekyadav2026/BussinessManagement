@@ -27,7 +27,7 @@ class InvoiceTest extends TestCase
 
     public function test_invoice_creation_deducts_stock_securely()
     {
-        $org = Organization::create(['name' => 'Org 1']);
+        $org = Organization::create(['name' => 'Org 1', 'cgst_percent' => 5, 'sgst_percent' => 5]);
         $user = User::factory()->create(['organization_id' => $org->id]);
         $role = Role::create(['name' => 'Organization Admin', 'organization_id' => $org->id]);
         $user->roles()->attach($role);
@@ -40,7 +40,6 @@ class InvoiceTest extends TestCase
             'organization_id' => $org->id,
             'name' => 'Laptop',
             'selling_price' => 1000,
-            'tax_rate' => 10
         ]);
         
         // Add 10 stock

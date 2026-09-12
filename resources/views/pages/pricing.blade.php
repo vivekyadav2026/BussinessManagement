@@ -5,7 +5,7 @@
     <div class="wrap text-center" style="text-align: center; max-width: 700px; margin: 0 auto;">
         <div class="eyebrow">Pricing Plans</div>
         <h1 class="page-title">Simple pricing, <br><em>no hidden fees</em>.</h1>
-        <p class="page-lead" style="max-width: 600px;">Start for free and upgrade as your business grows. Cancel anytime.</p>
+        <p class="page-lead" style="max-width: 600px;">Flexible plans tailored for your business needs. Upgrade anytime.</p>
     </div>
 </section>
 
@@ -41,7 +41,7 @@
                         <a class="btn btn-ghost w-100" href="{{ route('register') }}" style="width:100%; justify-content:center;">Contact Us</a>
                     @else
                         <a class="btn {{ $isFeat ? 'btn-gold' : 'btn-ghost' }} w-100" href="{{ route('register') }}" style="width:100%; justify-content:center;">
-                            {{ $plan->name === 'Free' ? 'Get Started' : 'Start Free Trial' }}
+                            Get Started
                         </a>
                     @endif
                 </div>

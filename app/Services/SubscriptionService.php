@@ -15,7 +15,7 @@ class SubscriptionService
     {
         $subscription = OrganizationSubscription::with(['plan.features'])
             ->where('organization_id', $orgId)
-            ->latest()
+            ->latest('id')
             ->first();
 
         if ($subscription && in_array($subscription->status, ['Active', 'Trial'])) {
@@ -92,7 +92,7 @@ class SubscriptionService
         $org = Organization::find($orgId);
         if (!$org) return true;
 
-        $subscription = OrganizationSubscription::where('organization_id', $orgId)->latest()->first();
+        $subscription = OrganizationSubscription::where('organization_id', $orgId)->latest('id')->first();
 
         if ($subscription) {
             if (in_array($subscription->status, ['Expired', 'Cancelled'])) {
