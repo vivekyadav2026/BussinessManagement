@@ -49,9 +49,23 @@
                 <option value="Takeaway" {{ $orderType === 'Takeaway' ? 'selected' : '' }}>🛍️ Takeaway / Parcel</option>
             </select>
 
-            <button type="button" onclick="window.print()" class="px-3.5 py-2 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition flex items-center gap-1.5 shadow-xs">
-                🖨️ Print
-            </button>
+            <!-- Print Options Dropdown -->
+            <div class="relative no-print" x-data="{ printOpen: false }">
+                <button type="button" @click="printOpen = !printOpen" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+                    <span>🖨️ Print Report</span>
+                    <svg class="w-3.5 h-3.5 transition-transform" :class="printOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+
+                <div x-show="printOpen" @click.outside="printOpen = false" x-cloak
+                     class="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-gray-200 py-1.5 z-50 text-xs">
+                    <button type="button" @click="printReport('all'); printOpen = false" class="w-full text-left px-4 py-2.5 hover:bg-indigo-50 font-bold text-slate-800 flex items-center gap-2 transition">
+                        <span>📊 Print Entire Analysis Report</span>
+                    </button>
+                    <button type="button" @click="printReport('items'); printOpen = false" class="w-full text-left px-4 py-2.5 hover:bg-indigo-50 font-bold text-slate-800 flex items-center gap-2 border-t border-gray-100 transition">
+                        <span>🥘 Print Only Selling Items</span>
+                    </button>
+                </div>
+            </div>
 
             <!-- Custom Date Range Sub-Bar -->
             <div x-show="showCustomDates" x-cloak class="w-full flex items-center gap-2 pt-2 border-t border-gray-100 mt-2">
@@ -72,7 +86,7 @@
     </div>
 
     <!-- 4 KPI Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print-kpi-section">
         
         <!-- Total Revenue -->
         <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/80 p-5 rounded-2xl shadow-xs relative overflow-hidden">
@@ -133,7 +147,7 @@
     </div>
 
     <!-- Navigation Tabs Bar -->
-    <div class="flex items-center gap-2 border-b border-gray-200 pb-1">
+    <div class="flex items-center gap-2 border-b border-gray-200 pb-1 no-print">
         <button type="button" @click="activeTab = 'dishes'" 
             :class="activeTab === 'dishes' ? 'border-indigo-600 text-indigo-600 font-black' : 'border-transparent text-gray-500 hover:text-gray-700 font-semibold'" 
             class="py-2.5 px-4 text-xs border-b-2 transition flex items-center gap-2">
@@ -150,10 +164,10 @@
     </div>
 
     <!-- TAB 1: DISH SALES & REVENUE ANALYTICS -->
-    <div x-show="activeTab === 'dishes'" class="space-y-6">
+    <div x-show="activeTab === 'dishes'" class="space-y-6 print-dishes-tab">
 
         <!-- Order Types Breakdown & Revenue Trend -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 print-breakdown-section">
 
             <!-- Order Type Breakdown (4 Cols) -->
             <div class="lg:col-span-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-xs space-y-4">
@@ -208,7 +222,7 @@
         </div>
 
         <!-- Detailed Food Item Sales Table -->
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs space-y-4">
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs space-y-4 print-dishes-section">
             <div class="flex items-center justify-between border-b pb-3">
                 <div>
                     <h3 class="text-base font-black text-gray-900 flex items-center gap-2">
@@ -274,7 +288,7 @@
             </div>
 
             <!-- Dish Table Pagination Links -->
-            <div class="pt-2 border-t border-gray-100">
+            <div class="pt-2 border-t border-gray-100 no-print">
                 {{ $itemSales->links() }}
             </div>
         </div>
@@ -282,7 +296,7 @@
     </div>
 
     <!-- TAB 2: CUSTOMER ORDER & PURCHASE HISTORY -->
-    <div x-show="activeTab === 'customers'" class="space-y-6" x-cloak>
+    <div x-show="activeTab === 'customers'" class="space-y-6 print-customers-tab" x-cloak>
         
         <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs space-y-4">
             
@@ -295,7 +309,7 @@
                     <p class="text-xs text-gray-500 mt-0.5">See exactly which customer ordered what dishes and how much they spent</p>
                 </div>
 
-                <div class="w-full sm:w-72">
+                <div class="w-full sm:w-72 no-print">
                     <input type="text" x-model="customerSearch" placeholder="🔍 Search customer name or phone..." 
                         class="w-full border-gray-300 rounded-xl text-xs py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
                 </div>
@@ -375,7 +389,7 @@
             </div>
 
             <!-- Customer Table Pagination Links -->
-            <div class="pt-2 border-t border-gray-100">
+            <div class="pt-2 border-t border-gray-100 no-print">
                 {{ $customerSummary->links() }}
             </div>
 
@@ -425,5 +439,46 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+function printReport(mode) {
+    if (mode === 'items') {
+        document.body.classList.add('print-items-only');
+    } else {
+        document.body.classList.remove('print-items-only');
+    }
+    window.print();
+    setTimeout(function() {
+        document.body.classList.remove('print-items-only');
+    }, 1000);
+}
 </script>
+
+<style>
+@media print {
+    .no-print { display: none !important; }
+    
+    /* When printing entire analysis, force both tabs to display */
+    body:not(.print-items-only) .print-dishes-tab,
+    body:not(.print-items-only) .print-customers-tab {
+        display: block !important;
+    }
+
+    /* When printing only selling items, hide everything else */
+    body.print-items-only .print-kpi-section,
+    body.print-items-only .print-breakdown-section,
+    body.print-items-only .print-customers-tab {
+        display: none !important;
+    }
+
+    body.print-items-only .print-dishes-tab,
+    body.print-items-only .print-dishes-section {
+        display: block !important;
+    }
+
+    /* Page reset styling */
+    body { background: white !important; font-size: 11px !important; }
+    .shadow-xs, .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
+    .border { border-color: #e2e8f0 !important; }
+}
+</style>
 @endsection

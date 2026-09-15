@@ -364,6 +364,16 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <script src="{{ asset('js/app.js') }}" defer></script>
     @stack('styles')
+    <style>
+        @media print {
+            .hidden.lg\:fixed, header, .bg-white.shadow, #mobile-menu, nav, .sticky.top-0 { display: none !important; }
+            .md\:pl-64 { padding-left: 0 !important; }
+            .dash-content { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
+            body, html { background: white !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .no-print { display: none !important; }
+        }
+    </style>
 </head>
 <body class="h-full font-sans antialiased text-gray-900" x-data="{ sidebarOpen: false, sidebarCollapsed: false }">
 
@@ -381,9 +391,9 @@
                 <div class="flex items-center px-4 mb-3 mt-3">
                     <div class="logo text-white flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-[#D99A2B] flex items-center justify-center shadow-sm">
-                            <span class="text-gray-900 font-extrabold text-xl">V</span>
+                            <span class="text-gray-900 font-extrabold text-xl">{{ auth()->user()->organization ? substr(auth()->user()->organization->name, 0, 1) : 'V' }}</span>
                         </div>
-                        <span class="truncate max-w-[150px] font-bold text-lg tracking-tight">Vyapaargo</span>
+                        <span class="truncate max-w-[150px] font-bold text-lg tracking-tight">{{ auth()->user()->organization->name ?? 'Vyapaargo' }}</span>
                     </div>
                 </div>
                 <nav class="mt-5 flex-1 space-y-1 px-2">
@@ -400,10 +410,10 @@
                 <div class="flex flex-shrink-0 items-center justify-between px-4 mb-3 mt-1">
                     <div class="logo text-white flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-lg bg-[#D99A2B] flex items-center justify-center shadow-sm">
-                            <span class="text-gray-900 font-extrabold text-xl">V</span>
+                            <span class="text-gray-900 font-extrabold text-xl">{{ auth()->user()->organization ? substr(auth()->user()->organization->name, 0, 1) : 'V' }}</span>
                         </div>
-                        <span x-show="!sidebarCollapsed" class="truncate max-w-[140px] font-bold text-lg tracking-tight" title="Vyapaargo">
-                            Vyapaargo
+                        <span x-show="!sidebarCollapsed" class="truncate max-w-[140px] font-bold text-lg tracking-tight" title="{{ auth()->user()->organization->name ?? 'Vyapaargo' }}">
+                            {{ auth()->user()->organization->name ?? 'Vyapaargo' }}
                         </span>
                     </div>
                 </div>
@@ -568,29 +578,53 @@
                     </div>
 
                     <!-- Notifications Dropdown -->
+                    @php
+                        $unreadNotifications = auth()->user()->unreadNotifications;
+                        $notificationCount = $unreadNotifications->count();
+                    @endphp
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none relative transition-colors">
                             <span class="sr-only">View notifications</span>
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.07 6.07 0 00-1-3.5M9 17v1a3 3 0 006 0v-1m-6 0H9m0 0a3 3 0 01-3-3v-3.5M9 17h6" /></svg>
-                            <span class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
+                            @if($notificationCount > 0)
+                                <span class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
+                            @endif
                         </button>
                         <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-80 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30" style="display: none;">
-                            <div class="px-4 py-2 text-sm font-semibold border-b border-gray-100 text-gray-800">Notifications</div>
+                            <div class="px-4 py-2 text-sm font-semibold border-b border-gray-100 text-gray-800 flex justify-between items-center">
+                                Notifications
+                                @if($notificationCount > 0)
+                                    <form action="{{ route('organization.notifications.markAllAsRead') }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Mark all as read</button>
+                                    </form>
+                                @endif
+                            </div>
                             <div class="divide-y divide-gray-50 max-h-64 overflow-y-auto">
-                                <div class="px-4 py-3 hover:bg-gray-50 text-xs">
-                                    <p class="font-medium text-gray-900">Payment Received</p>
-                                    <p class="text-gray-500 mt-0.5">Sharma Traders paid ₹10,132</p>
-                                    <p class="text-gray-400 text-[10px] mt-1">2 mins ago</p>
-                                </div>
-                                <div class="px-4 py-3 hover:bg-gray-50 text-xs">
-                                    <p class="font-medium text-gray-900">New KOT Order</p>
-                                    <p class="text-gray-500 mt-0.5">Table 07 ordered Butter Chicken</p>
-                                    <p class="text-gray-400 text-[10px] mt-1">10 mins ago</p>
-                                </div>
-                                <div class="px-4 py-3 hover:bg-gray-50 text-xs">
-                                    <p class="font-medium text-gray-900">Low Stock Warning</p>
-                                    <p class="text-gray-500 mt-0.5">Basmati Rice (25kg) is below 5 units</p>
-                                    <p class="text-gray-400 text-[10px] mt-1">1 hour ago</p>
+                                @forelse($unreadNotifications as $notification)
+                                    <div class="px-4 py-3 hover:bg-gray-50 text-xs">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <p class="font-medium text-gray-900">{{ $notification->data['title'] ?? 'Notification' }}</p>
+                                                <p class="text-gray-500 mt-0.5">{{ $notification->data['message'] ?? '' }}</p>
+                                                <p class="text-gray-400 text-[10px] mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                            </div>
+                                            <form action="{{ route('organization.notifications.markAsRead', $notification->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="text-gray-400 hover:text-indigo-600 p-1" title="Mark as read">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="px-4 py-6 text-center text-gray-500 text-xs">
+                                        No new notifications
+                                    </div>
+                                @endforelse
+                                
+                                <div class="px-4 py-2 border-t border-gray-100 text-center">
+                                    <a href="{{ route('organization.notifications.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">View all notifications</a>
                                 </div>
                             </div>
                         </div>

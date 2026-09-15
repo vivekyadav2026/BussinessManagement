@@ -84,22 +84,13 @@
                 </div>
             </div>
 
-            <!-- Quick Note Preset Tags -->
-            <div class="flex items-center gap-2 overflow-x-auto text-[11px] pb-1">
-                <span class="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Quick Tag:</span>
-                <button type="button" @click="appendPresetNote('📦 Takeaway')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition border border-slate-200/60">📦 Takeaway</button>
-                <button type="button" @click="appendPresetNote('🍽️ Counter Dine-in')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition border border-slate-200/60">🍽️ Counter Dine-in</button>
-                <button type="button" @click="appendPresetNote('🌶️ Spicy')" class="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-semibold transition border border-red-200/60">🌶️ Spicy</button>
-                <button type="button" @click="appendPresetNote('🚫 Less Sugar')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 font-semibold transition border border-amber-200/60">🚫 Less Sugar</button>
-            </div>
-
             <!-- Items Cards Grid -->
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[540px] overflow-y-auto pr-1">
                 @foreach($categories as $cat)
                     @foreach($cat->items as $item)
                         <div x-show="(selectedCategory === 'all' || selectedCategory === {{ $cat->id }}) && ('{{ strtolower(addslashes($item->name)) }}'.includes(searchQuery.toLowerCase()) || '{{ strtolower(addslashes($cat->name)) }}'.includes(searchQuery.toLowerCase()))"
                             @click="addToCart({{ json_encode($item) }})"
-                            class="bg-white border border-gray-200 hover:border-indigo-500 rounded-xl p-3 cursor-pointer transition-all transform hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between group relative overflow-hidden">
+                            class="bg-white border border-gray-200 hover:border-indigo-500 rounded-xl p-3 cursor-pointer transition-all hover:shadow-md flex flex-col justify-between group relative overflow-hidden">
                             
                             <div class="space-y-1">
                                 <div class="flex items-start justify-between gap-1">
@@ -139,15 +130,30 @@
                 </div>
 
                 <!-- Customer Name / Token Input -->
-                <div class="pt-3 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Customer / Token #</label>
-                        <button type="button" @click="generateQuickToken()" class="text-[10px] text-indigo-600 font-bold hover:underline">
-                            ⚡ Auto Token
-                        </button>
+                <div class="pt-3 space-y-3">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Customer / Token #</label>
+                            <button type="button" @click="generateQuickToken()" class="text-[10px] text-indigo-600 font-bold hover:underline">
+                                ⚡ Auto Token
+                            </button>
+                        </div>
+                        <input type="text" x-model="customerName" placeholder="e.g. Token 105 or Customer Name" 
+                               class="w-full border-gray-200 rounded-xl text-xs py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-gray-50/50 font-bold">
                     </div>
-                    <input type="text" x-model="customerName" placeholder="e.g. Token 105 or Customer Name" 
-                           class="w-full border-gray-200 rounded-xl text-xs py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-gray-50/50 font-bold">
+
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Cooking Instructions</label>
+                        </div>
+                        <div class="flex items-center gap-1.5 overflow-x-auto text-[10px] pb-1">
+                            <button type="button" @click="appendPresetNote('📦 Takeaway')" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition border border-slate-200/60 whitespace-nowrap">📦 Takeaway</button>
+                            <button type="button" @click="appendPresetNote('🌶️ Spicy')" class="px-2 py-0.5 rounded bg-red-50 hover:bg-red-100 text-red-700 font-semibold transition border border-red-200/60 whitespace-nowrap">🌶️ Spicy</button>
+                            <button type="button" @click="appendPresetNote('🚫 Less Sugar')" class="px-2 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-700 font-semibold transition border border-red-200/60 whitespace-nowrap">🚫 Less Sugar</button>
+                        </div>
+                        <input type="text" x-model="cookingNotes" placeholder="e.g. Less oil, extra spicy..." 
+                               class="w-full border-gray-200 rounded-xl text-xs py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-gray-50/50 font-bold">
+                    </div>
                 </div>
 
                 <!-- Cart Items Scroll List -->
@@ -314,10 +320,16 @@
                             <td class="px-4 py-3 text-gray-500" x-text="order.items.length + ' items'"></td>
                             <td class="px-4 py-3 font-black text-emerald-600 text-sm">₹<span x-text="parseFloat(order.total).toFixed(2)"></span></td>
                             <td class="px-4 py-3 text-gray-500" x-text="new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></td>
-                            <td class="px-4 py-3 text-right">
+                            <td class="px-4 py-3 text-right flex items-center justify-end gap-2">
+                                <template x-if="order.invoice_id">
+                                    <a :href="'/organization/invoices/' + order.invoice_id" target="_blank" 
+                                       class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition">
+                                        👁️ View
+                                    </a>
+                                </template>
                                 <a :href="'/organization/menu/pos/orders/' + order.id + '/print-receipt'" target="_blank" 
                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition shadow-2xs">
-                                    🖨️ Print Receipt
+                                    🖨️ Print Bill
                                 </a>
                             </td>
                         </tr>
@@ -432,6 +444,7 @@ function counterBilling() {
         editingOrderId: null,
         editingOrderNumber: '',
         customerName: '',
+        cookingNotes: '',
         cart: [],
         
         // Modal State
@@ -506,6 +519,7 @@ function counterBilling() {
         resetCartForm() {
             this.cart = [];
             this.customerName = '';
+            this.cookingNotes = '';
             this.editingOrderId = null;
             this.editingOrderNumber = '';
         },
@@ -516,10 +530,10 @@ function counterBilling() {
         },
 
         appendPresetNote(tag) {
-            if (!this.customerName) {
-                this.customerName = tag;
-            } else if (!this.customerName.includes(tag)) {
-                this.customerName += ' | ' + tag;
+            if (!this.cookingNotes) {
+                this.cookingNotes = tag;
+            } else if (!this.cookingNotes.includes(tag)) {
+                this.cookingNotes += ' | ' + tag;
             }
         },
 
@@ -542,6 +556,7 @@ function counterBilling() {
             const payload = {
                 order_id: this.editingOrderId,
                 customer_name: this.customerName || ('Token ' + Math.floor(100 + Math.random() * 900)),
+                notes: this.cookingNotes,
                 items: this.cart.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
             };
 
@@ -567,6 +582,7 @@ function counterBilling() {
             this.editingOrderId = order.id;
             this.editingOrderNumber = order.order_number;
             this.customerName = order.customer_name;
+            this.cookingNotes = order.special_notes || '';
             this.cart = order.items.map(i => ({
                 id: i.menu_item_id,
                 name: i.name_snapshot,
@@ -604,6 +620,7 @@ function counterBilling() {
                 const payload = {
                     order_id: this.editingOrderId,
                     customer_name: this.customerName || ('Token ' + Math.floor(100 + Math.random() * 900)),
+                    notes: this.cookingNotes,
                     items: this.cart.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
                 };
 

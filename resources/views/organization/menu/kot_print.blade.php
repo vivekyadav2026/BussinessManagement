@@ -219,10 +219,10 @@
         </table>
 
         <!-- Cooking Instructions / Notes -->
-        @if($order->notes)
+        @if($order->special_notes)
             <div class="notes-box">
                 <div class="bold uppercase" style="font-size: 11px; text-decoration: underline; margin-bottom: 2px;">⚠️ COOKING INSTRUCTIONS:</div>
-                <div class="bold uppercase" style="font-size: 13px;">{{ $order->notes }}</div>
+                <div class="bold uppercase" style="font-size: 13px;">{{ $order->special_notes }}</div>
             </div>
         @endif
 

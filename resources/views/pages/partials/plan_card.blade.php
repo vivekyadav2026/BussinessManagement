@@ -41,14 +41,17 @@
                 <div class="price-amount" style="font-family:'IBM Plex Mono', monospace; font-size:26px; font-weight:700; color:var(--ink);">Custom</div>
                 <div style="font-size: 11.5px; color: var(--ink-faint); margin-top: 2px;">Tailored for large operations</div>
             @else
-                <div class="price-monthly">
+                <div class="price-monthly" style="margin-bottom: 4px;">
                     <span class="price-amount" style="font-family:'IBM Plex Mono', monospace; font-size:26px; font-weight:700; color:var(--ink);">&#8377;{{ number_format($plan->price_monthly, 0) }}</span>
                     <span class="price-period" style="font-size:12px; color:var(--ink-faint); font-weight:500;"> / {{ $plan->name === 'Free' ? 'forever' : 'month' }}</span>
                 </div>
-                <div class="price-yearly">
-                    <span class="price-amount" style="font-family:'IBM Plex Mono', monospace; font-size:26px; font-weight:700; color:var(--ink);">&#8377;{{ number_format($plan->price_yearly, 0) }}</span>
-                    <span class="price-period" style="font-size:12px; color:var(--ink-faint); font-weight:500;"> / year</span>
+                @if($plan->price_yearly > 0 && $plan->price_monthly > 0 && $plan->name !== 'Free')
+                <div class="price-yearly" style="display: flex; align-items: center; gap: 6px;">
+                    <span class="price-amount" style="font-family:'IBM Plex Mono', monospace; font-size:14px; font-weight:600; color:var(--ink-soft);">&#8377;{{ number_format($plan->price_yearly, 0) }}</span>
+                    <span class="price-period" style="font-size:11px; color:var(--ink-faint); font-weight:500;"> / year</span>
+                    <span style="font-size: 10px; background: rgba(217,154,43,0.15); color: var(--gold-deep); padding: 2px 6px; border-radius: 4px; font-weight: 700;">SAVE {{ round((($plan->price_monthly * 12) - $plan->price_yearly) / ($plan->price_monthly * 12) * 100) }}%</span>
                 </div>
+                @endif
             @endif
         </div>
         

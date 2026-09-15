@@ -8,7 +8,16 @@
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Employees</h1>
             <p class="text-sm text-gray-500 mt-0.5">Manage your organization's staff profiles, location assignments, and system login access.</p>
         </div>
-        <a href="{{ route('organization.employees.create') }}" class="px-4 py-2.5 bg-[var(--theme-active)] text-[var(--theme-active-text)] rounded-xl font-semibold text-sm hover:opacity-95 shadow-sm transition">+ Add Employee</a>
+        @php
+            $orgId = auth()->user()->organization_id;
+            $currentCount = \App\Models\Employee::where('organization_id', $orgId)->count();
+            $limitReached = \App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_employees', $currentCount);
+        @endphp
+        @if(!$limitReached)
+            <a href="{{ route('organization.employees.create') }}" class="px-4 py-2.5 bg-[var(--theme-active)] text-[var(--theme-active-text)] rounded-xl font-semibold text-sm hover:opacity-95 shadow-sm transition">+ Add Employee</a>
+        @else
+            <a href="{{ route('organization.subscription.index') }}" class="px-4 py-2.5 bg-gray-200 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-300 shadow-sm transition" title="Employee limit reached. Please upgrade.">Upgrade to Add Employee</a>
+        @endif
     </div>
 
     @if(session('success'))
@@ -100,6 +109,13 @@
                                         @else
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                         @endif
+                                    </button>
+                                </form>
+                                <form action="{{ route('organization.employees.destroy', $emp) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this employee?');" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete Employee">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>
                             </div>

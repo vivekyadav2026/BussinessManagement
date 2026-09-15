@@ -11,6 +11,7 @@ class Organization extends Model
         'email',
         'phone',
         'address',
+        'business_type',
         'gst_number', 'cgst_percent', 'sgst_percent',
         'upi_id',
         'logo',

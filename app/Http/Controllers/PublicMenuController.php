@@ -23,7 +23,20 @@ class PublicMenuController extends Controller
           ->orderBy('sort_order')
           ->get();
 
-        return view('public.menu.index', compact('organization', 'location', 'categories'));
+        $tableId = session('restaurant_table_id');
+        $table = $tableId ? \App\Models\RestaurantTable::find($tableId) : null;
+
+        $activeOrders = collect();
+        if ($tableId) {
+            $activeOrders = \App\Models\RestaurantOrder::with('items')
+                ->where('restaurant_table_id', $tableId)
+                ->whereDate('created_at', now()->today())
+                ->whereNotIn('status', ['Cancelled'])
+                ->latest()
+                ->get();
+        }
+
+        return view('public.menu.index', compact('organization', 'location', 'categories', 'table', 'activeOrders'));
     }
 
     public function showByToken($token)

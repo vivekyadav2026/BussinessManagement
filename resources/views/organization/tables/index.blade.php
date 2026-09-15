@@ -124,31 +124,31 @@
                 </div>
                 
                 <!-- Card Body (QR Code & Actions) -->
-                <div class="p-5 flex-grow flex flex-col items-center justify-center bg-white space-y-3">
+                <div class="p-4 flex-grow flex flex-col items-center justify-center bg-white space-y-3">
                     
                     <!-- QR Box Frame -->
-                    <div class="p-3.5 bg-gradient-to-b from-slate-50 to-indigo-50/30 border border-indigo-100 rounded-2xl shadow-inner flex flex-col items-center justify-center">
-                        <div class="bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
-                            {!! QrCode::size(130)->margin(1)->generate($tablePublicUrl) !!}
+                    <div class="p-3 bg-gradient-to-b from-slate-50 to-indigo-50/30 border border-indigo-100 rounded-xl shadow-inner flex flex-col items-center justify-center w-full">
+                        <div class="bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                            {!! QrCode::size(110)->margin(1)->generate($tablePublicUrl) !!}
                         </div>
-                        <span class="text-[10px] font-bold text-gray-400 tracking-wider uppercase mt-2">Scan for Digital Menu</span>
+                        <span class="text-[9px] font-bold text-gray-400 tracking-wider uppercase mt-2">Digital Menu</span>
                     </div>
 
                     <!-- Token Code Chip -->
                     <div class="text-center w-full px-2">
-                        <span class="inline-block bg-slate-100 text-slate-600 text-[10px] font-mono font-semibold px-2.5 py-1 rounded-md max-w-full truncate border border-slate-200" title="{{ $table->public_token }}">
-                            Token: {{ substr($table->public_token, 0, 14) }}...
+                        <span class="inline-block bg-slate-100 text-slate-500 text-[10px] font-mono font-medium px-2 py-0.5 rounded max-w-full truncate border border-slate-200" title="{{ $table->public_token }}">
+                            Token: {{ substr($table->public_token, 0, 10) }}...
                         </span>
                     </div>
 
                     <!-- Direct Quick Action Links -->
-                    <div class="flex items-center gap-2 pt-1">
-                        <button onclick="copyTableLink('{{ $tablePublicUrl }}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg border border-indigo-200 transition-colors flex items-center gap-1.5">
+                    <div class="flex items-center justify-center gap-2 pt-1 w-full">
+                        <button onclick="copyTableLink('{{ $tablePublicUrl }}')" class="flex-1 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-bold rounded-lg border border-indigo-200 transition-colors flex justify-center items-center gap-1.5" title="Copy Menu Link">
                             <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                            <span>Copy Link</span>
+                            <span>Copy</span>
                         </button>
                         
-                        <a href="{{ $tablePublicUrl }}" target="_blank" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-lg border border-gray-200 transition-colors flex items-center gap-1.5" title="Preview Digital Menu">
+                        <a href="{{ $tablePublicUrl }}" target="_blank" class="flex-1 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 text-[11px] font-bold rounded-lg border border-gray-200 transition-colors flex justify-center items-center gap-1.5" title="Preview Digital Menu">
                             <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                             <span>Preview</span>
                         </a>
@@ -157,27 +157,27 @@
                 </div>
 
                 <!-- Card Action Footer -->
-                <div class="bg-slate-50/80 px-4 py-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                <div class="bg-slate-50/80 px-4 py-3 border-t border-gray-100 flex items-center justify-between gap-1 text-xs">
                     <button onclick="openEditTableModal({{ $table->id }}, '{{ addslashes($table->name) }}', {{ $table->is_active ? 1 : 0 }})" 
-                            class="px-2.5 py-1 text-xs font-bold text-slate-700 hover:text-indigo-600 hover:bg-white rounded-md border border-slate-200 transition-all flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        <span>Edit</span>
+                            class="p-2 text-slate-600 hover:text-indigo-600 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all flex items-center gap-1" title="Edit Table">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        <span class="sr-only">Edit</span>
                     </button>
                     
                     <form action="{{ route('organization.menu.tables.regenerate', $table) }}" method="POST" onsubmit="return confirm('Regenerating will invalidate the existing printed QR code. Continue?');" class="m-0">
                         @csrf
-                        <button type="submit" class="px-2.5 py-1 text-xs font-bold text-amber-700 hover:bg-white rounded-md border border-amber-200 transition-all flex items-center gap-1" title="Generate fresh QR Token">
-                            <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                            <span>Regenerate</span>
+                        <button type="submit" class="p-2 text-amber-600 hover:bg-white rounded-lg border border-transparent hover:border-amber-200 transition-all flex items-center gap-1" title="Generate fresh QR Token">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            <span class="sr-only">Regenerate</span>
                         </button>
                     </form>
 
                     <form action="{{ route('organization.menu.tables.destroy', $table) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this table?');" class="m-0">
                         @csrf 
                         @method('DELETE')
-                        <button type="submit" class="px-2.5 py-1 text-xs font-bold text-rose-600 hover:bg-white rounded-md border border-rose-200 transition-all flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            <span>Delete</span>
+                        <button type="submit" class="p-2 text-rose-600 hover:bg-white rounded-lg border border-transparent hover:border-rose-200 transition-all flex items-center gap-1" title="Delete Table">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            <span class="sr-only">Delete</span>
                         </button>
                     </form>
                 </div>

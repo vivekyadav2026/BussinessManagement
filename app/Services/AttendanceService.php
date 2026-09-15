@@ -18,11 +18,6 @@ class AttendanceService
         $startDate = Carbon::create($year, $month, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
-        // Prevent looking into the future
-        if ($endDate->isFuture()) {
-            $endDate = now()->endOfDay();
-        }
-
         $attendances = Attendance::where('employee_id', $employee->id)
             ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
             ->get();
@@ -32,8 +27,21 @@ class AttendanceService
         $halfDayCount = $attendances->where('status', 'Half Day')->count();
         $leaveCount = $attendances->where('status', 'Leave')->count();
 
-        // Payroll effective working days logic (1 half day = 0.5 days)
-        $effectiveWorkingDays = $presentCount + ($halfDayCount * 0.5);
+        // SME Deductive Logic: Unrecorded days are assumed Present/Paid. Only deduct explicit Absents and Half Days.
+        $daysInMonth = $startDate->daysInMonth;
+        
+        $daysBeforeJoining = 0;
+        if ($employee->joining_date) {
+            $joiningDate = Carbon::parse($employee->joining_date)->startOfDay();
+            if ($joiningDate->gt($startDate)) {
+                $daysBeforeJoining = min($startDate->diffInDays($joiningDate), $daysInMonth);
+            }
+        }
+
+        $effectiveWorkingDays = $daysInMonth - $daysBeforeJoining - $absentCount - ($halfDayCount * 0.5);
+        if ($effectiveWorkingDays < 0) {
+            $effectiveWorkingDays = 0;
+        }
 
         return [
             'present' => $presentCount,

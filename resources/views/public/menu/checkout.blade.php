@@ -1,98 +1,94 @@
 @extends('layouts.customer')
 
 @section('content')
-<div class="px-4 py-6 max-w-2xl mx-auto space-y-6">
+<div class="px-4 py-5 max-w-2xl mx-auto space-y-5">
     <!-- Header -->
-    <div class="flex items-center gap-3 pb-3 border-b border-stone-200">
-        <a href="{{ route('public.order.cart', [$organization->id, $location->id]) }}" class="p-2.5 rounded-2xl border border-stone-300 bg-white text-[#0F172A] hover:bg-stone-100 shadow-2xs transition font-black text-sm" title="Back to Cart">
-            &larr; Back
+    <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
+        <a href="{{ route('public.order.cart', [$organization->id, $location->id]) }}" class="p-2 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 shadow-2xs transition font-extrabold text-xs flex items-center gap-1">
+            <span>&larr;</span> Back to Cart
         </a>
-        <div>
-            <span class="inline-block bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] text-[10px] font-mono font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest mb-0.5">
-                Final Step
-            </span>
-            <h1 class="text-2xl font-black text-[#0F172A] tracking-tight">Checkout & Place Order</h1>
+        <div class="min-w-0">
+            <h1 class="text-xl font-black text-gray-900 tracking-tight">Checkout & Place Order</h1>
+            <p class="text-[11px] text-gray-400 font-semibold">Enter your details to confirm your order</p>
         </div>
     </div>
 
     @if(session('error'))
-        <div class="bg-rose-50 border border-rose-300 text-rose-950 px-4 py-3 rounded-2xl text-xs font-black shadow-xs">
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-2xl text-xs font-bold shadow-2xs">
             {{ session('error') }}
         </div>
     @endif
 
-    <form action="{{ route('public.order.place', [$organization->id, $location->id]) }}" method="POST" class="space-y-6">
+    <form action="{{ route('public.order.place', [$organization->id, $location->id]) }}" method="POST" class="space-y-4">
         @csrf
         
         <!-- Customer Contact Details Card -->
-        <div class="bg-white rounded-3xl shadow-xs border border-stone-200 p-6 space-y-4">
-            <div class="flex items-center gap-2 pb-3 border-b border-stone-100">
-                <span class="w-2 h-5 bg-[#0F172A] rounded-full"></span>
-                <h2 class="text-xs font-black text-[#0F172A] uppercase tracking-wider">Contact Information</h2>
-            </div>
+        <div class="bg-white rounded-2xl shadow-2xs border border-gray-200/80 p-5 space-y-3.5">
+            <h2 class="text-xs font-black text-gray-700 uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-1.5">
+                <span>👤</span> Contact Information
+            </h2>
             
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-extrabold text-[#0F172A] uppercase tracking-wider mb-1.5">Full Name <span class="text-rose-600">*</span></label>
-                    <input type="text" name="customer_name" class="w-full border-2 border-stone-200 focus:border-[#0F172A] focus:bg-white bg-stone-50/50 rounded-2xl px-4 py-3 text-xs font-black text-[#0F172A] outline-none transition placeholder-stone-400 @error('customer_name') border-rose-400 @enderror" required placeholder="e.g. Rahul Sharma">
-                    @error('customer_name') <span class="text-xs font-bold text-rose-600 mt-1 block">{{ $message }}</span> @enderror
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Your Name <span class="text-rose-500">*</span></label>
+                    <input type="text" name="customer_name" class="w-full border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:bg-white bg-gray-50/50 rounded-xl px-3.5 py-2.5 text-xs font-bold text-gray-900 outline-none transition placeholder-gray-400 @error('customer_name') border-rose-400 @enderror" required placeholder="e.g. Rahul Sharma">
+                    @error('customer_name') <span class="text-xs font-semibold text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-extrabold text-[#0F172A] uppercase tracking-wider mb-1.5">Mobile Phone Number <span class="text-rose-600">*</span></label>
-                    <input type="tel" name="customer_phone" class="w-full border-2 border-stone-200 focus:border-[#0F172A] focus:bg-white bg-stone-50/50 rounded-2xl px-4 py-3 text-xs font-black text-[#0F172A] outline-none transition placeholder-stone-400 @error('customer_phone') border-rose-400 @enderror" required placeholder="e.g. 9876543210">
-                    @error('customer_phone') <span class="text-xs font-bold text-rose-600 mt-1 block">{{ $message }}</span> @enderror
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Mobile Phone Number <span class="text-rose-500">*</span></label>
+                    <input type="tel" name="customer_phone" class="w-full border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:bg-white bg-gray-50/50 rounded-xl px-3.5 py-2.5 text-xs font-bold text-gray-900 outline-none transition placeholder-gray-400 @error('customer_phone') border-rose-400 @enderror" required placeholder="e.g. 9876543210">
+                    @error('customer_phone') <span class="text-xs font-semibold text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
         </div>
 
         <!-- Dining & Order Type Card -->
-        <div class="bg-white rounded-3xl shadow-xs border border-stone-200 p-6 space-y-4">
-            <div class="flex items-center gap-2 pb-3 border-b border-stone-100">
-                <span class="w-2 h-5 bg-[#0F172A] rounded-full"></span>
-                <h2 class="text-xs font-black text-[#0F172A] uppercase tracking-wider">Dining & Preparation Option</h2>
-            </div>
+        <div class="bg-white rounded-2xl shadow-2xs border border-gray-200/80 p-5 space-y-3.5">
+            <h2 class="text-xs font-black text-gray-700 uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-1.5">
+                <span>🍽️</span> Dining & Instructions
+            </h2>
             
             @if(session('restaurant_table_id'))
                 @php $table = \App\Models\RestaurantTable::find(session('restaurant_table_id')); @endphp
-                <div class="bg-[#FEF3C7]/60 border-2 border-[#FDE68A] rounded-2xl p-4 flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-[#0F172A] text-amber-400 flex items-center justify-center font-black text-lg shrink-0 shadow-xs">
+                <div class="bg-orange-50/60 border border-orange-200/80 rounded-xl p-3.5 flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center font-black text-base shrink-0 shadow-2xs">
                         🪑
                     </div>
                     <div>
-                        <h4 class="font-black text-[#92400E] text-base">Dine-in at Table {{ $table->name ?? '1' }}</h4>
-                        <p class="text-xs text-[#92400E] font-bold mt-0.5 leading-relaxed">You scanned Table {{ $table->name ?? '1' }} QR code. Our staff will bring your freshly cooked dishes directly to your table.</p>
+                        <h4 class="font-extrabold text-orange-900 text-sm">Dine-in at Table {{ $table->name ?? '1' }}</h4>
+                        <p class="text-[11px] text-orange-800 font-medium mt-0.5 leading-relaxed">Our staff will serve your freshly cooked dishes directly to your table.</p>
                     </div>
                 </div>
             @else
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label class="flex items-center p-4 border-2 border-stone-200 rounded-2xl cursor-pointer hover:border-[#0F172A] hover:bg-stone-50 transition">
-                        <input type="radio" name="order_type" value="Takeaway" class="w-4 h-4 text-[#0F172A] border-stone-300 focus:ring-[#0F172A]" checked required>
-                        <span class="ml-3 font-black text-[#0F172A] text-xs">🛍️ Takeaway / Self Pick-up</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <label class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-orange-500 hover:bg-orange-50/30 transition">
+                        <input type="radio" name="order_type" value="Takeaway" class="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500" checked required>
+                        <span class="ml-2.5 font-bold text-gray-800 text-xs">🛍️ Takeaway / Self Pick-up</span>
                     </label>
-                    <label class="flex items-center p-4 border-2 border-stone-200 rounded-2xl cursor-pointer hover:border-[#0F172A] hover:bg-stone-50 transition">
-                        <input type="radio" name="order_type" value="Online" class="w-4 h-4 text-[#0F172A] border-stone-300 focus:ring-[#0F172A]">
-                        <span class="ml-3 font-black text-[#0F172A] text-xs">🛵 Delivery / Online Order</span>
+                    <label class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-orange-500 hover:bg-orange-50/30 transition">
+                        <input type="radio" name="order_type" value="Online" class="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500">
+                        <span class="ml-2.5 font-bold text-gray-800 text-xs">🛵 Delivery / Online Order</span>
                     </label>
                 </div>
             @endif
             
             <div>
-                <label class="block text-xs font-extrabold text-[#0F172A] uppercase tracking-wider mb-1.5">Special Cooking Instructions (Optional)</label>
-                <textarea name="special_notes" rows="2" class="w-full border-2 border-stone-200 focus:border-[#0F172A] focus:bg-white bg-stone-50/50 rounded-2xl px-4 py-2.5 text-xs font-bold text-[#0F172A] outline-none transition placeholder-stone-400" placeholder="e.g. Extra spicy, less oil, no garlic"></textarea>
+                <label class="block text-xs font-bold text-gray-700 mb-1">Cooking Instructions / Notes (Optional)</label>
+                <textarea name="special_notes" rows="2" class="w-full border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:bg-white bg-gray-50/50 rounded-xl px-3.5 py-2 text-xs font-medium text-gray-900 outline-none transition placeholder-gray-400" placeholder="e.g. Extra spicy, less oil, no garlic"></textarea>
             </div>
         </div>
 
         <!-- Ordered Items Summary Preview -->
-        <div class="bg-white rounded-3xl shadow-xs border border-stone-200 p-6 space-y-3">
-            <h3 class="text-xs font-black text-[#475569] uppercase tracking-wider border-b border-stone-100 pb-3">Order Items Summary</h3>
-            <div class="space-y-2">
+        <div class="bg-white rounded-2xl shadow-2xs border border-gray-200/80 p-5 space-y-2.5">
+            <h3 class="text-xs font-black text-gray-500 uppercase tracking-wider border-b border-gray-100 pb-2">Order Summary</h3>
+            <div class="space-y-1.5 divide-y divide-gray-50">
                 @php $subtotal = 0; @endphp
                 @foreach($cart as $item)
                     @php $subtotal += $item['price'] * $item['quantity']; @endphp
-                    <div class="flex justify-between items-center text-xs font-semibold text-[#0F172A]">
-                        <span><b class="text-[#0F172A] font-mono font-black mr-1.5">{{ $item['quantity'] }}x</b> {{ $item['name'] }}</span>
-                        <span class="font-mono font-black text-[#0F172A]">₹{{ number_format($item['price'] * $item['quantity'], 2) }}</span>
+                    <div class="pt-1.5 flex justify-between items-center text-xs font-medium text-gray-800">
+                        <span><b class="text-orange-600 font-mono font-black mr-1">{{ $item['quantity'] }}x</b> {{ $item['name'] }}</span>
+                        <span class="font-mono font-bold text-gray-900">₹{{ number_format($item['price'] * $item['quantity'], 2) }}</span>
                     </div>
                 @endforeach
             </div>
@@ -111,27 +107,27 @@
             $totalTax = $cgstAmount + $sgstAmount;
             $total = $subtotal + $totalTax;
         @endphp
-        <div class="bg-[#0F172A] text-white rounded-3xl p-6 shadow-xl space-y-3 border border-slate-800">
-            <div class="flex justify-between text-xs text-slate-300 font-semibold">
+        <div class="bg-white text-gray-900 rounded-2xl p-5 shadow-2xs space-y-2.5 border border-gray-200/80">
+            <div class="flex justify-between text-xs text-gray-600 font-medium">
                 <span>Items Subtotal</span>
-                <span class="font-mono font-bold">₹{{ number_format($subtotal, 2) }}</span>
+                <span class="font-mono font-bold text-gray-900">₹{{ number_format($subtotal, 2) }}</span>
             </div>
-            <div class="flex justify-between text-xs text-slate-300 font-semibold">
+            <div class="flex justify-between text-xs text-gray-600 font-medium">
                 <span>CGST ({{ $cgstRate }}%)</span>
-                <span class="font-mono font-bold">₹{{ number_format($cgstAmount, 2) }}</span>
+                <span class="font-mono font-bold text-gray-900">₹{{ number_format($cgstAmount, 2) }}</span>
             </div>
-            <div class="flex justify-between text-xs text-slate-300 font-semibold">
+            <div class="flex justify-between text-xs text-gray-600 font-medium">
                 <span>SGST ({{ $sgstRate }}%)</span>
-                <span class="font-mono font-bold">₹{{ number_format($sgstAmount, 2) }}</span>
+                <span class="font-mono font-bold text-gray-900">₹{{ number_format($sgstAmount, 2) }}</span>
             </div>
-            <div class="flex justify-between border-t border-slate-800 pt-3 text-lg font-black text-white">
+            <div class="flex justify-between border-t border-dashed border-gray-200 pt-2.5 text-base font-black text-gray-900">
                 <span>Total Amount to Pay</span>
-                <span class="font-mono text-amber-300">₹{{ number_format($total, 2) }}</span>
+                <span class="font-mono text-orange-600 text-xl">₹{{ number_format($total, 2) }}</span>
             </div>
-            <p class="text-[11px] text-slate-400 mt-2 text-center font-bold">Payment collected at table/counter after serving.</p>
+            <p class="text-[11px] text-gray-400 text-center font-medium pt-1">Payment collected at table/counter after serving.</p>
         </div>
 
-        <button type="submit" class="block w-full text-center bg-[#0F172A] hover:bg-black text-white font-black py-4 rounded-2xl shadow-xl transition transform active:scale-95 text-base uppercase tracking-wider">
+        <button type="submit" class="block w-full text-center bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold py-3.5 rounded-2xl shadow-md transition transform active:scale-98 text-sm uppercase tracking-wider">
             🔥 Confirm & Send Order to Kitchen &rarr;
         </button>
     </form>

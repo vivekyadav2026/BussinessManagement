@@ -84,6 +84,7 @@ class CounterBillingController extends Controller
         $request->validate([
             'order_id' => 'nullable|exists:restaurant_orders,id',
             'customer_name' => 'nullable|string|max:255',
+            'notes' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',
             'items.*.menu_item_id' => 'required|exists:menu_items,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -100,7 +101,18 @@ class CounterBillingController extends Controller
                 }
 
                 if (!$order) {
-                    $orderNumber = 'ORD-' . strtoupper(Str::random(6));
+                    $lastOrder = RestaurantOrder::where('organization_id', $orgId)
+                        ->where('location_id', $locationId)
+                        ->whereDate('created_at', \Carbon\Carbon::today())
+                        ->orderBy('id', 'desc')
+                        ->first();
+                    
+                    $nextNumber = 1;
+                    if ($lastOrder && preg_match('/-(\d+)$/', $lastOrder->order_number, $matches)) {
+                        $nextNumber = intval($matches[1]) + 1;
+                    }
+                    
+                    $orderNumber = 'TKN-' . $nextNumber;
                     $order = RestaurantOrder::create([
                         'organization_id' => $orgId,
                         'location_id' => $locationId,
@@ -110,10 +122,12 @@ class CounterBillingController extends Controller
                         'order_type' => 'Counter',
                         'status' => 'Received',
                         'payment_status' => 'Pending',
+                        'special_notes' => $request->notes,
                     ]);
                 } else {
                     $order->update([
                         'customer_name' => $request->customer_name ?? $order->customer_name,
+                        'special_notes' => $request->notes,
                     ]);
                     $order->items()->delete();
                 }
@@ -135,8 +149,8 @@ class CounterBillingController extends Controller
                 }
 
                 $org = \App\Models\Organization::find($orgId);
-                $cgstPercent = ($org && $org->cgst_percent !== null && $org->cgst_percent > 0) ? (float)$org->cgst_percent : 2.5;
-                $sgstPercent = ($org && $org->sgst_percent !== null && $org->sgst_percent > 0) ? (float)$org->sgst_percent : 2.5;
+                $cgstPercent = $org ? (float)$org->cgst_percent : 0;
+                $sgstPercent = $org ? (float)$org->sgst_percent : 0;
 
                 $cgstAmount = round(($subtotal * $cgstPercent) / 100, 2);
                 $sgstAmount = round(($subtotal * $sgstPercent) / 100, 2);
@@ -157,8 +171,10 @@ class CounterBillingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Order saved successfully!',
-                'order' => $order->load('items')
+                'message' => 'Token saved successfully!',
+                'order' => $order->load(['items']),
+                'print_kot_url' => route('organization.menu.pos.orders.print-kot', $order),
+                'print_receipt_url' => route('organization.menu.pos.orders.print-receipt', $order)
             ]);
         } catch (\Exception $e) {
             return response()->json([

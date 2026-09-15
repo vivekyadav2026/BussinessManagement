@@ -44,7 +44,7 @@
         <span class="text-xs text-slate-400 font-medium">Total Staff: {{ count($reportData) }}</span>
     </div>
     
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto print:overflow-visible">
         <table class="w-full text-left border-collapse whitespace-nowrap">
             <thead>
                 <tr class="bg-slate-50 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-gray-100">

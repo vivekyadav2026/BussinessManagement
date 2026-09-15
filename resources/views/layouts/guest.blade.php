@@ -57,7 +57,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-[var(--bg)] font-sans antialiased text-gray-900 flex flex-col justify-center py-6 sm:py-10 px-4 sm:px-6 lg:px-8">
+<body class="min-h-screen bg-[var(--bg)] font-sans antialiased text-gray-900 flex flex-col justify-start sm:justify-center py-6 sm:py-10 px-4 sm:px-6 lg:px-8">
     @php
         $maxWidthClass = $maxWidth ?? 'max-w-md';
     @endphp
@@ -80,9 +80,15 @@
         @endif
     </div>
 
-    <div class="mt-4 sm:mt-5 w-full {{ $maxWidthClass }} mx-auto">
+    <div class="mt-4 sm:mt-5 w-full {{ $maxWidthClass }} mx-auto mb-10">
         <div class="bg-white py-6 px-5 sm:py-7 sm:px-8 rounded-2xl shadow-lg border border-gray-200/80">
             {{ $slot }}
+        </div>
+        
+        <div class="mt-6 text-center text-xs text-gray-500 font-sans">
+            &copy; {{ date('Y') }} {{ config('app.name', 'Vyapaargo') }}. All rights reserved.<br>
+            <a href="{{ route('public.terms') }}" class="hover:text-gray-800 transition">Terms</a> &middot; 
+            <a href="{{ route('public.privacy') }}" class="hover:text-gray-800 transition">Privacy Policy</a>
         </div>
     </div>
 </body>

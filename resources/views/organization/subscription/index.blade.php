@@ -118,15 +118,14 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @foreach($currentSubscription->plan->features as $feature)
             @php
-                $label = $featureMap[$feature->feature_code] ?? ucwords(str_replace('_', ' ', $feature->feature_code));
                 $val = strtolower(trim($feature->feature_value));
+                if ($val === 'false' || $val === 'no' || $val === '0') continue;
+                $label = $featureMap[$feature->feature_code] ?? ucwords(str_replace('_', ' ', $feature->feature_code));
             @endphp
             <div class="bg-gray-50/70 border border-gray-100 p-3.5 rounded-xl flex justify-between items-center">
                 <span class="text-sm font-bold text-gray-700">{{ $label }}</span>
-                @if($val === 'true' || $val === 'yes')
+                @if($val === 'true' || $val === 'yes' || $val === '1')
                     <span class="text-xs font-bold bg-green-100 text-green-800 border border-green-200 px-3 py-0.5 rounded-full">✓ Enabled</span>
-                @elseif($val === 'false' || $val === 'no')
-                    <span class="text-xs font-bold bg-gray-100 text-gray-400 border border-gray-200 px-3 py-0.5 rounded-full">✗ Excluded</span>
                 @else
                     <span class="text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-0.5 rounded-full font-mono">{{ $feature->feature_value }}</span>
                 @endif
@@ -171,22 +170,22 @@
             $isMonthlyActive = $isSamePlan && $activeCycle === 'monthly';
             $isYearlyActive = $isSamePlan && $activeCycle === 'yearly';
         @endphp
-        <div class="panel p-6 shadow-sm flex flex-col {{ $isSamePlan ? 'ring-2 ring-indigo-600 border-indigo-600' : '' }}">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 flex flex-col border transition-all duration-300 {{ $isSamePlan ? 'border-indigo-600 ring-2 ring-indigo-600/20 shadow-lg relative overflow-hidden' : 'border-slate-200 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/50' }}">
             <div class="tag-monthly {{ $isMonthlyActive ? '' : 'hidden' }}">
                 <div class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">Current Plan (Monthly)</div>
             </div>
             <div class="tag-yearly {{ $isYearlyActive ? '' : 'hidden' }}">
                 <div class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">Current Plan (Yearly)</div>
             </div>
-            <h3 class="text-xl font-bold text-gray-900">{{ $plan->name }}</h3>
+            <h3 class="text-lg font-black text-slate-900 tracking-tight">{{ $plan->name }}</h3>
             
-            <div class="mt-2 mb-4 price-display-monthly">
-                <span class="text-3xl font-black text-gray-900 font-mono">₹{{ number_format($plan->price_monthly, 0) }}</span>
-                <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">/mo</span>
+            <div class="mt-2 mb-4 price-display-monthly flex items-end gap-1">
+                <span class="text-4xl font-black text-slate-900 tracking-tighter font-mono">₹{{ number_format($plan->price_monthly, 0) }}</span>
+                <span class="text-sm text-slate-500 font-medium mb-1">/mo</span>
             </div>
-            <div class="mt-2 mb-4 price-display-yearly hidden">
-                <span class="text-3xl font-black text-gray-900 font-mono">₹{{ number_format($plan->price_yearly, 0) }}</span>
-                <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">/yr</span>
+            <div class="mt-2 mb-4 price-display-yearly hidden flex items-end gap-1">
+                <span class="text-4xl font-black text-slate-900 tracking-tighter font-mono">₹{{ number_format($plan->price_yearly, 0) }}</span>
+                <span class="text-sm text-slate-500 font-medium mb-1">/yr</span>
             </div>
             
             <p class="text-sm text-gray-600 mb-6 flex-grow leading-relaxed">{{ $plan->description }}</p>
@@ -211,24 +210,22 @@
             </ul>
 
             {{-- Monthly Action Button --}}
-            <div class="btn-action-monthly mt-auto">
+            <div class="btn-action-monthly mt-auto flex justify-center">
                 @if($isMonthlyActive)
-                    <button disabled class="w-full btn btn-ghost py-2.5 justify-center cursor-not-allowed opacity-50">Active Plan (Monthly)</button>
+                    <button disabled class="w-auto px-6 btn btn-ghost mx-auto py-1.5 px-3 rounded-lg text-xs font-bold tracking-wide cursor-not-allowed opacity-60 justify-center">Active Plan (Monthly)</button>
                 @else
-                    <button type="button" onclick="openCheckoutModal({{ $plan->id }}, '{{ addslashes($plan->name) }}', {{ $plan->price_monthly }}, {{ $plan->price_yearly }}, 'base')" class="w-full btn btn-gold py-3 justify-center flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    <button type="button" onclick="openCheckoutModal({{ $plan->id }}, '{{ addslashes($plan->name) }}', {{ $plan->price_monthly }}, {{ $plan->price_yearly }}, 'base')" class="w-auto px-6 btn btn-gold mx-auto py-1.5 px-3 rounded-lg text-xs font-bold tracking-wide transition-all shadow-sm hover:shadow active:scale-[0.98] justify-center">
                         Switch to {{ $plan->name }} (Monthly)
                     </button>
                 @endif
             </div>
 
             {{-- Yearly Action Button --}}
-            <div class="btn-action-yearly mt-auto hidden">
+            <div class="btn-action-yearly mt-auto hidden flex justify-center">
                 @if($isYearlyActive)
-                    <button disabled class="w-full btn btn-ghost py-2.5 justify-center cursor-not-allowed opacity-50">Active Plan (Yearly)</button>
+                    <button disabled class="w-auto px-6 btn btn-ghost mx-auto py-1.5 px-3 rounded-lg text-xs font-bold tracking-wide cursor-not-allowed opacity-60 justify-center">Active Plan (Yearly)</button>
                 @else
-                    <button type="button" onclick="openCheckoutModal({{ $plan->id }}, '{{ addslashes($plan->name) }}', {{ $plan->price_monthly }}, {{ $plan->price_yearly }}, 'base')" class="w-full btn btn-gold py-3 justify-center flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    <button type="button" onclick="openCheckoutModal({{ $plan->id }}, '{{ addslashes($plan->name) }}', {{ $plan->price_monthly }}, {{ $plan->price_yearly }}, 'base')" class="w-auto px-6 btn btn-gold mx-auto py-1.5 px-3 rounded-lg text-xs font-bold tracking-wide transition-all shadow-sm hover:shadow active:scale-[0.98] justify-center">
                         {{ $isSamePlan ? 'Upgrade to Yearly' : 'Switch to ' . $plan->name . ' (Yearly)' }}
                     </button>
                 @endif
@@ -251,7 +248,7 @@
                 $isAddonMonthlyActive = $hasAddon && $addonCycle === 'monthly';
                 $isAddonYearlyActive = $hasAddon && $addonCycle === 'yearly';
             @endphp
-            <div class="panel p-5 shadow-sm flex flex-col border border-gray-100 {{ $hasAddon ? 'ring-2 ring-indigo-600' : '' }}">
+            <div class="bg-white rounded-3xl p-5 sm:p-6 flex flex-col border transition-all duration-300 relative {{ $hasAddon ? 'border-indigo-600 ring-2 ring-indigo-600/20 shadow-lg overflow-hidden' : 'border-slate-200 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/50' }}">
                 <div class="tag-monthly {{ $isAddonMonthlyActive ? '' : 'hidden' }}">
                     <div class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2">Active Add-on (Monthly)</div>
                 </div>
@@ -263,13 +260,13 @@
                 @endif
                 <h3 class="text-lg font-bold text-gray-900 mb-1">{{ $plan->name }}</h3>
                 
-                <div class="mt-1 mb-3 price-display-monthly">
-                    <span class="text-2xl font-black text-gray-900 font-mono">₹{{ number_format($plan->price_monthly, 0) }}</span>
-                    <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">/mo</span>
+                <div class="mt-2 mb-4 price-display-monthly flex items-end gap-1">
+                    <span class="text-3xl font-black text-slate-900 tracking-tighter font-mono">₹{{ number_format($plan->price_monthly, 0) }}</span>
+                    <span class="text-xs text-slate-500 font-medium mb-1">/mo</span>
                 </div>
-                <div class="mt-1 mb-3 price-display-yearly hidden">
-                    <span class="text-2xl font-black text-gray-900 font-mono">₹{{ number_format($plan->price_yearly, 0) }}</span>
-                    <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">/yr</span>
+                <div class="mt-2 mb-4 price-display-yearly hidden flex items-end gap-1">
+                    <span class="text-3xl font-black text-slate-900 tracking-tighter font-mono">₹{{ number_format($plan->price_yearly, 0) }}</span>
+                    <span class="text-xs text-slate-500 font-medium mb-1">/yr</span>
                 </div>
                 
                 <ul class="space-y-2 mb-4">
@@ -285,23 +282,22 @@
                 </ul>
 
                 {{-- Addon Monthly Button --}}
-                <div class="btn-action-monthly mt-auto">
+                <div class="btn-action-monthly mt-auto flex justify-center">
                     @if($isAddonMonthlyActive)
-                        <button disabled class="w-full btn btn-ghost py-2 justify-center cursor-not-allowed opacity-50 text-sm">Added (Monthly)</button>
+                        <button disabled class="w-auto px-6 btn btn-ghost mx-auto py-1 px-2.5 rounded-lg text-[11px] font-bold tracking-wide cursor-not-allowed opacity-60 justify-center">Added (Monthly)</button>
                     @else
-                        <button type="button" onclick="openCheckoutModal({{ $plan->id }}, '{{ addslashes($plan->name) }}', {{ $plan->price_monthly }}, {{ $plan->price_yearly }}, 'addon')" class="w-full btn btn-gold py-2 justify-center flex items-center gap-2 text-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-                            Add to Plan (Monthly)
-                        </button>
+                        <button type="button" onclick="openCheckoutModal({{ $plan->id }}, '{{ addslashes($plan->name) }}', {{ $plan->price_monthly }}, {{ $plan->price_yearly }}, 'addon')" class="w-auto px-6 btn btn-gold mx-auto py-1 px-2.5 rounded-lg text-[11px] font-bold tracking-wide transition-all shadow-sm hover:shadow active:scale-[0.98] justify-center">
+                                Add to Plan (Monthly)
+                            </button>
                     @endif
                 </div>
 
                 {{-- Addon Yearly Button --}}
-                <div class="btn-action-yearly mt-auto hidden">
+                <div class="btn-action-yearly mt-auto hidden flex justify-center">
                     @if($isAddonYearlyActive)
-                        <button disabled class="w-full btn btn-ghost py-2 justify-center cursor-not-allowed opacity-50 text-sm">Added (Yearly)</button>
+                        <button disabled class="w-auto px-6 btn btn-ghost mx-auto py-1 px-2.5 rounded-lg text-[11px] font-bold tracking-wide cursor-not-allowed opacity-60 justify-center">Added (Yearly)</button>
                     @else
-                        <button type="button" onclick="openCheckoutModal({{ $plan->id }}, '{{ addslashes($plan->name) }}', {{ $plan->price_monthly }}, {{ $plan->price_yearly }}, 'addon')" class="w-full btn btn-gold py-2 justify-center flex items-center gap-2 text-sm">
+                        <button type="button" onclick="openCheckoutModal({{ $plan->id }}, '{{ addslashes($plan->name) }}', {{ $plan->price_monthly }}, {{ $plan->price_yearly }}, 'addon')" class="w-auto px-6 btn btn-gold mx-auto py-2 justify-center flex items-center gap-2 text-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                             Add to Plan (Yearly)
                         </button>

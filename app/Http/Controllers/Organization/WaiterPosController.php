@@ -103,7 +103,18 @@ class WaiterPosController extends Controller
             $order = DB::transaction(function () use ($request, $orgId, $locationId) {
                 $tableId = $request->restaurant_table_id;
 
-                $orderNumber = 'ORD-' . strtoupper(Str::random(6));
+                $lastOrder = RestaurantOrder::where('organization_id', $orgId)
+                    ->where('location_id', $locationId)
+                    ->whereDate('created_at', \Carbon\Carbon::today())
+                    ->orderBy('id', 'desc')
+                    ->first();
+                
+                $nextNumber = 1;
+                if ($lastOrder && preg_match('/-(\d+)$/', $lastOrder->order_number, $matches)) {
+                    $nextNumber = intval($matches[1]) + 1;
+                }
+                
+                $orderNumber = 'TKN-' . $nextNumber;
                 $order = RestaurantOrder::create([
                     'organization_id' => $orgId,
                     'location_id' => $locationId,
@@ -114,7 +125,7 @@ class WaiterPosController extends Controller
                     'order_type' => $request->order_type,
                     'status' => 'Received',
                     'payment_status' => 'Pending',
-                    'notes' => $request->notes
+                    'special_notes' => $request->notes
                 ]);
 
                 $subtotal = 0;
@@ -158,7 +169,8 @@ class WaiterPosController extends Controller
                 'success' => true,
                 'message' => 'Order sent to Kitchen successfully!',
                 'order' => $order->load(['items', 'table']),
-                'print_kot_url' => route('organization.menu.pos.orders.print-kot', $order)
+                'print_kot_url' => route('organization.menu.pos.orders.print-kot', $order),
+                'print_receipt_url' => route('organization.menu.pos.orders.print-receipt', $order)
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -76,9 +76,12 @@ class RoleController extends Controller implements HasMiddleware
         if (!$hasRetail) {
             $excludedModules[] = 'Products';
             $excludedModules[] = 'Inventory';
+            $excludedModules[] = 'Clients';
+            $excludedModules[] = 'Invoices';
         }
         if (!$hasPayroll) {
             $excludedModules[] = 'Payroll';
+            $excludedModules[] = 'Attendance';
         }
         if (!$hasRestaurant) {
             $excludedModules[] = 'Restaurant';

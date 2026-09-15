@@ -89,7 +89,18 @@ class PublicOrderController extends Controller
 
         $request->validate($rules);
 
-        $orderNumber = 'ORD-' . strtoupper(Str::random(6));
+        $lastOrder = RestaurantOrder::where('organization_id', $organization->id)
+            ->where('location_id', $location->id)
+            ->whereDate('created_at', \Carbon\Carbon::today())
+            ->orderBy('id', 'desc')
+            ->first();
+        
+        $nextNumber = 1;
+        if ($lastOrder && preg_match('/-(\d+)$/', $lastOrder->order_number, $matches)) {
+            $nextNumber = intval($matches[1]) + 1;
+        }
+        
+        $orderNumber = 'TKN-' . $nextNumber;
 
         DB::beginTransaction();
         try {

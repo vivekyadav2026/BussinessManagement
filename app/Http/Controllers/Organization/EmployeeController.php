@@ -242,4 +242,22 @@ class EmployeeController extends Controller implements HasMiddleware
         
         return back()->with('success', 'Employee status updated.');
     }
+
+    public function destroy(Employee $employee)
+    {
+        abort_if($employee->organization_id !== auth()->user()->organization_id, 403);
+        
+        if ($employee->user_id === auth()->id()) {
+            return back()->with('error', 'You cannot delete yourself.');
+        }
+        
+        \DB::transaction(function () use ($employee) {
+            if ($employee->user) {
+                $employee->user->delete();
+            }
+            $employee->delete();
+        });
+
+        return redirect()->route('organization.employees.index')->with('success', 'Employee deleted successfully.');
+    }
 }

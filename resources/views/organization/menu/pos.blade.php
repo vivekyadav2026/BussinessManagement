@@ -68,9 +68,9 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-1.5 bg-stone-100 p-1 rounded-2xl border border-stone-200">
-                        <button type="button" @click="setOrderType('Dine-in')" :class="orderType === 'Dine-in' ? 'bg-slate-900 text-white font-black shadow-2xs' : 'text-slate-600 font-bold hover:bg-stone-200'" class="px-3.5 py-1.5 rounded-xl text-xs transition uppercase tracking-wider">🪑 Dine-in</button>
-                        <button type="button" @click="setOrderType('Takeaway')" :class="orderType === 'Takeaway' ? 'bg-slate-900 text-white font-black shadow-2xs' : 'text-slate-600 font-bold hover:bg-stone-200'" class="px-3.5 py-1.5 rounded-xl text-xs transition uppercase tracking-wider">🛍️ Parcel / Takeaway</button>
+                    <div class="flex items-center gap-1.5 bg-stone-100 p-1 rounded-2xl border border-stone-200 overflow-x-auto">
+                        <button type="button" @click="setOrderType('Dine-in')" :class="orderType === 'Dine-in' ? 'bg-slate-900 text-white font-black shadow-2xs' : 'text-slate-600 font-bold hover:bg-stone-200'" class="px-3 py-1.5 rounded-xl text-[10px] sm:text-xs transition uppercase tracking-wider whitespace-nowrap flex-shrink-0">🪑 Dine-in</button>
+                        <button type="button" @click="setOrderType('Takeaway')" :class="orderType === 'Takeaway' ? 'bg-slate-900 text-white font-black shadow-2xs' : 'text-slate-600 font-bold hover:bg-stone-200'" class="px-3 py-1.5 rounded-xl text-[10px] sm:text-xs transition uppercase tracking-wider whitespace-nowrap flex-shrink-0">🛍️ Parcel / Takeaway</button>
                     </div>
                 </div>
 
@@ -86,15 +86,16 @@
                             ]"
                             class="p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between min-h-[108px] relative group overflow-hidden">
                             
-                            <div class="flex items-start justify-between gap-1 w-full">
-                                <span class="font-black text-sm tracking-tight leading-snug truncate" 
-                                      :class="t.is_occupied ? 'text-slate-900' : 'text-slate-900'" 
-                                      x-text="t.name"></span>
-                                <span class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0 shadow-2xs" 
-                                      :class="t.is_occupied ? 'bg-amber-200 text-amber-900 border border-amber-300' : 'bg-emerald-200 text-emerald-900 border border-emerald-300'"
-                                      x-text="t.is_occupied ? 'Occupied' : 'Vacant'">
-                                </span>
-                            </div>
+                            <div class="flex flex-col gap-1 w-full relative">
+                                <div class="flex justify-between items-start w-full gap-1">
+                                    <span class="font-black text-[13px] tracking-tight leading-tight line-clamp-2 pr-1" 
+                                          :class="t.is_occupied ? 'text-slate-900' : 'text-slate-900'" 
+                                          x-text="t.name" :title="t.name"></span>
+                                    <span class="text-[9px] px-1.5 py-0.5 rounded-sm font-black uppercase tracking-wider shrink-0 shadow-2xs mt-0.5" 
+                                          :class="t.is_occupied ? 'bg-amber-200 text-amber-900 border border-amber-300' : 'bg-emerald-200 text-emerald-900 border border-emerald-300'"
+                                          x-text="t.is_occupied ? 'Busy' : 'Free'">
+                                    </span>
+                                </div>
 
                             <template x-if="t.is_occupied && t.active_order">
                                 <div class="mt-2 pt-2 border-t border-amber-200/90 w-full space-y-0.5">
@@ -276,22 +277,26 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="space-y-2 pt-1">
+                <div class="space-y-2 pt-3 border-t border-stone-200 mt-auto">
                     <div class="grid grid-cols-2 gap-2">
-                        <button type="button" @click="saveOrder('kot')" :disabled="loading || combinedItems.length === 0" class="w-full py-3 px-3 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-2xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50 uppercase tracking-wider">
+                        <button type="button" @click="saveOrder('kot')" :disabled="loading || combinedItems.length === 0" 
+                            class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-amber-950 rounded-xl text-[11px] font-black transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 uppercase">
                             <span>👨‍🍳 Send KOT</span>
                         </button>
 
-                        <button type="button" @click="openSettleModal()" :disabled="loading || combinedItems.length === 0" class="w-full py-3 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50 uppercase tracking-wider">
+                        <button type="button" @click="openSettleModal()" :disabled="loading || combinedItems.length === 0" 
+                            class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-black transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 uppercase">
                             <span>💳 Settle Bill</span>
                         </button>
                     </div>
 
-                    <div class="flex gap-2" x-show="activeOrderIds.length > 0">
-                        <a :href="activeKotUrl" target="_blank" class="flex-1 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-center rounded-xl text-xs font-black transition flex items-center justify-center gap-1">
+                    <div class="grid grid-cols-2 gap-2" x-show="activeOrderIds.length > 0">
+                        <a :href="activeKotUrl" target="_blank" 
+                           class="w-full py-2 bg-white border-2 border-amber-200 hover:border-amber-400 hover:bg-amber-50 text-amber-800 text-center rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
                             🖨️ KOT Slip
                         </a>
-                        <a :href="activeReceiptUrl" target="_blank" class="flex-1 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-center rounded-xl text-xs font-black transition flex items-center justify-center gap-1">
+                        <a :href="activeReceiptUrl" target="_blank" 
+                           class="w-full py-2 bg-white border-2 border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50 text-emerald-800 text-center rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
                             🧾 Customer Receipt
                         </a>
                     </div>
@@ -389,11 +394,6 @@ function waiterPos() {
         loading: false,
 
         init() {
-            if (this.cgstPercent <= 0 && this.sgstPercent <= 0) {
-                this.cgstPercent = 2.5;
-                this.sgstPercent = 2.5;
-            }
-
             const firstTable = @json($tables->first());
             if (firstTable) {
                 this.selectTable(firstTable);
@@ -455,7 +455,10 @@ function waiterPos() {
                         this.customerName = data.active_orders[0].customer_name || '';
                         this.customerPhone = data.active_orders[0].customer_phone || '';
                         this.orderType = data.active_orders[0].order_type || 'Dine-in';
-                        this.cookingNotes = data.active_orders.map(o => o.notes).filter(Boolean).join(' | ');
+                        this.cookingNotes = data.active_orders.map(o => o.special_notes).filter(Boolean).join(' | ');
+                        
+                        this.activeKotUrl = `/organization/menu/pos/orders/${data.active_orders[0].id}/print-kot`;
+                        this.activeReceiptUrl = `/organization/menu/pos/orders/${data.active_orders[0].id}/print-receipt`;
                         
                         let allSent = [];
                         data.active_orders.forEach(order => {
@@ -573,11 +576,12 @@ function waiterPos() {
             .then(data => {
                 this.loading = false;
                 if (data.success) {
-                    if(!this.activeOrderIds.includes(data.order.id)) {
+                    if (!this.activeOrderIds.includes(data.order.id)) {
                         this.activeOrderIds.push(data.order.id);
                     }
                     this.activeOrderNumber = data.order.order_number;
                     this.activeKotUrl = data.print_kot_url;
+                    this.activeReceiptUrl = data.print_receipt_url;
 
                     this.getTableOrder(this.selectedTableId);
                     
