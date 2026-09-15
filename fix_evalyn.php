@@ -1,0 +1,1 @@
+<?php require 'vendor/autoload.php'; $app = require_once 'bootstrap/app.php'; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); $org = \App\Models\Organization::where('email', 'like', '%evalyn%')->first(); if($org) { $org->business_type = 'restaurant'; $org->save(); echo 'Fixed ' . $org->name; } else { echo 'Not found'; }

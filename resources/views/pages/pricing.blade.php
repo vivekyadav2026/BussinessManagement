@@ -166,7 +166,7 @@
         <div class="plans-container" id="plans-business" style="display: {{ $type !== 'restaurant' ? 'block' : 'none' }};">
             <div class="plans" id="plans-business-slider">
                 @foreach($businessPlans as $plan)
-                    @include('pages.partials.plan_card', ['plan' => $plan])
+                    @include('pages.partials.plan_card', ['plan' => $plan, 'planType' => 'business'])
                 @endforeach
             </div>
             <div class="slider-dots" id="plans-business-dots"></div>
@@ -176,7 +176,7 @@
         <div class="plans-container" id="plans-restaurant" style="display: {{ $type === 'restaurant' ? 'block' : 'none' }};">
             <div class="plans" id="plans-restaurant-slider">
                 @foreach($restaurantPlans as $plan)
-                    @include('pages.partials.plan_card', ['plan' => $plan])
+                    @include('pages.partials.plan_card', ['plan' => $plan, 'planType' => 'restaurant'])
                 @endforeach
             </div>
             <div class="slider-dots" id="plans-restaurant-dots"></div>

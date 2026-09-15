@@ -80,7 +80,8 @@
     
     @php
         $btnText = $isAddon ? 'Add to Plan &rarr;' : 'Get Started &rarr;';
-        $targetUrl = route('register') . '?plan=' . $plan->id . ($plan->category ? '&type=' . $plan->category : '');
+        $forceType = $planType ?? ($plan->category === 'all' ? null : $plan->category);
+        $targetUrl = route('register') . '?plan=' . $plan->id . ($forceType ? '&type=' . $forceType : '');
     @endphp
 
     <div style="margin-top: auto; padding-top: 8px;">
