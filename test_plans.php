@@ -1,0 +1,1 @@
+<?php require 'vendor/autoload.php'; $app = require_once 'bootstrap/app.php'; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo \App\Models\Plan::all(['id', 'name', 'category', 'type'])->toJson(JSON_PRETTY_PRINT);

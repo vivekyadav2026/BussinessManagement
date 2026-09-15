@@ -1,4 +1,4 @@
-@props(['route', 'icon', 'active' => false])
+@props(['route', 'icon', 'active' => false, 'target' => '_self'])
 
 @php
     $classes = $active
@@ -7,7 +7,7 @@
     $iconClasses = $active ? 'text-[var(--theme-active-text)]' : 'text-gray-400 group-hover:text-[var(--theme-hover-text)]';
 @endphp
 
-<a href="{{ $route }}" class="{{ $classes }}" :class="typeof sidebarCollapsed !== 'undefined' && sidebarCollapsed ? 'justify-center px-2' : 'px-3'" title="{{ $slot }}">
+<a href="{{ $route }}" target="{{ $target }}" class="{{ $classes }}" :class="typeof sidebarCollapsed !== 'undefined' && sidebarCollapsed ? 'justify-center px-2' : 'px-3'" title="{{ $slot }}">
     <span class="flex-shrink-0 h-5 w-5 {{ $iconClasses }}" :class="typeof sidebarCollapsed !== 'undefined' && sidebarCollapsed ? 'mr-0' : 'mr-3'">
         {!! $icon !!}
     </span>

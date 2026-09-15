@@ -378,14 +378,12 @@
                         <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <div class="flex items-center px-4 mb-3">
+                <div class="flex items-center px-4 mb-3 mt-3">
                     <div class="logo text-white flex items-center gap-2">
-                        @if(auth()->user()->organization && auth()->user()->organization->logo)
-                            <img src="{{ asset('storage/' . auth()->user()->organization->logo) }}" class="org-header-logo w-7 h-7 rounded-md object-cover border border-white/20">
-                        @else
-                            <div class="mark bg-[#D99A2B]"></div>
-                        @endif
-                        <span class="truncate max-w-[150px]">{{ auth()->user()->organization->name ?? 'Vyapaargo' }}</span>
+                        <div class="w-8 h-8 rounded-lg bg-[#D99A2B] flex items-center justify-center shadow-sm">
+                            <span class="text-gray-900 font-extrabold text-xl">V</span>
+                        </div>
+                        <span class="truncate max-w-[150px] font-bold text-lg tracking-tight">Vyapaargo</span>
                     </div>
                 </div>
                 <nav class="mt-5 flex-1 space-y-1 px-2">
@@ -399,20 +397,15 @@
     <div :class="sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'" class="sidebar-expanded md:w-64 hidden md:fixed md:inset-y-0 md:flex md:flex-col transition-all duration-300 z-30">
         <div class="flex min-h-0 flex-1 flex-col" style="background-color: var(--theme-bg);">
             <div class="flex flex-1 flex-col overflow-y-auto sidebar-scroll pt-5 pb-6">
-                <div class="flex flex-shrink-0 items-center justify-between px-4 mb-3">
+                <div class="flex flex-shrink-0 items-center justify-between px-4 mb-3 mt-1">
                     <div class="logo text-white flex items-center gap-2.5">
-                        @if(auth()->user()->organization && auth()->user()->organization->logo)
-                            <img src="{{ asset('storage/' . auth()->user()->organization->logo) }}" class="org-logo-img w-8 h-8 rounded-lg object-cover border border-white/20 shadow-sm">
-                        @else
-                            <div class="mark bg-[#D99A2B]"></div>
-                        @endif
-                        <span x-show="!sidebarCollapsed" class="truncate max-w-[140px] font-bold text-base tracking-tight" title="{{ auth()->user()->organization->name ?? 'Vyapaargo' }}">
-                            {{ auth()->user()->organization->name ?? 'Vyapaargo' }}
+                        <div class="w-8 h-8 rounded-lg bg-[#D99A2B] flex items-center justify-center shadow-sm">
+                            <span class="text-gray-900 font-extrabold text-xl">V</span>
+                        </div>
+                        <span x-show="!sidebarCollapsed" class="truncate max-w-[140px] font-bold text-lg tracking-tight" title="Vyapaargo">
+                            Vyapaargo
                         </span>
                     </div>
-                    {{-- <button type="button" @click="sidebarCollapsed = !sidebarCollapsed; localStorage.setItem('sidebar_collapsed', sidebarCollapsed); document.documentElement.classList.toggle('sidebar-is-collapsed', sidebarCollapsed)" class="text-gray-300 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition" title="Toggle Sidebar">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16" /></svg>
-                    </button> --}}
                 </div>
 
 

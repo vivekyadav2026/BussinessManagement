@@ -76,36 +76,41 @@
 
                 <!-- Tables Cards Grid -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 max-h-56 overflow-y-auto p-1 pr-2">
-                    @forelse($tables as $t)
+                    <template x-for="t in tables" :key="t.id">
                         <button type="button" 
-                            x-show="tableFilter === 'all' || (tableFilter === 'vacant' && !{{ $t->is_occupied ? 'true' : 'false' }}) || (tableFilter === 'occupied' && {{ $t->is_occupied ? 'true' : 'false' }})"
-                            @click="selectTable({{ json_encode($t) }})" 
-                            :class="selectedTableId === {{ $t->id }} ? 'ring-2 ring-slate-900 border-slate-900 shadow-md bg-white scale-[1.02]' : ''"
-                            class="p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between min-h-[108px] relative group overflow-hidden
-                            {{ $t->is_occupied ? 'bg-gradient-to-b from-amber-50/90 to-amber-100/50 border-amber-300 text-amber-950 hover:border-amber-400 shadow-2xs' : 'bg-gradient-to-b from-emerald-50/90 to-emerald-100/40 border-emerald-300 text-emerald-950 hover:border-emerald-400 shadow-2xs' }}">
+                            x-show="tableFilter === 'all' || (tableFilter === 'vacant' && !t.is_occupied) || (tableFilter === 'occupied' && t.is_occupied)"
+                            @click="selectTable(t)" 
+                            :class="[
+                                selectedTableId === t.id ? 'ring-2 ring-slate-900 border-slate-900 shadow-md bg-white scale-[1.02]' : '',
+                                t.is_occupied ? 'bg-gradient-to-b from-amber-50/90 to-amber-100/50 border-amber-300 text-amber-950 hover:border-amber-400 shadow-2xs' : 'bg-gradient-to-b from-emerald-50/90 to-emerald-100/40 border-emerald-300 text-emerald-950 hover:border-emerald-400 shadow-2xs'
+                            ]"
+                            class="p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between min-h-[108px] relative group overflow-hidden">
                             
                             <div class="flex items-start justify-between gap-1 w-full">
-                                <span class="font-black text-sm tracking-tight text-slate-900 leading-snug truncate">{{ $t->name }}</span>
-                                <span class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0 shadow-2xs {{ $t->is_occupied ? 'bg-amber-200 text-amber-900 border border-amber-300' : 'bg-emerald-200 text-emerald-900 border border-emerald-300' }}">
-                                    {{ $t->is_occupied ? 'Occupied' : 'Vacant' }}
+                                <span class="font-black text-sm tracking-tight leading-snug truncate" 
+                                      :class="t.is_occupied ? 'text-slate-900' : 'text-slate-900'" 
+                                      x-text="t.name"></span>
+                                <span class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0 shadow-2xs" 
+                                      :class="t.is_occupied ? 'bg-amber-200 text-amber-900 border border-amber-300' : 'bg-emerald-200 text-emerald-900 border border-emerald-300'"
+                                      x-text="t.is_occupied ? 'Occupied' : 'Vacant'">
                                 </span>
                             </div>
 
-                            @if($t->is_occupied && $t->active_order)
+                            <template x-if="t.is_occupied && t.active_order">
                                 <div class="mt-2 pt-2 border-t border-amber-200/90 w-full space-y-0.5">
-                                    <div class="text-[10px] text-amber-800 font-mono font-bold tracking-tight">#{{ $t->active_order->order_number }}</div>
-                                    <div class="text-xs font-black text-amber-950 font-mono">₹{{ number_format($t->active_order->total, 2) }}</div>
+                                    <div class="text-[10px] text-amber-800 font-mono font-bold tracking-tight" x-text="'#' + t.active_order.order_number"></div>
+                                    <div class="text-xs font-black text-amber-950 font-mono" x-text="'₹' + Number(t.active_order.total).toFixed(2)"></div>
                                 </div>
-                            @else
+                            </template>
+                            <template x-if="!(t.is_occupied && t.active_order)">
                                 <div class="mt-2 pt-2 border-t border-emerald-200/90 text-[10px] text-emerald-700 font-bold flex items-center gap-1.5">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                     <span>Available</span>
                                 </div>
-                            @endif
+                            </template>
                         </button>
-                    @empty
-                        <div class="col-span-full text-center py-6 text-xs text-slate-400 font-bold">No tables configured. Click "Tables" to add tables.</div>
-                    @endforelse
+                    </template>
+                    <div x-show="tables.length === 0" class="col-span-full text-center py-6 text-xs text-slate-400 font-bold">No tables configured. Click "Tables" to add tables.</div>
                 </div>
             </div>
 
@@ -437,7 +442,14 @@ function waiterPos() {
                 .then(res => res.json())
                 .then(data => {
                     this.loading = false;
+                    const tableIndex = this.tables.findIndex(t => t.id === tableId);
+                    
                     if (data.active_orders && data.active_orders.length > 0) {
+                        if(tableIndex > -1) {
+                            this.tables[tableIndex].is_occupied = true;
+                            this.tables[tableIndex].active_order = data.active_orders[0];
+                        }
+                        
                         this.activeOrderIds = data.active_orders.map(o => o.id);
                         this.activeOrderNumber = data.active_orders[0].order_number;
                         this.customerName = data.active_orders[0].customer_name || '';
@@ -458,6 +470,11 @@ function waiterPos() {
                         });
                         this.sentItems = allSent;
                         this.calculateTotals();
+                    } else {
+                        if(tableIndex > -1) {
+                            this.tables[tableIndex].is_occupied = false;
+                            this.tables[tableIndex].active_order = null;
+                        }
                     }
                 });
         },
@@ -655,9 +672,12 @@ function waiterPos() {
                 this.loading = false;
                 if (data.success) {
                     this.settleModalOpen = false;
+                    const tableId = this.selectedTableId;
                     this.resetForm();
                     window.open(data.print_receipt_url, '_blank');
-                    window.location.reload();
+                    if (tableId) {
+                        this.getTableOrder(tableId);
+                    }
                 } else {
                     alert(data.message || 'Error settling bill.');
                 }
@@ -686,8 +706,11 @@ function waiterPos() {
                     this.loading = false;
                     if (data.success) {
                         alert(data.message || 'Order cancelled successfully.');
+                        const tableId = this.selectedTableId;
                         this.resetForm();
-                        window.location.reload();
+                        if (tableId) {
+                            this.getTableOrder(tableId);
+                        }
                     } else {
                         alert(data.message || 'Error cancelling order.');
                     }
