@@ -8,7 +8,9 @@ use App\Models\Payroll;
 
 Route::get('/', function () {
     $plans = \App\Models\Plan::where('is_active', true)->with('features')->get();
-    return view('welcome', compact('plans'));
+    $trialDays = (int) \App\Models\SystemSetting::get('trial_days', 14);
+    $enableTrial = \App\Models\SystemSetting::get('enable_free_trial', '1') === '1';
+    return view('welcome', compact('plans', 'trialDays', 'enableTrial'));
 })->name('welcome');
 
 Route::get('/set-locale/{lang}', [\App\Http\Controllers\LanguageController::class, 'switchLanguage'])->name('set-locale');
@@ -81,8 +83,22 @@ Route::view('/payments', 'pages.payments')->name('public.payments');
 Route::get('/pricing', function () {
     $plans = \App\Models\Plan::where('is_active', true)->with('features')->get();
     $type = request('type', 'business'); // default to business
-    return view('pages.pricing', compact('plans', 'type'));
+    $trialDays = (int) \App\Models\SystemSetting::get('trial_days', 14);
+    $enableTrial = \App\Models\SystemSetting::get('enable_free_trial', '1') === '1';
+    return view('pages.pricing', compact('plans', 'type', 'trialDays', 'enableTrial'));
 })->name('public.pricing');
+
+Route::get('/privacy', function () {
+    $privacyPolicy = \App\Models\SystemSetting::getPrivacyPolicy();
+    return view('pages.privacy', compact('privacyPolicy'));
+})->name('public.privacy');
+Route::redirect('/privacy-policy', '/privacy');
+
+Route::get('/terms', function () {
+    $terms = \App\Models\SystemSetting::getTermsAndConditions();
+    return view('pages.terms', compact('terms'));
+})->name('public.terms');
+Route::redirect('/terms-and-conditions', '/terms');
 
 // Public Document Endpoints
 Route::get('/document/invoice/{invoice}/download', function (Invoice $invoice) {
@@ -176,6 +192,7 @@ Route::middleware(['auth', 'role:Organization Admin'])->prefix('organization')->
         Route::post('/switch', [\App\Http\Controllers\Organization\SubscriptionController::class, 'switchPlan'])->name('switch');
         Route::post('/initiate/{plan}', [\App\Http\Controllers\Organization\SubscriptionController::class, 'initiatePayment'])->name('initiate');
         Route::post('/confirm', [\App\Http\Controllers\Organization\SubscriptionController::class, 'confirmPayment'])->name('confirm');
+        Route::post('/refund', [\App\Http\Controllers\Organization\SubscriptionController::class, 'requestRefund'])->name('refund');
     });
 
 }); // End of Organization Admin Group

@@ -117,4 +117,58 @@ class SubscriptionTest extends TestCase
         $this->assertEquals('5050', SubscriptionService::getFeatureValue($org->id, 'max_invoices_per_month'));
         $this->assertTrue(SubscriptionService::hasFeature($org->id, 'advanced_analytics'));
     }
+
+    public function test_can_bundle_and_checkout_base_plan_with_multiple_addons_in_single_payment()
+    {
+        $org = Organization::create(['name' => 'Bundle Org', 'business_type' => 'restaurant']);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $role = \App\Models\Role::create(['organization_id' => $org->id, 'name' => 'Organization Admin']);
+        $user->roles()->attach($role);
+
+        $basePlan = Plan::create(['name' => 'Restaurant Base', 'type' => 'base', 'price_monthly' => 599, 'category' => 'restaurant']);
+        $basePlan->features()->create(['feature_code' => 'max_tables', 'feature_value' => '10']);
+        $basePlan->features()->create(['feature_code' => 'kitchen_display', 'feature_value' => 'false']);
+
+        $tableAddon = Plan::create(['name' => '+20 Tables', 'type' => 'addon', 'price_monthly' => 199]);
+        $tableAddon->features()->create(['feature_code' => 'max_tables', 'feature_value' => '20']);
+
+        $kdsAddon = Plan::create(['name' => 'KDS Kitchen Display', 'type' => 'addon', 'price_monthly' => 299]);
+        $kdsAddon->features()->create(['feature_code' => 'kitchen_display', 'feature_value' => 'true']);
+
+        $this->actingAs($user);
+
+        // 1. Initiate Bundled Payment
+        $initResponse = $this->postJson(route('organization.subscription.initiate', $basePlan->id), [
+            'billing_cycle' => 'monthly',
+            'addon_ids' => [$tableAddon->id, $kdsAddon->id]
+        ]);
+        $initResponse->assertStatus(200);
+        $initResponse->assertJson([
+            'success' => true,
+            'amount' => (599 + 199 + 299) * 100 // 1097 * 100
+        ]);
+
+        // 2. Confirm Bundled Payment
+        $confirmResponse = $this->postJson(route('organization.subscription.confirm'), [
+            'plan_id' => $basePlan->id,
+            'addon_ids' => [$tableAddon->id, $kdsAddon->id],
+            'billing_cycle' => 'monthly',
+            'razorpay_order_id' => $initResponse->json('order_id')
+        ]);
+        $confirmResponse->assertStatus(200);
+
+        $org->refresh();
+
+        // Verify Base Plan is active
+        $this->assertNotNull($org->activeSubscription);
+        $this->assertEquals('Restaurant Base', $org->activeSubscription->plan->name);
+        $this->assertEquals('Active', $org->activeSubscription->status);
+
+        // Verify both addons are active
+        $this->assertCount(2, $org->activeAddons);
+        
+        // Verify limits & features combined
+        $this->assertEquals('30', SubscriptionService::getFeatureValue($org->id, 'max_tables')); // 10 + 20 = 30
+        $this->assertTrue(SubscriptionService::hasFeature($org->id, 'kitchen_display'));
+    }
 }

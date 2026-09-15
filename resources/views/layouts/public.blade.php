@@ -103,61 +103,72 @@
 
   /* Hero */
   .hero{
-    padding:24px 0 16px;
-    background: radial-gradient(circle at 80% 20%, rgba(217, 154, 43, 0.08) 0%, transparent 50%), 
-                radial-gradient(circle at 10% 80%, rgba(20, 99, 86, 0.06) 0%, transparent 50%);
+    padding: 64px 0 54px;
+    background: radial-gradient(circle at 85% 10%, rgba(217, 154, 43, 0.12) 0%, transparent 50%), 
+                radial-gradient(circle at 15% 90%, rgba(20, 99, 86, 0.1) 0%, transparent 50%),
+                linear-gradient(180deg, rgba(248,250,252,0) 0%, rgba(241,245,249,0.5) 100%),
+                var(--bg);
+    position: relative;
+    overflow: visible;
   }
-  .hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:32px; align-items:center;}
+  .hero-grid{display:grid; grid-template-columns:1.1fr 0.9fr; gap:36px; align-items:center;}
   .eyebrow{
     display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono'; font-size:12px;
-    color:var(--gold-deep); background:#FBF1DD; border:1px solid #EFDDAE; padding:4px 10px; border-radius:100px;
-    margin-bottom:12px; letter-spacing:.03em;
+    color:var(--gold-deep); background:#FBF1DD; border:1px solid #EFDDAE; padding:5px 12px; border-radius:100px;
+    margin-bottom:14px; letter-spacing:.03em;
   }
   .eyebrow::before{content:'●'; font-size:8px;}
-  .hero h1{font-size:46px; line-height:1.06; font-weight:600; margin-bottom:14px;}
-  .hero h1 em{font-style:normal; color:var(--gold-deep); position:relative;}
-  .hero p.lead{font-size:15.5px; color:var(--ink-soft); line-height:1.55; max-width:490px; margin-bottom:18px;}
-  .hero-actions{display:flex; gap:14px; margin-bottom:20px;}
-  .hero-note{font-size:12.5px; color:var(--ink-faint); display:flex; gap:18px;}
+  .hero h1{font-size:52px; line-height:1.08; font-weight:700; margin-bottom:16px;}
+  .hero h1 em{font-style:normal; color:var(--teal); position:relative;}
+  .hero p.lead{font-size:16px; color:var(--ink-soft); line-height:1.6; max-width:520px; margin-bottom:24px;}
+  .hero-actions{display:flex; gap:14px; margin-bottom:24px; flex-wrap:wrap;}
+  .hero-note{font-size:13px; color:var(--ink-soft); display:flex; gap:20px; flex-wrap:wrap;}
   .hero-note span{display:flex; align-items:center; gap:6px;}
   .hero-note span::before{content:'✓'; color:var(--teal); font-weight:700;}
 
   /* invoice mock card */
   .invoice-mock{
-    background:var(--paper); border-radius:12px; padding:20px; position:relative; max-width:390px; margin-left:auto;
-    box-shadow: 0 10px 30px -10px rgba(23,35,63,.15); border:1px solid var(--border-soft);
-    transition: transform 0.3s ease;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 26px 24px;
+    position: relative;
+    max-width: 410px;
+    margin-left: auto;
+    box-shadow: 0 20px 45px -10px rgba(23,35,63,0.12), 0 1px 3px rgba(23,35,63,0.05);
+    border: 1.5px solid var(--border-soft);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
   .invoice-mock:hover{
-    transform: translateY(-4px) rotate(1deg);
+    transform: translateY(-4px);
+    box-shadow: 0 25px 50px -12px rgba(23,35,63,0.18);
   }
   .invoice-mock::before, .invoice-mock::after{
     content:''; position:absolute; width:22px; height:22px; background:var(--bg); border-radius:50%; top:50%; transform:translateY(-50%);
   }
   .invoice-mock::before{left:-11px;} .invoice-mock::after{right:-11px;}
   .invoice-mock .perf{
-    position:absolute; left:0; right:0; top:50%; border-top:2px dashed var(--border); transform:translateY(-1px);
+    position:absolute; left:0; right:0; top:50%; border-top:2px dashed var(--border-soft); transform:translateY(-1px);
   }
-  .inv-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;}
-  .inv-top .who{font-family:'Space Grotesk'; font-weight:700; font-size:15px;}
-  .inv-top .num{font-family:'IBM Plex Mono'; font-size:11px; color:var(--ink-faint);}
+  .inv-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;}
+  .inv-top .who{font-family:'Space Grotesk'; font-weight:700; font-size:17px; color:var(--ink);}
+  .inv-top .num{font-family:'IBM Plex Mono'; font-size:11.5px; color:var(--ink-faint); margin-top:2px;}
   .stamp{
-    font-family:'Space Grotesk'; font-weight:700; font-size:13px; color:var(--teal); border:2.5px solid var(--teal);
-    border-radius:50%; width:64px; height:64px; display:flex; align-items:center; justify-content:center; text-align:center;
-    transform:rotate(-14deg); opacity:.9; letter-spacing:.02em;
+    font-family:'Space Grotesk'; font-weight:800; font-size:12.5px; color:var(--gold); border:2.5px solid var(--gold);
+    border-radius:50%; width:58px; height:58px; display:flex; align-items:center; justify-content:center; text-align:center;
+    transform:rotate(-12deg); opacity:.95; letter-spacing:.03em;
   }
-  .inv-lines{padding:12px 0; border-top:1px solid var(--border-soft); font-size:13px;}
-  .inv-line{display:flex; justify-content:space-between; padding:4px 0; color:var(--ink-soft);}
-  .inv-line span:last-child{font-family:'IBM Plex Mono'; color:var(--ink);}
-  .inv-total{display:flex; justify-content:space-between; padding-top:12px; margin-top:4px; border-top:1.5px solid var(--ink); font-family:'Space Grotesk'; font-weight:700; font-size:16px;}
-  .inv-total span:last-child{font-family:'IBM Plex Mono';}
-  .inv-bottom{margin-top:16px; padding-top:12px; border-top:2px dashed var(--border); display:flex; justify-content:space-between; align-items:center;}
-  .badge{font-family:'IBM Plex Mono'; font-size:10.5px; padding:4px 9px; border-radius:100px; font-weight:600; letter-spacing:.03em;}
-  .badge-paid{background:var(--teal-soft); color:var(--teal);}
+  .inv-lines{padding:14px 0; border-top:1px solid var(--border-soft); font-size:13.5px;}
+  .inv-line{display:flex; justify-content:space-between; padding:5px 0; color:var(--ink-soft);}
+  .inv-line span:last-child{font-family:'IBM Plex Mono'; color:var(--ink); font-weight:500;}
+  .inv-total{display:flex; justify-content:space-between; padding-top:14px; margin-top:6px; border-top:1.5px solid var(--ink); font-family:'Space Grotesk'; font-weight:700; font-size:17px;}
+  .inv-total span:last-child{font-family:'IBM Plex Mono'; color:var(--teal);}
+  .inv-bottom{margin-top:18px; padding-top:14px; border-top:2px dashed var(--border-soft); display:flex; justify-content:space-between; align-items:center;}
+  .badge{font-family:'IBM Plex Mono'; font-size:10.5px; padding:4px 10px; border-radius:100px; font-weight:700; letter-spacing:.04em;}
+  .badge-paid{background:#E6F4F1; color:var(--teal);}
 
   /* trust strip */
-  .trust{padding:12px 0; border-top:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft);}
-  .trust-row{display:flex; justify-content:space-between; flex-wrap:wrap; gap:14px; font-family:'IBM Plex Mono'; font-size:12px; color:var(--ink-faint);}
+  .trust{padding:14px 0; border-top:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft); background: #FAFBF9;}
+  .trust-row{display:flex; justify-content:space-between; flex-wrap:wrap; gap:14px; font-family:'IBM Plex Mono'; font-size:12px; color:var(--ink-soft);}
   .trust-row div{display:flex; align-items:center; gap:7px;}
   .trust-row div::before{content:''; width:5px; height:5px; background:var(--gold); border-radius:50%;}
 
@@ -271,14 +282,102 @@
     width: 100%;
     border-radius: var(--radius);
     border: 1px solid var(--border-soft);
-    box-shadow: var(--shadow);
-    transition: transform .2s ease-in-out, box-shadow .2s ease-in-out;
+    box-shadow: 0 10px 30px -5px rgba(23,35,63,0.12);
+    transition: transform .3s ease, box-shadow .3s ease;
     object-fit: cover;
     display: block;
   }
   .illust-img:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(23,35,63,.06), 0 12px 30px rgba(23,35,63,.1);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px rgba(23,35,63,0.18);
+  }
+
+  /* Industry Dual Cards */
+  .industry-card {
+    background: #ffffff;
+    border: 1.5px solid var(--border-soft);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(23,35,63,0.04);
+  }
+  .industry-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px -10px rgba(23,35,63,0.12);
+    border-color: var(--gold);
+  }
+  .industry-card.restaurant-theme:hover {
+    border-color: var(--teal);
+  }
+  .industry-card-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-soft);
+  }
+  .industry-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .industry-tag.gold {
+    background: #FDF4E5;
+    color: var(--gold-deep);
+    border: 1px solid #F5DEB3;
+  }
+  .industry-tag.teal {
+    background: var(--teal-soft);
+    color: var(--teal);
+    border: 1px solid #BEE3D8;
+  }
+
+  /* Stats Counter Bar */
+  .stats-strip {
+    background: var(--paper);
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 20px 0;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    text-align: center;
+  }
+  .stat-item h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .stat-item p {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  @media(max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
   }
   
   /* Desktop defaults for custom toggle elements */
@@ -463,6 +562,7 @@
     }
   }
   @media(max-width:600px){
+    .stats-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
     .plan-card, .addon-card { 
       padding: 20px 16px !important; 
       flex: 0 0 88% !important; 
@@ -477,17 +577,109 @@
     .feat-card { padding: 12px !important; }
     .feat-card h3 { font-size: 13px !important; }
     .feat-card p { font-size: 11.5px !important; line-height: 1.4 !important; }
-    .grid-2-cards { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-    .grid-2-cards .feat-card { padding: 12px !important; }
-    .grid-2-cards .feat-card h3 { font-size: 13px !important; }
-    .grid-2-cards .feat-card p { font-size: 11.5px !important; line-height: 1.4 !important; }
+    .grid-2-cards { grid-template-columns: 1fr !important; gap: 24px !important; }
+    .grid-2-cards .feat-card { padding: 20px !important; }
+    .grid-2-cards .feat-card h3 { font-size: 18px !important; }
+    .grid-2-cards .feat-card p { font-size: 14px !important; line-height: 1.5 !important; }
+    .inner-feat-list { grid-template-columns: 1fr !important; }
     .side-cards-list { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
     .side-cards-list .feat-card { padding: 12px !important; }
     .side-cards-list .feat-card h3 { font-size: 13px !important; }
-    .side-cards-list .feat-card p { font-size: 11.5px !important; line-height: 1.4 !important; }
     .hero-actions { flex-direction: column !important; width: 100% !important; gap: 10px !important; }
     .hero-actions .btn { width: 100% !important; justify-content: center !important; }
     .hero-note { flex-direction: column !important; gap: 6px !important; align-items: center !important; }
+  }
+
+  /* Global Professional Footer Styling */
+  footer.site-footer {
+    background: #0F172A !important;
+    color: #F8FAFC !important;
+    padding: 60px 0 28px !important;
+    border-top: 1px solid #1E293B !important;
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .footer-grid {
+    display: grid !important;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr !important;
+    gap: 40px !important;
+    margin-bottom: 48px !important;
+  }
+  .footer-col h4 {
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #FFFFFF !important;
+    margin-bottom: 18px !important;
+    letter-spacing: 0.02em !important;
+  }
+  .footer-col ul {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .footer-col ul li {
+    margin-bottom: 11px !important;
+    list-style: none !important;
+    list-style-type: none !important;
+  }
+  .footer-col ul li::before, .footer-col ul li::marker {
+    content: "" !important;
+    display: none !important;
+  }
+  .footer-col ul li a {
+    color: #94A3B8 !important;
+    font-size: 13.5px !important;
+    transition: color 0.2s ease !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+  }
+  .footer-col ul li a:hover {
+    color: var(--gold) !important;
+    transform: translateX(2px);
+  }
+  .footer-bottom {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-top: 1px solid #1E293B !important;
+    padding-top: 24px !important;
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+  }
+  .footer-badges {
+    display: flex !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+  }
+  .f-badge {
+    font-family: 'IBM Plex Mono', monospace !important;
+    font-size: 11px !important;
+    padding: 5px 12px !important;
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    color: #94A3B8 !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  @media(max-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 30px !important;
+    }
+  }
+  @media(max-width: 600px) {
+    .footer-grid {
+      grid-template-columns: 1fr !important;
+      gap: 28px !important;
+    }
+    .footer-bottom {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+    }
   }
 </style>
 </head>
@@ -546,9 +738,138 @@
     @yield('content')
   </main>
 
-  <footer class="site">
-    <div class="wrap" style="width: 100%; display: flex; justify-content: space-between;">
-      <div>© {{ date('Y') }} {{ config('app.name', 'Vyapaargo') }}  </div>
+  <footer class="site-footer" style="background: #0B132B; color: #F8FAFC; padding: 64px 0 28px; border-top: 1px solid #1E293B; display: block; width: 100%;">
+    <div class="wrap">
+      <div class="footer-grid" style="grid-template-columns: 1.3fr 0.9fr 0.9fr 1.2fr; gap: 36px; margin-bottom: 44px;">
+        <!-- Col 1: Brand Info & Social Media Links -->
+        <div class="footer-brand">
+          <div class="logo" style="margin-bottom: 14px;">
+            <a href="{{ route('welcome') }}" style="display:flex; align-items:center; gap:9px; color: #fff; text-decoration: none;">
+              <div class="mark" style="background: #fff; position: relative;"><span style="position: absolute; left: 6px; right: 6px; top: 7px; height: 2px; background: var(--gold); box-shadow: 0 5px 0 var(--gold), 0 10px 0 var(--gold); display: block;"></span></div>
+              <span style="color: #fff; font-size: 20px; font-weight: 700; font-family: 'Space Grotesk';">{{ $siteSettings['company_name'] ?? config('app.name', 'Vyapaargo') }}</span>
+            </a>
+          </div>
+          <p style="color: #94A3B8; font-size: 13.5px; line-height: 1.6; margin-bottom: 20px; max-width: 320px;">
+            {{ $siteSettings['company_tagline'] ?? 'The unified cloud business & restaurant ERP platform designed specifically for Indian SMEs, retail shops, and food joints.' }}
+          </p>
+
+          <!-- Dynamic Social Media Icons -->
+          <div style="margin-bottom: 20px;">
+            <div style="font-size: 11px; font-family: 'IBM Plex Mono'; color: #64748B; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;">Connect With Us</div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+              @if(!empty($siteSettings['social_whatsapp']))
+                <a href="{{ $siteSettings['social_whatsapp'] }}" target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp" style="width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: #25D366; transition: 0.2s; border: 1px solid rgba(255,255,255,0.1);">
+                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                </a>
+              @endif
+              @if(!empty($siteSettings['social_linkedin']))
+                <a href="{{ $siteSettings['social_linkedin'] }}" target="_blank" rel="noopener noreferrer" title="Follow on LinkedIn" style="width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: #38BDF8; transition: 0.2s; border: 1px solid rgba(255,255,255,0.1);">
+                  <svg width="17" height="17" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                </a>
+              @endif
+              @if(!empty($siteSettings['social_twitter']))
+                <a href="{{ $siteSettings['social_twitter'] }}" target="_blank" rel="noopener noreferrer" title="Follow on X / Twitter" style="width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: #E2E8F0; transition: 0.2s; border: 1px solid rgba(255,255,255,0.1);">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+              @endif
+              @if(!empty($siteSettings['social_instagram']))
+                <a href="{{ $siteSettings['social_instagram'] }}" target="_blank" rel="noopener noreferrer" title="Follow on Instagram" style="width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: #F472B6; transition: 0.2s; border: 1px solid rgba(255,255,255,0.1);">
+                  <svg width="17" height="17" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                </a>
+              @endif
+              @if(!empty($siteSettings['social_facebook']))
+                <a href="{{ $siteSettings['social_facebook'] }}" target="_blank" rel="noopener noreferrer" title="Facebook Page" style="width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: #60A5FA; transition: 0.2s; border: 1px solid rgba(255,255,255,0.1);">
+                  <svg width="17" height="17" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+                </a>
+              @endif
+              @if(!empty($siteSettings['social_youtube']))
+                <a href="{{ $siteSettings['social_youtube'] }}" target="_blank" rel="noopener noreferrer" title="YouTube Channel" style="width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: #EF4444; transition: 0.2s; border: 1px solid rgba(255,255,255,0.1);">
+                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                </a>
+              @endif
+            </div>
+          </div>
+
+          <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); padding: 5px 12px; border-radius: 100px; color: #E2E8F0; font-family: 'IBM Plex Mono';">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #10B981; display: inline-block;"></span>
+            All Systems Operational • 99.9% Uptime
+          </div>
+        </div>
+
+        <!-- Col 2: Core Platform Modules -->
+        <div class="footer-col">
+          <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 18px; letter-spacing: 0.02em;">Core Modules</h4>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.features') }}">GST Invoicing &amp; Billing</a></li>
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.features') }}">Barcode &amp; Inventory</a></li>
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.restaurant') }}">Restaurant POS &amp; KDS</a></li>
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.restaurant') }}">Table QR Digital Menus</a></li>
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.payments') }}">Razorpay &amp; UPI Auto-Pay</a></li>
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.features') }}">Staff Attendance &amp; Payroll</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Legal & Platform Navigation -->
+        <div class="footer-col">
+          <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 18px; letter-spacing: 0.02em;">Legal &amp; Company</h4>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.pricing') }}">Pricing &amp; Plans</a></li>
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.privacy') }}">Privacy Policy</a></li>
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.terms') }}">Terms &amp; Conditions</a></li>
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.pricing') }}#faq">Frequently Asked Questions</a></li>
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('login') }}">Merchant Login</a></li>
+            @php
+              $trialDays = (int)\App\Models\SystemSetting::get('trial_days', 14);
+              $enableTrial = \App\Models\SystemSetting::get('enable_free_trial', '1') === '1';
+            @endphp
+            <li style="margin-bottom: 11px; list-style: none;">
+              @if($enableTrial && $trialDays > 0)
+              <a href="{{ route('public.pricing') }}">Start {{ $trialDays }}-Day Free Trial</a>
+              @else
+              <a href="{{ route('public.pricing') }}">Get Started</a>
+              @endif
+            </li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Dynamic Helpdesk & Physical Address -->
+        <div class="footer-col">
+          <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 18px; letter-spacing: 0.02em;">Support &amp; Office</h4>
+          
+          <div style="font-size: 13px; color: #94A3B8; line-height: 1.6; margin-bottom: 12px;">
+            <div style="color: #64748B; font-size: 11px; font-family: 'IBM Plex Mono'; text-transform: uppercase;">Direct Helpdesk</div>
+            <div style="margin-top: 3px;">
+              📞 <a href="tel:{{ $siteSettings['support_phone'] ?? '+919876543210' }}" style="color: #F8FAFC; font-weight: 600; text-decoration: none;">{{ $siteSettings['support_phone'] ?? '+91 98765 43210' }}</a>
+            </div>
+            <div style="margin-top: 2px;">
+              ✉️ <a href="mailto:{{ $siteSettings['support_email'] ?? 'support@vyapaargo.com' }}" style="color: #94A3B8; text-decoration: none;">{{ $siteSettings['support_email'] ?? 'support@vyapaargo.com' }}</a>
+            </div>
+          </div>
+
+          <div style="font-size: 13px; color: #94A3B8; line-height: 1.5; margin-bottom: 12px;">
+            <div style="color: #64748B; font-size: 11px; font-family: 'IBM Plex Mono'; text-transform: uppercase;">Corporate Address</div>
+            <div style="color: #CBD5E1; margin-top: 3px; font-size: 12.5px;">
+              📍 {{ $siteSettings['company_address'] ?? 'Plot No. 42, Cyber City, Phase 2, Gurugram, Haryana - 122002, India' }}
+            </div>
+          </div>
+
+          <div style="font-size: 12px; color: #64748B; font-family: 'IBM Plex Mono';">
+            ⏰ {{ $siteSettings['business_hours'] ?? 'Mon - Sat: 9:00 AM - 7:00 PM IST' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom Bar -->
+      <div class="footer-bottom">
+        <div style="font-size: 13px; color: #64748B;">
+          © {{ date('Y') }} {{ $siteSettings['company_name'] ?? config('app.name', 'Vyapaargo') }}. Made with ❤️ in India for growing businesses.
+        </div>
+        <div class="footer-badges">
+          <span class="f-badge">GST Ready</span>
+          <span class="f-badge">UPI &amp; Razorpay Verified</span>
+          <span class="f-badge">256-Bit SSL Secure</span>
+        </div>
+      </div>
     </div>
   </footer>
 

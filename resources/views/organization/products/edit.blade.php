@@ -23,34 +23,34 @@
             <div class="lg:col-span-2 space-y-6">
                 <!-- Panel 1: Basic Information -->
                 <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 space-y-4">
-                    <div class="flex items-center gap-2 pb-1.5 border-b border-gray-50">
-                        <span class="w-1 h-3.5 bg-[var(--theme-active)] rounded-full"></span>
-                        <h2 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Basic Information</h2>
+                    <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center font-bold">▶</div>
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Basic Information</h2>
                     </div>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Product Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="name" value="{{ old('name', $product->name) }}" required class="w-full border border-gray-300 focus:border-[var(--theme-active)] focus:ring-1 focus:ring-[var(--theme-active)] rounded-lg px-3 py-2 text-sm outline-none transition @error('name') border-red-300 @enderror" placeholder="e.g. Wireless Mouse, Red T-Shirt">
-                            @error('name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                            <label class="block mb-1.5">Product Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" value="{{ old('name', $product->name) }}" required class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all shadow-sm @error('name') border-red-300 bg-red-50 @enderror" placeholder="e.g. Wireless Mouse, Red T-Shirt">
+                            @error('name') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Category</label>
-                                <select name="category_id" class="w-full border border-gray-300 focus:border-[var(--theme-active)] focus:ring-1 focus:ring-[var(--theme-active)] rounded-lg px-3 py-2 text-sm outline-none transition">
+                                <label class="block mb-1.5">Category</label>
+                                <select name="category_id" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all shadow-sm">
                                     <option value="">Select Category</option>
                                     @foreach($categories as $cat)
                                         <option value="{{ $cat->id }}" {{ old('category_id', $product->category_id) == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('category_id') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                                @error('category_id') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1.5">SKU</label>
+                                <label class="block mb-1.5">SKU</label>
                                 <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none bg-gray-50 text-gray-500 cursor-not-allowed border-dashed" readonly>
-                                @error('sku') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                                @error('sku') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
@@ -62,59 +62,59 @@
                                     <span>📷 Scan Box Barcode</span>
                                 </button>
                             </div>
-                            <input type="text" id="barcodeField" name="barcode" value="{{ old('barcode', $product->barcode) }}" placeholder="Scan product box barcode via gun or camera..." class="w-full border border-gray-300 focus:border-[var(--theme-active)] focus:ring-1 focus:ring-[var(--theme-active)] rounded-lg px-3 py-2 text-sm outline-none transition @error('barcode') border-red-300 @enderror">
+                            <input type="text" id="barcodeField" name="barcode" value="{{ old('barcode', $product->barcode) }}" placeholder="Scan product box barcode via gun or camera..." class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all shadow-sm @error('barcode') border-red-300 @enderror">
                             <span class="text-[11px] text-gray-400 mt-1 block">Point USB/Bluetooth barcode gun or use mobile camera to capture the barcode printed on the product packaging.</span>
-                            @error('barcode') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                            @error('barcode') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
                         </div>
 
 
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Description</label>
-                            <textarea name="description" rows="3" class="w-full border border-gray-300 focus:border-[var(--theme-active)] focus:ring-1 focus:ring-[var(--theme-active)] rounded-lg px-3 py-2 text-sm outline-none transition" placeholder="Provide product technical details or notes...">{{ old('description', $product->description) }}</textarea>
+                            <label class="block mb-1.5">Description</label>
+                            <textarea name="description" rows="3" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all shadow-sm" placeholder="Provide product technical details or notes...">{{ old('description', $product->description) }}</textarea>
                         </div>
                     </div>
                 </div>
 
                 <!-- Panel 2: Pricing & Inventory Config -->
                 <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 space-y-4">
-                    <div class="flex items-center gap-2 pb-1.5 border-b border-gray-50">
-                        <span class="w-1 h-3.5 bg-[var(--theme-active)] rounded-full"></span>
-                        <h2 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Pricing & Inventory Config</h2>
+                    <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center font-bold">▶</div>
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Pricing & Inventory Config</h2>
                     </div>
                     
                     <div class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Selling Price <span class="text-red-500">*</span></label>
+                                <label class="block mb-1.5">Selling Price <span class="text-red-500">*</span></label>
                                 <div class="flex rounded-xl shadow-xs overflow-hidden border border-gray-300 focus-within:border-[var(--theme-active)] focus-within:ring-1 focus-within:ring-[var(--theme-active)] transition @error('selling_price') border-red-300 @enderror">
                                     <span class="inline-flex items-center px-3.5 bg-gray-50 text-gray-500 font-bold text-xs border-r border-gray-200 select-none">₹</span>
                                     <input type="number" step="0.01" name="selling_price" value="{{ old('selling_price', $product->selling_price) }}" required class="w-full border-0 px-3 py-2 text-sm font-semibold text-gray-900 outline-none" placeholder="0.00">
                                 </div>
-                                @error('selling_price') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                                @error('selling_price') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Purchase Price</label>
+                                <label class="block mb-1.5">Purchase Price</label>
                                 <div class="flex rounded-xl shadow-xs overflow-hidden border border-gray-300 focus-within:border-[var(--theme-active)] focus-within:ring-1 focus-within:ring-[var(--theme-active)] transition @error('purchase_price') border-red-300 @enderror">
                                     <span class="inline-flex items-center px-3.5 bg-gray-50 text-gray-500 font-bold text-xs border-r border-gray-200 select-none">₹</span>
                                     <input type="number" step="0.01" name="purchase_price" value="{{ old('purchase_price', $product->purchase_price) }}" class="w-full border-0 px-3 py-2 text-sm font-semibold text-gray-900 outline-none" placeholder="0.00">
                                 </div>
-                                @error('purchase_price') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                                @error('purchase_price') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
                             </div>
 
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tax Rate (%)</label>
-                                <input type="number" step="0.01" name="tax_rate" value="{{ old('tax_rate', $product->tax_rate) }}" class="w-full border border-gray-300 focus:border-[var(--theme-active)] focus:ring-1 focus:ring-[var(--theme-active)] rounded-lg px-3 py-2 text-sm outline-none transition @error('tax_rate') border-red-300 @enderror" placeholder="0">
-                                @error('tax_rate') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                                <label class="block mb-1.5">Tax Rate (%)</label>
+                                <input type="number" step="0.01" name="tax_rate" value="{{ old('tax_rate', $product->tax_rate) }}" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all shadow-sm @error('tax_rate') border-red-300 @enderror" placeholder="0">
+                                @error('tax_rate') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Low Stock Alert Level</label>
-                                <input type="number" name="min_stock_level" value="{{ old('min_stock_level', $product->min_stock_level) }}" class="w-full border border-gray-300 focus:border-[var(--theme-active)] focus:ring-1 focus:ring-[var(--theme-active)] rounded-lg px-3 py-2 text-sm outline-none transition @error('min_stock_level') border-red-300 @enderror" placeholder="e.g. 5">
-                                @error('min_stock_level') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                                <label class="block mb-1.5">Low Stock Alert Level</label>
+                                <input type="number" name="min_stock_level" value="{{ old('min_stock_level', $product->min_stock_level) }}" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all shadow-sm @error('min_stock_level') border-red-300 @enderror" placeholder="e.g. 5">
+                                @error('min_stock_level') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </div>
@@ -125,9 +125,9 @@
             <div class="space-y-6">
                 <!-- Product Media Panel -->
                 <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 space-y-4">
-                    <div class="flex items-center gap-2 pb-1.5 border-b border-gray-50">
-                        <span class="w-1 h-3.5 bg-[var(--theme-active)] rounded-full"></span>
-                        <h2 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Product Photos & Gallery</h2>
+                    <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center font-bold">▶</div>
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Product Photos & Gallery</h2>
                     </div>
                     
                     <!-- Primary Thumbnail -->
@@ -142,7 +142,7 @@
                             @endif
                         </div>
                         <input type="file" name="image" id="imageInput" accept="image/*" class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border file:border-gray-300 file:text-xs file:font-semibold file:bg-white hover:file:bg-gray-50 file:cursor-pointer cursor-pointer">
-                        @error('image') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('image') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
                     </div>
 
                     <!-- Multi-Image Gallery -->
@@ -175,15 +175,15 @@
 
                         <!-- Preview Grid for NEW Photos -->
                         <div id="galleryPreviewContainer" class="grid grid-cols-3 gap-2 pt-1"></div>
-                        @error('images.*') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('images.*') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 
                 <!-- Status & Update Panel -->
                 <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 space-y-4">
-                    <div class="flex items-center gap-2 pb-1.5 border-b border-gray-50">
-                        <span class="w-1 h-3.5 bg-[var(--theme-active)] rounded-full"></span>
-                        <h2 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Publish Options</h2>
+                    <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center font-bold">▶</div>
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Publish Options</h2>
                     </div>
                     
                     <div class="space-y-4">

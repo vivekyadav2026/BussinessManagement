@@ -79,7 +79,7 @@
     </div>
     
     @php
-        $btnText = $isAddon ? 'Add to Plan &rarr;' : ($plan->name === 'Free' ? 'Start Free Trial' : 'Get Started &rarr;');
+        $btnText = $isAddon ? 'Add to Plan &rarr;' : 'Get Started &rarr;';
         $targetUrl = route('register') . '?plan=' . $plan->id . ($plan->category ? '&type=' . $plan->category : '');
     @endphp
 

@@ -84,14 +84,14 @@
 
         body {
             background-color: var(--bg-main) !important;
-            color: var(--text-main) !important;
+            color: var(--text-main);
             font-family: 'Inter', sans-serif !important;
         }
 
         h1, h2, h3, h4, .dash-head h1, .display {
             font-family: 'Space Grotesk', sans-serif !important;
             letter-spacing: -.01em !important;
-            color: var(--text-main) !important;
+            color: var(--text-main);
             font-weight: 700 !important;
         }
 

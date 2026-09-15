@@ -4,19 +4,72 @@
 <div class="p-6 space-y-6">
     <!-- Top Bar -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-xs border border-gray-200">
-        <div>
-            <h1 class="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                <span>🍽️ Restaurant Menu Builder</span>
-            </h1>
-            <p class="text-xs text-gray-500 font-medium">Manage categories, dishes, prices, photos, and stock availability.</p>
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 font-bold flex items-center justify-center text-xl shrink-0">
+                🍽️
+            </div>
+            <div>
+                <h1 class="text-xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                    <span>Restaurant Menu Builder</span>
+                </h1>
+                <p class="text-xs text-gray-500 font-medium">Manage food categories, dish items, pricing, photos, and live stock availability.</p>
+            </div>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="document.getElementById('add-category-modal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl shadow-sm text-xs font-bold transition flex items-center gap-1.5">
+            <button onclick="document.getElementById('add-category-modal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl shadow-xs text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
                 <span>+ Add Category</span>
             </button>
-            <a href="{{ route('public.menu', [auth()->user()->organization_id, session('active_location_id')]) }}" target="_blank" class="bg-gray-900 hover:bg-black text-white px-4 py-2.5 rounded-xl shadow-sm text-xs font-bold transition flex items-center gap-1.5">
-                <span>🌐 Preview Public Menu</span>
+            <a href="{{ route('public.menu', [auth()->user()->organization_id, session('active_location_id')]) }}" target="_blank" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-xs text-xs font-bold transition flex items-center gap-1.5">
+                <span>🌐 Preview Customer Menu</span>
             </a>
+        </div>
+    </div>
+
+    <!-- Stats & Search Toolbar -->
+    @php
+        $totalCategories = $categories->count();
+        $totalItems = $categories->sum(fn($c) => $c->items->count());
+        $inStockItems = $categories->sum(fn($c) => $c->items->where('is_available', true)->count());
+    @endphp
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 font-bold flex items-center justify-center text-lg">
+                📂
+            </div>
+            <div>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Menu Categories</span>
+                <span class="text-xl font-black text-gray-900">{{ $totalCategories }}</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 font-bold flex items-center justify-center text-lg">
+                🍱
+            </div>
+            <div>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Total Dish Items</span>
+                <span class="text-xl font-black text-emerald-600">{{ $totalItems }}</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 font-bold flex items-center justify-center text-lg">
+                ✅
+            </div>
+            <div>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Currently In Stock</span>
+                <span class="text-xl font-black text-amber-600">{{ $inStockItems }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Search Bar -->
+    <div class="bg-white p-3 rounded-2xl border border-gray-200 shadow-2xs flex items-center gap-3">
+        <div class="relative flex-grow">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <input type="text" id="menuItemSearch" onkeyup="filterMenuItems()" placeholder="Search dishes by name or category..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50/50">
         </div>
     </div>
 
@@ -41,16 +94,19 @@
     @endif
 
     <!-- Menu Categories & Items List -->
-    <div class="space-y-6">
+    <div class="space-y-6" id="categoriesContainer">
         @forelse($categories as $category)
-            <div class="bg-white rounded-2xl shadow-xs border border-gray-200 overflow-hidden">
+            <div class="category-card bg-white rounded-2xl shadow-xs border border-gray-200 overflow-hidden" data-category="{{ strtolower($category->name) }}">
                 <!-- Category Header -->
                 <div class="bg-slate-50 border-b border-gray-200 p-4 flex flex-wrap justify-between items-center gap-3">
                     <div class="flex items-center gap-3">
-                        <span class="text-gray-400 font-bold cursor-grab">⋮⋮</span>
-                        <h2 class="text-lg font-black text-gray-900 tracking-tight {{ !$category->is_active ? 'line-through text-gray-400' : '' }}">
+                        <span class="text-gray-400 font-bold">⋮⋮</span>
+                        <h2 class="text-base font-black text-gray-900 tracking-tight {{ !$category->is_active ? 'line-through text-gray-400' : '' }}">
                             {{ $category->name }}
                         </h2>
+                        <span class="text-[10px] font-bold bg-white text-gray-700 px-2 py-0.5 rounded-full border border-gray-200 font-mono">
+                            {{ $category->items->count() }} {{ $category->items->count() === 1 ? 'Dish' : 'Dishes' }}
+                        </span>
                         @if(!$category->is_active)
                             <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-gray-200 text-gray-700">Hidden</span>
                         @else
@@ -59,17 +115,17 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button onclick="openAddItemModal({{ $category->id }}, '{{ addslashes($category->name) }}')" class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1.5 rounded-xl border border-indigo-200 hover:bg-indigo-100 transition flex items-center gap-1">
-                            <span>+ Add Dish Item</span>
+                        <button onclick="openAddItemModal({{ $category->id }}, '{{ addslashes($category->name) }}')" class="text-xs bg-indigo-50 text-indigo-700 font-bold px-3 py-1.5 rounded-xl border border-indigo-200 hover:bg-indigo-100 transition flex items-center gap-1 cursor-pointer">
+                            <span>+ Add Dish</span>
                         </button>
 
-                        <button onclick="openEditCategoryModal({{ $category->id }}, '{{ addslashes($category->name) }}', {{ $category->is_active ? 'true' : 'false' }})" class="p-1.5 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition" title="Edit Category">
+                        <button onclick="openEditCategoryModal({{ $category->id }}, '{{ addslashes($category->name) }}', {{ $category->is_active ? 'true' : 'false' }})" class="p-1.5 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition cursor-pointer" title="Edit Category">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </button>
 
                         <form action="{{ route('organization.menu.categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this category and all its dishes?');" class="inline m-0">
                             @csrf @method('DELETE')
-                            <button type="submit" class="p-1.5 text-gray-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Delete Category">
+                            <button type="submit" class="p-1.5 text-gray-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer" title="Delete Category">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </form>
@@ -81,9 +137,8 @@
                     <table class="w-full text-left text-sm border-collapse">
                         <thead class="bg-gray-50/50 text-[10px] uppercase font-bold text-gray-400 border-b border-gray-100">
                             <tr>
-                                <th class="p-3 w-12 text-center">#</th>
                                 <th class="p-3 w-16">Photo</th>
-                                <th class="p-3">Dish Name & Details</th>
+                                <th class="p-3">Dish Item Name & Details</th>
                                 <th class="p-3">Price</th>
                                 <th class="p-3">Stock Status</th>
                                 <th class="p-3 text-right">Actions</th>
@@ -91,8 +146,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($category->items as $item)
-                                <tr class="hover:bg-slate-50/80 transition {{ !$item->is_active ? 'opacity-50' : '' }}">
-                                    <td class="p-3 text-center text-gray-400 font-bold">⋮⋮</td>
+                                <tr class="dish-row hover:bg-slate-50/80 transition {{ !$item->is_active ? 'opacity-50' : '' }}" data-dish-name="{{ strtolower($item->name) }}">
                                     <td class="p-3">
                                         @if($item->photo)
                                             <img src="{{ asset('storage/' . $item->photo) }}" class="w-12 h-12 rounded-xl object-cover border border-gray-200 shadow-2xs">
@@ -123,13 +177,13 @@
                                     </td>
                                     <td class="p-3 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            <button onclick='openEditItemModal({{ $item->id }}, @json($item))' class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold rounded-lg text-xs transition border border-indigo-200">
+                                            <button onclick='openEditItemModal({{ $item->id }}, @json($item))' class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold rounded-lg text-xs transition border border-indigo-200 cursor-pointer">
                                                 ✏️ Edit
                                             </button>
 
                                             <form action="{{ route('organization.menu.items.destroy', $item) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this dish item?');" class="inline m-0">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" class="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold rounded-lg text-xs transition border border-rose-200">
+                                                <button type="submit" class="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold rounded-lg text-xs transition border border-rose-200 cursor-pointer">
                                                     🗑️ Delete
                                                 </button>
                                             </form>
@@ -138,8 +192,8 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="p-8 text-center text-gray-500 text-xs font-semibold">
-                                        No dish items in this category yet. Click <b>"+ Add Dish Item"</b> to create one.
+                                    <td colspan="5" class="p-8 text-center text-gray-500 text-xs font-semibold">
+                                        No dish items in this category yet. Click <b>"+ Add Dish"</b> to create one.
                                     </td>
                                 </tr>
                             @endforelse
@@ -318,6 +372,33 @@
         document.getElementById('edit-item-available').checked = Boolean(itemData.is_available);
         document.getElementById('edit-item-active').checked = Boolean(itemData.is_active);
         document.getElementById('edit-item-modal').classList.remove('hidden');
+    }
+
+    function filterMenuItems() {
+        const query = document.getElementById('menuItemSearch').value.toLowerCase().trim();
+        const categories = document.querySelectorAll('.category-card');
+
+        categories.forEach(cat => {
+            const catName = cat.getAttribute('data-category') || '';
+            const rows = cat.querySelectorAll('.dish-row');
+            let hasVisibleDish = false;
+
+            rows.forEach(row => {
+                const dishName = row.getAttribute('data-dish-name') || '';
+                if (dishName.includes(query) || catName.includes(query) || query === '') {
+                    row.style.display = '';
+                    hasVisibleDish = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (hasVisibleDish || catName.includes(query) || query === '') {
+                cat.style.display = '';
+            } else {
+                cat.style.display = 'none';
+            }
+        });
     }
 </script>
 @endsection

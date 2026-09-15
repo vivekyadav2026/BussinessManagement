@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Plan;
 use App\Models\OrganizationSubscription;
 use App\Models\Invoice;
+use App\Models\GatewayPayment;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -22,17 +23,21 @@ class DashboardController extends Controller
             ->where(function($q) {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()->toDateString());
             })->count();
-        $expiredOrgs = OrganizationSubscription::whereIn('status', ['Expired', 'Cancelled'])->count();
+        $expiredOrgs = OrganizationSubscription::whereIn('status', ['Expired', 'Cancelled', 'Refunded'])->count();
 
-        // Platform Revenue from Paid Invoices
-        $totalRevenue = (float) Invoice::where('status', 'Paid')->sum('amount_paid');
-        $thisMonthRevenue = (float) Invoice::where('status', 'Paid')
+        // Platform Revenue from Paid Subscriptions
+        $totalRevenue = (float) GatewayPayment::where('entity_type', Plan::class)
+            ->where('status', 'captured')->sum('amount');
+            
+        $thisMonthRevenue = (float) GatewayPayment::where('entity_type', Plan::class)
+            ->where('status', 'captured')
             ->whereBetween('updated_at', [now()->startOfMonth(), now()])
-            ->sum('amount_paid');
+            ->sum('amount');
 
-        $lastMonthRevenue = (float) Invoice::where('status', 'Paid')
+        $lastMonthRevenue = (float) GatewayPayment::where('entity_type', Plan::class)
+            ->where('status', 'captured')
             ->whereBetween('updated_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
-            ->sum('amount_paid');
+            ->sum('amount');
 
         $revenueGrowth = $lastMonthRevenue > 0 
             ? round((($thisMonthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100, 1) 
@@ -44,10 +49,11 @@ class DashboardController extends Controller
         for ($i = 5; $i >= 0; $i--) {
             $month = now()->subMonths($i);
             $mrrLabels[] = $month->format('M Y');
-            $monthlySum = (float) Invoice::where('status', 'Paid')
+            $monthlySum = (float) GatewayPayment::where('entity_type', Plan::class)
+                ->where('status', 'captured')
                 ->whereYear('updated_at', $month->year)
                 ->whereMonth('updated_at', $month->month)
-                ->sum('amount_paid');
+                ->sum('amount');
             $mrrData[] = $monthlySum;
         }
 

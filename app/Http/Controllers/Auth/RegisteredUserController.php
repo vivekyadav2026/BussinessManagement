@@ -59,10 +59,16 @@ class RegisteredUserController extends Controller
             \App\Models\Role::firstOrCreate(['name' => 'Organization Admin', 'organization_id' => $org->id]);
             $user->assignRole('Organization Admin');
 
-            // Assign default Plan subscription based on Super Admin Trial Settings
-            $freePlan = \App\Models\Plan::where('name', 'Free')->first();
-            if (!$freePlan) {
-                $freePlan = \App\Models\Plan::create([
+            // Assign default or selected Plan subscription based on Super Admin Trial Settings
+            $targetPlan = null;
+            if ($request->filled('plan')) {
+                $targetPlan = \App\Models\Plan::where('id', $request->plan)->where('is_active', true)->where('type', 'base')->first();
+            }
+            if (!$targetPlan) {
+                $targetPlan = \App\Models\Plan::where('name', 'Free')->first();
+            }
+            if (!$targetPlan) {
+                $targetPlan = \App\Models\Plan::create([
                     'name' => 'Free',
                     'category' => 'all',
                     'price_monthly' => 0,
@@ -73,8 +79,8 @@ class RegisteredUserController extends Controller
             }
             
             // Ensure plan has retail and payroll modules enabled
-            \App\Models\PlanFeature::firstOrCreate(['plan_id' => $freePlan->id, 'feature_code' => 'module_retail'], ['feature_value' => 'true']);
-            \App\Models\PlanFeature::firstOrCreate(['plan_id' => $freePlan->id, 'feature_code' => 'module_payroll'], ['feature_value' => 'true']);
+            \App\Models\PlanFeature::firstOrCreate(['plan_id' => $targetPlan->id, 'feature_code' => 'module_retail'], ['feature_value' => 'true']);
+            \App\Models\PlanFeature::firstOrCreate(['plan_id' => $targetPlan->id, 'feature_code' => 'module_payroll'], ['feature_value' => 'true']);
 
             $trialDays = (int) \App\Models\SystemSetting::get('trial_days', 14);
             $enableTrial = \App\Models\SystemSetting::get('enable_free_trial', '1');
@@ -89,7 +95,7 @@ class RegisteredUserController extends Controller
 
             \App\Models\OrganizationSubscription::create([
                 'organization_id' => $org->id,
-                'plan_id' => $freePlan->id,
+                'plan_id' => $targetPlan->id,
                 'status' => $status,
                 'starts_at' => now(),
                 'ends_at' => $endsAt,

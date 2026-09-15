@@ -27,5 +27,10 @@ class OrganizationSubscription extends Model
         }
         return $this->starts_at->diffInDays($this->ends_at) > 60 ? 'yearly' : 'monthly';
     }
+
+    public function gatewayPayment()
+    {
+        return $this->belongsTo(GatewayPayment::class);
+    }
 }
 

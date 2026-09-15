@@ -14,21 +14,21 @@
     </div>
 
     <!-- Form Container -->
-    <form action="{{ route('organization.roles.update', $role) }}" method="POST" class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+    <form action="{{ route('organization.roles.update', $role) }}" method="POST" class="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 overflow-hidden">
         @csrf
         @method('PUT')
         
         <!-- Role Details -->
-        <div class="p-5 space-y-4">
-            <div class="flex items-center gap-2 pb-1.5 border-b border-gray-50">
-                <span class="w-1 h-3.5 bg-[var(--theme-active)] rounded-full"></span>
-                <h2 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Role Details</h2>
+        <div class="p-6 md:p-8 space-y-6">
+            <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center font-bold">▶</div>
+                <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Role Details</h2>
             </div>
             
             <div class="max-w-md">
-                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Role Name <span class="text-red-500">*</span></label>
-                <input type="text" name="name" value="{{ old('name', $role->name) }}" required class="w-full border border-gray-300 focus:border-[var(--theme-active)] focus:ring-1 focus:ring-[var(--theme-active)] rounded-lg px-3 py-2 text-sm outline-none transition @error('name') border-red-300 @enderror">
-                @error('name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                <label class="block mb-1.5">Role Name <span class="text-red-500">*</span></label>
+                <input type="text" name="name" value="{{ old('name', $role->name) }}" required class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 rounded-xl px-4 py-2.5 text-sm font-medium outline-none transition-all shadow-sm @error('name') border-red-300 bg-red-50 @enderror">
+                @error('name') <span class="text-xs text-red-500 mt-1 block font-medium">{{ $message }}</span> @enderror
             </div>
         </div>
 
@@ -36,11 +36,11 @@
         <div class="border-t border-gray-200 p-5 space-y-4 bg-gray-50/30">
             <div class="flex items-center justify-between pb-2 border-b border-gray-200">
                 <div class="flex items-center gap-2">
-                    <span class="w-1 h-3.5 bg-[var(--theme-active)] rounded-full"></span>
-                    <h2 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Assign Permissions</h2>
+                    <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center font-bold">▶</div>
+                    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Assign Permissions</h2>
                 </div>
                 <label class="inline-flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-xs hover:bg-gray-50 transition">
-                    <input type="checkbox" id="select-all-global" onclick="toggleAllPermissions(this)" class="rounded text-[var(--theme-active)] focus:ring-[var(--theme-active)] border-gray-300">
+                    <input type="checkbox" id="select-all-global" onclick="toggleAllPermissions(this)" class="rounded text-amber-500 focus:ring-amber-500 border-slate-300 w-4 h-4 shadow-sm">
                     <span class="text-xs font-bold text-gray-800">Select All Permissions</span>
                 </label>
             </div>
@@ -74,9 +74,9 @@
         </div>
         
         <!-- Footer Actions -->
-        <div class="bg-gray-50 border-t border-gray-200 px-5 py-3.5 flex justify-end gap-2.5">
-            <a href="{{ route('organization.roles.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg font-semibold text-xs hover:bg-gray-50 shadow-sm transition">Cancel</a>
-            <button type="submit" class="px-4 py-2 bg-[var(--theme-active)] text-[var(--theme-active-text)] rounded-lg font-semibold text-xs hover:opacity-90 shadow-sm transition">Update Role</button>
+        <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex flex-col-reverse sm:flex-row justify-end gap-3">
+            <a href="{{ route('organization.roles.index') }}" class="px-6 py-2.5 border border-slate-300 text-slate-700 bg-white rounded-xl font-bold text-xs hover:bg-slate-50 shadow-sm transition-all text-center">Cancel</a>
+            <button type="submit" class="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-slate-800 shadow-sm transition-all flex items-center justify-center gap-2">Update Role</button>
         </div>
     </form>
 </div>

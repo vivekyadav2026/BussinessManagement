@@ -26,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
                 return true;
             }
         });
+
+        \Illuminate\Support\Facades\View::composer(['layouts.public', 'pages.*', 'welcome'], function ($view) {
+            try {
+                $view->with('siteSettings', \App\Models\SystemSetting::getAllSettings());
+                $view->with('siteFaqs', \App\Models\SystemSetting::getFaqs());
+            } catch (\Throwable $e) {
+                $view->with('siteSettings', []);
+                $view->with('siteFaqs', []);
+            }
+        });
     }
 
 }
