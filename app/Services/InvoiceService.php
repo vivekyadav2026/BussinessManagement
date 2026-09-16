@@ -144,6 +144,25 @@ class InvoiceService
                 }
             }
 
+            // Record transaction entry if payment was collected upon creation
+            if ($invoice->amount_paid > 0) {
+                $method = $data['payment_method'] ?? 'Cash';
+                if (!in_array($method, ['Cash', 'UPI', 'Card', 'Razorpay'])) {
+                    $method = 'Cash';
+                }
+
+                \App\Models\Transaction::create([
+                    'organization_id' => $organizationId,
+                    'location_id' => $locationId,
+                    'invoice_id' => $invoice->id,
+                    'amount' => $invoice->amount_paid,
+                    'payment_method' => $method,
+                    'reference_number' => $data['reference_number'] ?? null,
+                    'payment_date' => $invoice->invoice_date,
+                    'notes' => $data['notes'] ?? 'Settled Order Payment'
+                ]);
+            }
+
             return $invoice;
         });
     }

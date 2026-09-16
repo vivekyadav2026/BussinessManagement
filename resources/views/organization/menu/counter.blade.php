@@ -631,18 +631,10 @@
                             <td class="px-4 py-3 font-mono font-extrabold text-slate-950 text-sm">₹<span x-text="parseFloat(order.total).toFixed(2)"></span></td>
                             <td class="px-4 py-3 text-slate-500 font-mono text-[11px]" x-text="formatTime(order.created_at)"></td>
                             <td class="px-4 py-3 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <template x-if="order.invoice_id">
-                                        <a :href="'/organization/invoices/' + order.invoice_id" target="_blank" 
-                                           class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition shadow-2xs">
-                                            👁️ Invoice
-                                        </a>
-                                    </template>
-                                    <a :href="'/organization/menu/pos/orders/' + order.id + '/print-receipt'" target="_blank" 
-                                       class="inline-flex items-center gap-1 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-extrabold transition shadow-2xs">
-                                        🖨️ Print Bill
-                                    </a>
-                                </div>
+                                <a :href="'/organization/menu/pos/orders/' + order.id + '/print-receipt'" target="_blank" 
+                                   class="inline-flex items-center gap-1 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-extrabold transition shadow-2xs">
+                                    🖨️ Print Bill / Receipt
+                                </a>
                             </td>
                         </tr>
                     </template>
