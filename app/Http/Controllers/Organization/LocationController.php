@@ -13,14 +13,33 @@ class LocationController extends Controller
     {
         $orgId = auth()->user()->organization_id;
         $locations = Location::where('organization_id', $orgId)->withCount('employees')->latest()->paginate(15)->withQueryString();
+        $totalLocations = Location::where('organization_id', $orgId)->count();
+        $activeLocations = Location::where('organization_id', $orgId)->where('is_active', true)->count();
+        $totalAssignedEmployees = \App\Models\Employee::where('organization_id', $orgId)->whereNotNull('location_id')->count();
         $maxLocations = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_locations') ?? '1';
-        return view('organization.locations.index', compact('locations', 'maxLocations'));
+        $activeLocationId = LocationManager::getActiveLocationId();
+        $limitReached = \App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_locations', $totalLocations);
+
+        return view('organization.locations.index', compact(
+            'locations',
+            'maxLocations',
+            'totalLocations',
+            'activeLocations',
+            'totalAssignedEmployees',
+            'activeLocationId',
+            'limitReached'
+        ));
     }
 
 
     public function create()
     {
-        return view('organization.locations.create');
+        $orgId = auth()->user()->organization_id;
+        $totalLocations = Location::where('organization_id', $orgId)->count();
+        $maxLocations = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_locations') ?? '1';
+        $limitReached = \App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_locations', $totalLocations);
+
+        return view('organization.locations.create', compact('totalLocations', 'maxLocations', 'limitReached'));
     }
 
     public function store(Request $request)
@@ -54,6 +73,7 @@ class LocationController extends Controller
     public function edit(Location $location)
     {
         abort_if($location->organization_id !== auth()->user()->organization_id, 403);
+        $location->loadCount('employees');
         return view('organization.locations.edit', compact('location'));
     }
 
@@ -101,7 +121,11 @@ class LocationController extends Controller
     public function show(Location $location)
     {
         abort_if($location->organization_id !== auth()->user()->organization_id, 403);
-        return view('organization.locations.show', compact('location'));
+        $location->load(['employees' => function ($q) {
+            $q->latest();
+        }, 'users']);
+        $activeLocationId = LocationManager::getActiveLocationId();
+        return view('organization.locations.show', compact('location', 'activeLocationId'));
     }
 
     public function destroy(Location $location)

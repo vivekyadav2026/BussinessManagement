@@ -11,7 +11,25 @@ class OrganizationProfileController extends Controller
     public function show()
     {
         $organization = auth()->user()->organization;
-        return view('organization.profile.show', compact('organization'));
+        $organization->load(['activeSubscription.plan', 'activeAddons.plan']);
+
+        $locationsCount = \App\Models\Location::where('organization_id', $organization->id)->count();
+        $employeesCount = \App\Models\Employee::where('organization_id', $organization->id)->count();
+        $adminUser = auth()->user();
+        $ownerEmployee = \App\Models\Employee::where('organization_id', $organization->id)
+            ->where(function($q) {
+                $q->where('designation', 'like', '%Owner%')
+                  ->orWhere('designation', 'like', '%Admin%');
+            })
+            ->first();
+
+        return view('organization.profile.show', compact(
+            'organization', 
+            'locationsCount', 
+            'employeesCount', 
+            'adminUser', 
+            'ownerEmployee'
+        ));
     }
 
     public function update(Request $request)

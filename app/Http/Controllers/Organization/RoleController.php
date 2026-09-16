@@ -22,8 +22,17 @@ class RoleController extends Controller implements HasMiddleware
     }
     public function index()
     {
-        $roles = Role::where('organization_id', auth()->user()->organization_id)->withCount('users')->get();
-        return view('organization.roles.index', compact('roles'));
+        $orgId = auth()->user()->organization_id;
+        $roles = Role::where('organization_id', $orgId)
+            ->withCount('users')
+            ->with('permissions')
+            ->get();
+
+        $totalRoles = $roles->count();
+        $totalAssignedUsers = $roles->sum('users_count');
+        $totalModules = Permission::distinct('module')->count('module');
+
+        return view('organization.roles.index', compact('roles', 'totalRoles', 'totalAssignedUsers', 'totalModules'));
     }
 
     public function create()
@@ -113,7 +122,7 @@ class RoleController extends Controller implements HasMiddleware
     public function show(Role $role)
     {
         abort_if($role->organization_id !== auth()->user()->organization_id, 403);
-        $role->load('permissions');
+        $role->load(['permissions', 'users']);
         return view('organization.roles.show', compact('role'));
     }
 

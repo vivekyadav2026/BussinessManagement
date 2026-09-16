@@ -25,7 +25,8 @@ class EmployeeController extends Controller implements HasMiddleware
     }
     public function index(Request $request)
     {
-        $query = Employee::with('user.roles');
+        $orgId = auth()->user()->organization_id;
+        $query = Employee::where('organization_id', $orgId)->with(['user.roles', 'location']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -41,9 +42,22 @@ class EmployeeController extends Controller implements HasMiddleware
             $query->where('status', $request->status);
         }
 
-        $employees = $query->with(['user', 'user.roles'])->latest()->paginate(15)->withQueryString();
+        $employees = $query->latest()->paginate(15)->withQueryString();
 
-        return view('organization.employees.index', compact('employees'));
+        $totalCount = Employee::where('organization_id', $orgId)->count();
+        $activeCount = Employee::where('organization_id', $orgId)->where('status', 'active')->count();
+        $systemUsersCount = Employee::where('organization_id', $orgId)->whereNotNull('user_id')->count();
+        $maxEmployees = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_employees');
+        $limitReached = \App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_employees', $totalCount);
+
+        return view('organization.employees.index', compact(
+            'employees',
+            'totalCount',
+            'activeCount',
+            'systemUsersCount',
+            'maxEmployees',
+            'limitReached'
+        ));
     }
 
     public function create()
