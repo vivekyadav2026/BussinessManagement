@@ -226,6 +226,7 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'plan.fe
     // Waiter POS & Bill Receipt Routes
     Route::middleware('permission:restaurant.view')->group(function() {
         Route::get('/pos', [\App\Http\Controllers\Organization\WaiterPosController::class, 'index'])->name('pos.index');
+        Route::get('/pos/api/tables-status', [\App\Http\Controllers\Organization\WaiterPosController::class, 'fetchTablesStatus'])->name('pos.tables-status');
         Route::get('/pos/table/{table}', [\App\Http\Controllers\Organization\WaiterPosController::class, 'getTableOrder'])->name('pos.table-order');
         Route::post('/pos/orders', [\App\Http\Controllers\Organization\WaiterPosController::class, 'saveOrder'])->name('pos.orders.save')->middleware('permission:restaurant.orders');
         Route::post('/pos/orders/{order}/settle', [\App\Http\Controllers\Organization\WaiterPosController::class, 'settleOrder'])->name('pos.orders.settle')->middleware('permission:restaurant.orders');

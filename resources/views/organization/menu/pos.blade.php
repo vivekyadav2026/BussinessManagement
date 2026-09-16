@@ -481,6 +481,54 @@ function waiterPos() {
             if (firstTable) {
                 this.selectTable(firstTable);
             }
+
+            // Auto-poll tables status every 5 seconds for 100% real-time updates!
+            setInterval(() => {
+                this.pollTablesStatus();
+            }, 5000);
+        },
+
+        pollTablesStatus() {
+            fetch('/organization/menu/pos/api/tables-status')
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        let prevOccupied = this.occupiedTablesCount;
+                        this.tables = data;
+
+                        // Auto refresh currently selected table if active
+                        if (this.selectedTableId) {
+                            let updatedTable = data.find(t => t.id === this.selectedTableId);
+                            if (updatedTable && updatedTable.is_occupied) {
+                                this.getTableOrder(this.selectedTableId, true);
+                            }
+                        }
+
+                        // Play audio chime alert when new table order arrives!
+                        let newOccupied = data.filter(t => t.is_occupied).length;
+                        if (newOccupied > prevOccupied) {
+                            this.playChimeSound();
+                        }
+                    }
+                })
+                .catch(err => console.log('Polling error:', err));
+        },
+
+        playChimeSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } catch(e) {}
         },
 
         get vacantTablesCount() {
@@ -513,10 +561,12 @@ function waiterPos() {
             this.cookingNotes = this.cookingNotes ? (this.cookingNotes + ', ' + note) : note;
         },
 
-        getTableOrder(tableId) {
+        getTableOrder(tableId, isBackground = false) {
             if (!tableId) return;
-            this.loading = true;
-            this.resetForm();
+            if (!isBackground) {
+                this.loading = true;
+                this.resetForm();
+            }
             this.selectedTableId = tableId;
             this.activeTable = this.tables.find(t => t.id === tableId);
             if(this.activeTable) this.selectedTableName = this.activeTable.name;
@@ -535,8 +585,12 @@ function waiterPos() {
                         
                         this.activeOrderIds = data.active_orders.map(o => o.id);
                         this.activeOrderNumber = data.active_orders[0].order_number;
-                        this.customerName = data.active_orders[0].customer_name || '';
-                        this.customerPhone = data.active_orders[0].customer_phone || '';
+                        if (!isBackground || !this.customerName) {
+                            this.customerName = data.active_orders[0].customer_name || '';
+                        }
+                        if (!isBackground || !this.customerPhone) {
+                            this.customerPhone = data.active_orders[0].customer_phone || '';
+                        }
                         this.orderType = data.active_orders[0].order_type || 'Dine-in';
                         this.cookingNotes = data.active_orders.map(o => o.special_notes).filter(Boolean).join(' | ');
                         

@@ -56,6 +56,36 @@ class WaiterPosController extends Controller
         return view('organization.menu.pos', compact('tables', 'categories'));
     }
 
+    public function fetchTablesStatus()
+    {
+        $orgId = auth()->user()->organization_id;
+        $locationId = LocationManager::getActiveLocationId();
+
+        if (!$locationId) {
+            return response()->json([]);
+        }
+
+        $tables = RestaurantTable::where('organization_id', $orgId)
+            ->where('location_id', $locationId)
+            ->orderBy('name')
+            ->get()
+            ->map(function ($table) use ($orgId, $locationId) {
+                $activeOrder = RestaurantOrder::with('items')
+                    ->where('organization_id', $orgId)
+                    ->where('location_id', $locationId)
+                    ->where('restaurant_table_id', $table->id)
+                    ->whereNotIn('status', ['Cancelled', 'Completed'])
+                    ->latest()
+                    ->first();
+
+                $table->active_order = $activeOrder;
+                $table->is_occupied = $activeOrder ? true : false;
+                return $table;
+            });
+
+        return response()->json($tables);
+    }
+
     public function getTableOrder(RestaurantTable $table)
     {
         $orgId = auth()->user()->organization_id;
