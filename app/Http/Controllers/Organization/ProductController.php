@@ -23,7 +23,20 @@ class ProductController extends Controller implements HasMiddleware
     }
     public function index(Request $request)
     {
-        $query = Product::with('category')->where('organization_id', auth()->user()->organization_id);
+        $orgId = auth()->user()->organization_id;
+        $baseQuery = Product::where('organization_id', $orgId);
+
+        // Compute KPI metrics
+        $totalProducts = (clone $baseQuery)->count();
+        $activeProducts = (clone $baseQuery)->where('is_active', true)->count();
+        $inactiveProducts = $totalProducts - $activeProducts;
+        $categoriesCount = Category::where('organization_id', $orgId)->count();
+
+        // Subscription product capacity
+        $maxProducts = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_products') ?? 'Unlimited';
+        $limitReached = \App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_products', $totalProducts);
+
+        $query = Product::with('category')->where('organization_id', $orgId);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -36,11 +49,27 @@ class ProductController extends Controller implements HasMiddleware
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
 
-        $products = $query->with('category')->latest()->paginate(15)->withQueryString();
-        $categories = Category::where('organization_id', auth()->user()->organization_id)->get();
+        $products = $query->latest()->paginate(15)->withQueryString();
+        $categories = Category::where('organization_id', $orgId)->get();
         
-        return view('organization.products.index', compact('products', 'categories'));
+        return view('organization.products.index', compact(
+            'products',
+            'categories',
+            'totalProducts',
+            'activeProducts',
+            'inactiveProducts',
+            'categoriesCount',
+            'maxProducts',
+            'limitReached'
+        ));
     }
 
     public function create()

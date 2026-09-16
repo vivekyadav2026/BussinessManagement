@@ -16,13 +16,21 @@ class SubscriptionController extends Controller
 {
     public function index()
     {
-        $orgId = auth()->user()->organization_id;
-        $currentSubscription = auth()->user()->organization->activeSubscription;
+        $user = auth()->user();
+        $org = $user->organization;
+        $orgId = $user->organization_id;
+        $currentSubscription = $org ? $org->activeSubscription : null;
         
         $plans = Plan::where('is_active', true)->with('features')->get();
         $key = config('services.razorpay.key');
 
-        return view('organization.subscription.index', compact('currentSubscription', 'plans', 'key'));
+        $subscriptionHistory = $orgId ? OrganizationSubscription::where('organization_id', $orgId)
+            ->with(['plan', 'gatewayPayment'])
+            ->latest('id')
+            ->take(10)
+            ->get() : collect();
+
+        return view('organization.subscription.index', compact('currentSubscription', 'plans', 'key', 'subscriptionHistory'));
     }
 
     public function initiatePayment(Request $request, Plan $plan)

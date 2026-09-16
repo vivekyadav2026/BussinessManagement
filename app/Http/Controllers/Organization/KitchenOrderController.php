@@ -12,9 +12,15 @@ class KitchenOrderController extends Controller
 {
     public function index()
     {
-        $locationId = session('active_location_id');
+        $locationId = session('active_location_id') ?? \App\Services\LocationManager::getActiveLocationId();
         if (!$locationId) {
-            return redirect()->route('dashboard')->with('error', 'You are not assigned to any location. Please contact your administrator.');
+            $firstLoc = \App\Models\Location::where('organization_id', auth()->user()->organization_id)->first();
+            if ($firstLoc) {
+                session(['active_location_id' => $firstLoc->id]);
+                $locationId = $firstLoc->id;
+            } else {
+                return redirect()->route('dashboard')->with('error', 'You are not assigned to any location. Please contact your administrator.');
+            }
         }
 
         return view('organization.restaurant.kitchen');
@@ -22,6 +28,8 @@ class KitchenOrderController extends Controller
 
     public function fetchOrders()
     {
+        $locationId = session('active_location_id') ?? \App\Services\LocationManager::getActiveLocationId();
+
         $orders = RestaurantOrder::select([
                 'id', 'organization_id', 'location_id', 'restaurant_table_id', 
                 'order_number', 'customer_name', 'customer_phone', 'order_type', 
@@ -29,11 +37,16 @@ class KitchenOrderController extends Controller
                 'status', 'created_at'
             ])
             ->with([
-                'items:id,restaurant_order_id,name_snapshot,price_snapshot,quantity,total',
+                'items:id,restaurant_order_id,menu_item_id,name_snapshot,price_snapshot,quantity,total',
+                'items.menuItem:id,is_veg',
                 'table:id,name'
             ])
             ->where('organization_id', auth()->user()->organization_id)
-            ->where('location_id', session('active_location_id'))
+            ->where(function($query) use ($locationId) {
+                if ($locationId) {
+                    $query->where('location_id', $locationId);
+                }
+            })
             ->whereIn('status', ['Received', 'Preparing', 'Ready'])
             ->orderBy('created_at', 'asc')
             ->get();
@@ -41,15 +54,13 @@ class KitchenOrderController extends Controller
         return response()->json($orders);
     }
 
-
-
     public function updateStatus(Request $request, RestaurantOrder $order)
     {
         if ($order->organization_id !== auth()->user()->organization_id) {
             abort(403);
         }
 
-        $request->validate(['status' => 'required|in:Preparing,Ready,Served,Cancelled']);
+        $request->validate(['status' => 'required|in:Received,Preparing,Ready,Served,Cancelled']);
 
         $order->update(['status' => $request->status]);
 

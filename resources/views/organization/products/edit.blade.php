@@ -1,15 +1,40 @@
 @extends('layouts.sme')
 
+@section('title', 'Edit Product: ' . $product->name)
+
 @section('content')
-<div class="max-w-6xl mx-auto px-4 py-2 space-y-6">
-    <!-- Header -->
-    <div class="flex items-center gap-3 pb-3 mb-4 border-b border-gray-100">
-        <a href="{{ route('organization.products.index') }}" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-gray-900 hover:bg-gray-50 shadow-sm transition">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        </a>
-        <div>
-            <h1 class="text-lg font-bold text-gray-900 tracking-tight">Edit Product: {{ $product->name }}</h1>
-            <p class="text-xs text-gray-500">Modify information parameters or update catalog specifications.</p>
+<div class="max-w-7xl mx-auto space-y-6 pt-2 sm:pt-4 pb-20">
+
+    <!-- 1. Breadcrumb & Page Header -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+        <div class="min-w-0 flex-1">
+            <nav class="flex items-center gap-2 text-xs font-semibold text-slate-600 mb-2" aria-label="Breadcrumb">
+                <a href="{{ route('organization.products.index') }}" class="hover:text-slate-900 transition-colors">Inventory</a>
+                <span class="text-slate-400 font-bold">/</span>
+                <a href="{{ route('organization.products.index') }}" class="hover:text-slate-900 transition-colors">Products</a>
+                <span class="text-slate-400 font-bold">/</span>
+                <span class="text-slate-950 font-extrabold truncate max-w-[200px]">{{ $product->name }}</span>
+            </nav>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center text-slate-950 text-xl font-black shadow-sm shrink-0">
+                    ✏️
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">Edit Product: {{ $product->name }}</h1>
+                    <p class="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
+                        Modify product configurations, barcode association, pricing tiers, and reorder levels.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 shrink-0">
+            <a href="{{ route('organization.products.show', $product) }}" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs rounded-lg transition shadow-2xs">
+                &larr; View Specs
+            </a>
+            <a href="{{ route('organization.products.index') }}" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs rounded-lg transition shadow-2xs">
+                All Products
+            </a>
         </div>
     </div>
 

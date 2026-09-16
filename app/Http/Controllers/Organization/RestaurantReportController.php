@@ -23,7 +23,13 @@ class RestaurantReportController extends Controller
         $locationId = session('active_location_id') ?? LocationManager::getActiveLocationId();
 
         if (!$locationId) {
-            return redirect()->route('organization.dashboard')->with('error', 'Please select a location to view reports.');
+            $firstLoc = \App\Models\Location::where('organization_id', $orgId)->first();
+            if ($firstLoc) {
+                session(['active_location_id' => $firstLoc->id]);
+                $locationId = $firstLoc->id;
+            } else {
+                return redirect()->route('organization.dashboard')->with('error', 'Please select a location to view reports.');
+            }
         }
 
         // Date & Dynamic Filtering Logic
@@ -56,33 +62,34 @@ class RestaurantReportController extends Controller
         }
 
         // Base Query
-        $baseQuery = RestaurantOrder::where('organization_id', $orgId)
-            ->where('location_id', $locationId)
-            ->whereBetween('created_at', [$from, $to])
-            ->whereNotIn('status', ['Cancelled']);
+        $baseQuery = RestaurantOrder::where('restaurant_orders.organization_id', $orgId)
+            ->where('restaurant_orders.location_id', $locationId)
+            ->whereBetween('restaurant_orders.created_at', [$from, $to])
+            ->whereNotIn('restaurant_orders.status', ['Cancelled']);
 
         if ($orderType !== 'all') {
-            $baseQuery->where('order_type', $orderType);
+            $baseQuery->where('restaurant_orders.order_type', $orderType);
         }
 
         // KPI Calculations
         $totalOrders = (clone $baseQuery)->count();
-        $totalRevenue = (clone $baseQuery)->sum('total');
+        $totalRevenue = (clone $baseQuery)->sum('restaurant_orders.total');
         $avgOrderValue = $totalOrders > 0 ? ($totalRevenue / $totalOrders) : 0;
 
         // Order Types Breakdown (Dine-in vs Takeaway)
-        $dineInQuery = RestaurantOrder::where('organization_id', $orgId)
-            ->where('location_id', $locationId)
-            ->whereBetween('created_at', [$from, $to])
-            ->whereNotIn('status', ['Cancelled']);
+        $dineInQuery = RestaurantOrder::where('restaurant_orders.organization_id', $orgId)
+            ->where('restaurant_orders.location_id', $locationId)
+            ->whereBetween('restaurant_orders.created_at', [$from, $to])
+            ->whereNotIn('restaurant_orders.status', ['Cancelled']);
         
-        $dineInCount = (clone $dineInQuery)->where('order_type', 'Dine-in')->count();
-        $dineInRevenue = (clone $dineInQuery)->where('order_type', 'Dine-in')->sum('total');
-        $takeawayCount = (clone $dineInQuery)->where('order_type', 'Takeaway')->count();
-        $takeawayRevenue = (clone $dineInQuery)->where('order_type', 'Takeaway')->sum('total');
+        $dineInCount = (clone $dineInQuery)->where('restaurant_orders.order_type', 'Dine-in')->count();
+        $dineInRevenue = (clone $dineInQuery)->where('restaurant_orders.order_type', 'Dine-in')->sum('restaurant_orders.total');
+        $takeawayCount = (clone $dineInQuery)->where('restaurant_orders.order_type', 'Takeaway')->count();
+        $takeawayRevenue = (clone $dineInQuery)->where('restaurant_orders.order_type', 'Takeaway')->sum('restaurant_orders.total');
 
         // Paginated Item-wise Sales Aggregation
         $itemSalesQuery = RestaurantOrderItem::join('restaurant_orders', 'restaurant_order_items.restaurant_order_id', '=', 'restaurant_orders.id')
+            ->leftJoin('menu_items', 'restaurant_order_items.menu_item_id', '=', 'menu_items.id')
             ->where('restaurant_orders.organization_id', $orgId)
             ->where('restaurant_orders.location_id', $locationId)
             ->whereBetween('restaurant_orders.created_at', [$from, $to])
@@ -95,21 +102,51 @@ class RestaurantReportController extends Controller
         $itemSalesQuery->select(
             'restaurant_order_items.name_snapshot',
             'restaurant_order_items.price_snapshot',
+            DB::raw('COALESCE(menu_items.is_veg, 1) as is_veg'),
             DB::raw('SUM(restaurant_order_items.quantity) as total_quantity'),
             DB::raw('SUM(restaurant_order_items.total) as total_revenue')
         )
-        ->groupBy('restaurant_order_items.name_snapshot', 'restaurant_order_items.price_snapshot')
+        ->groupBy('restaurant_order_items.name_snapshot', 'restaurant_order_items.price_snapshot', 'menu_items.is_veg')
         ->orderByDesc('total_revenue');
 
         $totalItemsSold = (clone $itemSalesQuery)->get()->sum('total_quantity');
+        $topDishes = (clone $itemSalesQuery)->take(5)->get();
         $itemSales = $itemSalesQuery->paginate(15, ['*'], 'item_page')->withQueryString();
+
+        // Diet Breakdown (Veg vs Non-Veg)
+        $dietStats = (clone $baseQuery)
+            ->join('restaurant_order_items', 'restaurant_orders.id', '=', 'restaurant_order_items.restaurant_order_id')
+            ->leftJoin('menu_items', 'restaurant_order_items.menu_item_id', '=', 'menu_items.id')
+            ->select(
+                DB::raw('COALESCE(menu_items.is_veg, 1) as is_veg'),
+                DB::raw('SUM(restaurant_order_items.quantity) as total_qty'),
+                DB::raw('SUM(restaurant_order_items.total) as total_rev')
+            )
+            ->groupBy('is_veg')
+            ->get();
+
+        $vegRevenue = $dietStats->where('is_veg', 1)->sum('total_rev');
+        $nonVegRevenue = $dietStats->where('is_veg', 0)->sum('total_rev');
+        $vegQuantity = $dietStats->where('is_veg', 1)->sum('total_qty');
+        $nonVegQuantity = $dietStats->where('is_veg', 0)->sum('total_qty');
+
+        // Hourly Sales Distribution (Peak Hours)
+        $hourlyDistribution = (clone $baseQuery)
+            ->select(
+                DB::raw('HOUR(restaurant_orders.created_at) as hour'),
+                DB::raw('COUNT(restaurant_orders.id) as orders_count'),
+                DB::raw('SUM(restaurant_orders.total) as revenue')
+            )
+            ->groupBy('hour')
+            ->orderBy('hour', 'asc')
+            ->get();
 
         // Chart Data: Daily Sales Trend over selected period
         $trendData = (clone $baseQuery)
             ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(total) as revenue'),
-                DB::raw('COUNT(id) as orders_count')
+                DB::raw('DATE(restaurant_orders.created_at) as date'),
+                DB::raw('SUM(restaurant_orders.total) as revenue'),
+                DB::raw('COUNT(restaurant_orders.id) as orders_count')
             )
             ->groupBy('date')
             ->orderBy('date', 'asc')
@@ -182,7 +219,13 @@ class RestaurantReportController extends Controller
             'takeawayRevenue',
             'itemSales',
             'trendData',
-            'customerSummary'
+            'customerSummary',
+            'topDishes',
+            'vegRevenue',
+            'nonVegRevenue',
+            'vegQuantity',
+            'nonVegQuantity',
+            'hourlyDistribution'
         ));
     }
 }

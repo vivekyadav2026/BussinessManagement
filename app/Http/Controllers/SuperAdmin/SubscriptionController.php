@@ -9,10 +9,29 @@ use Illuminate\Http\Request;
 
 class SubscriptionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $subscriptions = OrganizationSubscription::with(['organization', 'plan'])->latest()->paginate(20)->withQueryString();
-        return view('super-admin.subscriptions.index', compact('subscriptions'));
+        $query = OrganizationSubscription::with(['organization', 'plan']);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('organization', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        $subscriptions = $query->latest('id')->paginate(20)->withQueryString();
+        
+        $totalCount = OrganizationSubscription::count();
+        $activeCount = OrganizationSubscription::where('status', 'Active')->count();
+        $trialCount = OrganizationSubscription::where('status', 'Trial')->count();
+        $expiredCount = OrganizationSubscription::whereIn('status', ['Expired', 'Cancelled', 'Refunded'])->count();
+
+        return view('super-admin.subscriptions.index', compact('subscriptions', 'totalCount', 'activeCount', 'trialCount', 'expiredCount'));
     }
 
     public function edit(OrganizationSubscription $subscription)
