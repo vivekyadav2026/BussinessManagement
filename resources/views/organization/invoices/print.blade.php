@@ -70,6 +70,9 @@
             return ($result ? "Rupees " . trim($result) : "Rupees Zero") . ($points ? $points : "") . " Only";
         }
         $amountInWords = numberToWords($invoice->grand_total);
+        $orgUpi = $invoice->organization->upi_id ?? '';
+        $payAmount = $invoice->amount_due > 0 ? $invoice->amount_due : $invoice->grand_total;
+        $upiString = $orgUpi ? "upi://pay?pa=" . rawurlencode($orgUpi) . "&pn=" . rawurlencode($invoice->organization->name) . "&am=" . number_format($payAmount, 2, '.', '') . "&cu=INR&tn=" . rawurlencode('Invoice ' . $invoice->invoice_number) : '';
     @endphp
 
     <!-- Top Floating Action Toolbar (No Print) -->
@@ -99,6 +102,8 @@
             <div class="space-y-1.5 max-w-md">
                 @if($invoice->organization->logo)
                     <img src="{{ Storage::url($invoice->organization->logo) }}" class="h-14 w-auto object-contain mb-3">
+                @else
+                    <img src="{{ asset('images/logo.png') }}" class="h-12 w-auto object-contain mb-3" alt="Vyapaargo">
                 @endif
                 <h1 class="text-2xl font-black text-slate-900 tracking-tight uppercase">{{ $invoice->organization->name }}</h1>
                 <div class="text-xs text-slate-600 leading-normal font-medium space-y-0.5">
@@ -223,10 +228,23 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
             <!-- Left: Bank Details & Terms -->
             <div class="space-y-4 text-xs">
-                <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 space-y-1">
-                    <div class="font-bold text-slate-800 uppercase tracking-wider text-[10px] border-b border-slate-200 pb-1 mb-1.5">Payment Details</div>
-                    <div class="text-slate-600 font-medium">Mode: <b>Cash / Bank / UPI</b></div>
-                    <div class="text-slate-600 font-medium">Bank Account: <b>Available on Request</b></div>
+                <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 flex items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <div class="font-bold text-slate-800 uppercase tracking-wider text-[10px] border-b border-slate-200 pb-1 mb-1.5">Payment Details</div>
+                        <div class="text-slate-600 font-medium">Mode: <b>Cash / Bank / UPI</b></div>
+                        @if($invoice->organization->upi_id)
+                            <div class="text-slate-700 font-medium">Merchant UPI: <b class="font-mono text-slate-900">{{ $invoice->organization->upi_id }}</b></div>
+                            <div class="text-[10px] text-slate-500">Scan QR via GPay, PhonePe, Paytm or BHIM</div>
+                        @else
+                            <div class="text-slate-600 font-medium">Bank Account: <b>Available on Request</b></div>
+                        @endif
+                    </div>
+                    @if($invoice->organization->upi_id)
+                        <div class="flex flex-col items-center shrink-0">
+                            <div id="upiPayQrCode" class="p-1 bg-white border border-slate-200 rounded-lg shadow-2xs"></div>
+                            <span class="text-[9px] font-bold text-slate-600 mt-1">Scan to Pay</span>
+                        </div>
+                    @endif
                 </div>
 
                 @if($invoice->notes)
@@ -304,7 +322,7 @@
         <div class="border-t-2 border-slate-900 pt-6 flex flex-col sm:flex-row justify-between items-end gap-6">
             <div class="text-[10px] text-slate-400 space-y-0.5">
                 <div>E. & O.E. | Computer Generated Tax Invoice</div>
-                <div>Printed via Antigravity ERP System</div>
+                <div>Powered by {{ config('app.name', 'Vyapaargo') }} Cloud ERP</div>
             </div>
 
             <div class="text-right space-y-8 shrink-0">

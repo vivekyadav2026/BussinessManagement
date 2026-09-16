@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Super Admin - {{ config('app.name', 'Vyapaargo') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-32.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo-180.png') }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Theme Switcher Script -->
     <script>
@@ -236,6 +239,12 @@
         html.sidebar-is-collapsed .sidebar-expanded { width: 4.5rem !important; }
         html.sidebar-is-collapsed .main-expanded { padding-left: 4.5rem !important; }
 
+        @media (min-width: 768px) {
+            .sidebar-expanded, .sidebar-collapsed {
+                display: flex !important;
+            }
+        }
+
         @media (max-width: 768px) {
             .main-expanded, .main-collapsed, html.sidebar-is-collapsed .main-expanded { padding-left: 0 !important; }
             .sidebar-expanded, .sidebar-collapsed, html.sidebar-is-collapsed .sidebar-expanded { width: 16rem !important; }
@@ -266,14 +275,19 @@
                     </button>
                 </div>
                 <div class="flex flex-shrink-0 items-center px-4">
-                    <div class="logo text-white">
-                        <div class="mark bg-[#D99A2B]"></div>
-                        <span>Vyapaargo</span>
+                    <div class="logo text-white flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 shadow-sm shrink-0">
+                            <img src="{{ asset('images/logo.png') }}" alt="Vyapaargo" class="w-full h-full object-contain">
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-extrabold text-base tracking-tight leading-tight">Vyapaargo</span>
+                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Super Admin</span>
+                        </div>
                     </div>
                 </div>
                 <div class="mt-5 h-0 flex-1 overflow-y-auto">
                     <nav class="space-y-1 px-2">
-                        <x-sidebar-item route="{{ route('super-admin.dashboard') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 0 001 1m-6 0h6"/></svg>' :active="request()->routeIs('super-admin.dashboard')" class="text-gray-300 hover:bg-slate-800 hover:text-white" />
+                        <x-sidebar-item route="{{ route('super-admin.dashboard') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 0 001 1m-6 0h6"/></svg>' :active="request()->routeIs('super-admin.dashboard')" class="text-gray-300 hover:bg-slate-800 hover:text-white">Dashboard</x-sidebar-item>
                         <x-sidebar-item route="{{ route('super-admin.organizations.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>' :active="request()->routeIs('super-admin.organizations.*')" class="text-gray-300 hover:bg-slate-800 hover:text-white">Organizations</x-sidebar-item>
                         <x-sidebar-item route="{{ route('super-admin.plans.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>' :active="request()->routeIs('super-admin.plans.*')" class="text-gray-300 hover:bg-slate-800 hover:text-white">Plans</x-sidebar-item>
                         <x-sidebar-item route="{{ route('super-admin.subscriptions.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' :active="request()->routeIs('super-admin.subscriptions.*')" class="text-gray-300 hover:bg-slate-800 hover:text-white">Subscriptions</x-sidebar-item>
@@ -286,13 +300,18 @@
     </div>
 
     <!-- Static sidebar -->
-    <div :class="sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'" class="sidebar-expanded md:w-64 hidden md:fixed md:inset-y-0 md:flex md:flex-col transition-all duration-300 z-30">
+    <div :class="sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'" class="sidebar-expanded md:w-64 hidden md:flex md:fixed md:inset-y-0 md:flex-col transition-all duration-300 z-30">
         <div class="flex min-h-0 flex-1 flex-col" style="background-color: var(--theme-bg);">
             <div class="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                 <div class="flex flex-shrink-0 items-center justify-between px-4 mb-3">
-                    <div class="logo text-white flex items-center gap-2">
-                        <div class="mark bg-[#D99A2B]"></div>
-                        <span x-show="!sidebarCollapsed" class="truncate font-bold text-base">Vyapaargo</span>
+                    <div class="logo text-white flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 shadow-sm shrink-0">
+                            <img src="{{ asset('images/logo.png') }}" alt="Vyapaargo" class="w-full h-full object-contain">
+                        </div>
+                        <div x-show="!sidebarCollapsed" class="flex flex-col">
+                            <span class="truncate font-extrabold text-base tracking-tight leading-tight">Vyapaargo</span>
+                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Super Admin</span>
+                        </div>
                     </div>
                     {{-- <button type="button" @click="sidebarCollapsed = !sidebarCollapsed; localStorage.setItem('sidebar_collapsed', sidebarCollapsed); document.documentElement.classList.toggle('sidebar-is-collapsed', sidebarCollapsed)" class="text-gray-300 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition" title="Toggle Sidebar">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16" /></svg>
@@ -402,5 +421,6 @@
             </div>
         </main>
     </div>
+    @stack('scripts')
 </body>
 </html>

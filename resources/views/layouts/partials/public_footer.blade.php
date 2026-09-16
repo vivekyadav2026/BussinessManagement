@@ -4,9 +4,11 @@
       <!-- Col 1: Brand Info & Social Media Links -->
       <div class="footer-brand">
         <div class="logo" style="margin-bottom: 14px;">
-          <a href="{{ route('welcome') }}" style="display:flex; align-items:center; gap:9px; color: #fff; text-decoration: none;">
-            <div class="mark" style="background: #fff; position: relative;"><span style="position: absolute; left: 6px; right: 6px; top: 7px; height: 2px; background: var(--gold); box-shadow: 0 5px 0 var(--gold), 0 10px 0 var(--gold); display: block;"></span></div>
-            <span style="color: #fff; font-size: 20px; font-weight: 700; font-family: 'Space Grotesk';">{{ $siteSettings['company_name'] ?? config('app.name', 'Vyapaargo') }}</span>
+          <a href="{{ route('welcome') }}" style="display:flex; align-items:center; gap:12px; color: #fff; text-decoration: none;">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: #ffffff; display: flex; align-items: center; justify-content: center; padding: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); flex-shrink: 0;">
+              <img src="{{ asset('images/logo.png') }}" alt="Vyapaargo" style="width: 100%; height: 100%; object-fit: contain; display: block;">
+            </div>
+            <span style="color: #fff; font-size: 20px; font-weight: 700; font-family: 'Space Grotesk'; letter-spacing: -0.02em;">{{ $siteSettings['company_name'] ?? config('app.name', 'Vyapaargo') }}</span>
           </a>
         </div>
         <p style="color: #94A3B8; font-size: 13.5px; line-height: 1.6; margin-bottom: 20px; max-width: 320px;">

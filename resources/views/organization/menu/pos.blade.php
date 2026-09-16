@@ -37,7 +37,7 @@
             </div>
 
             <!-- Quick Links -->
-            <a href="{{ route('organization.menu.kitchen.index') }}" target="_blank" 
+            <a href="{{ route('organization.menu.kitchen.index') }}" 
                class="px-4 py-2 bg-slate-950 hover:bg-slate-900 text-white font-black rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs whitespace-nowrap">
                 <span>👨‍🍳 Kitchen KOT</span>
                 <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
@@ -100,30 +100,30 @@
                 </div>
 
                 <!-- Tables Grid -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 max-h-56 overflow-y-auto p-1 pr-2">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 max-h-60 overflow-y-auto p-1 pr-2">
                     <template x-for="t in tables" :key="t.id">
                         <button type="button" 
                             x-show="tableFilter === 'all' || (tableFilter === 'vacant' && !t.is_occupied) || (tableFilter === 'occupied' && t.is_occupied)"
                             @click="selectTable(t)" 
                             :class="[
                                 selectedTableId === t.id ? 'ring-2 ring-slate-950 border-slate-950 shadow-md scale-[1.02] bg-white' : '',
-                                t.is_occupied ? 'bg-amber-50/50 border-amber-300 text-amber-950 hover:border-amber-400 shadow-2xs' : 'bg-emerald-50/40 border-emerald-300 text-emerald-950 hover:border-emerald-400 shadow-2xs'
+                                t.is_occupied ? 'bg-amber-50/70 border-amber-300 text-amber-950 hover:border-amber-400 shadow-2xs' : 'bg-emerald-50/50 border-emerald-300 text-emerald-950 hover:border-emerald-400 shadow-2xs'
                             ]"
                             class="p-3 rounded-2xl border text-left transition-all duration-150 flex flex-col justify-between min-h-[105px] relative group overflow-hidden cursor-pointer">
                             
                             <div class="flex flex-col gap-1 w-full relative">
-                                <div class="flex justify-between items-start w-full gap-1">
-                                    <span class="font-black text-xs sm:text-sm tracking-tight leading-tight line-clamp-2 pr-1 text-slate-950" 
+                                <div class="flex items-center justify-between w-full gap-1.5">
+                                    <span class="font-black text-xs sm:text-sm tracking-tight leading-tight truncate min-w-0 text-slate-950" 
                                           x-text="t.name" :title="t.name"></span>
-                                    <span class="text-[9px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider shrink-0 shadow-2xs mt-0.5" 
-                                          :class="t.is_occupied ? 'bg-amber-500 text-slate-950 border border-amber-600' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'"
+                                    <span class="text-[9px] px-2 py-0.5 rounded-md font-black uppercase tracking-wider shrink-0 shadow-2xs" 
+                                          :class="t.is_occupied ? 'bg-amber-500 text-slate-950 border border-amber-600' : 'bg-emerald-100 text-emerald-950 border border-emerald-300'"
                                           x-text="t.is_occupied ? 'Occupied' : 'Free'">
                                     </span>
                                 </div>
 
                                 <template x-if="t.is_occupied && t.active_order">
                                     <div class="mt-2 pt-1.5 border-t border-amber-200/90 w-full space-y-0.5">
-                                        <div class="text-[10px] text-amber-900 font-mono font-bold tracking-tight" x-text="'#' + t.active_order.order_number"></div>
+                                        <div class="text-[11px] text-amber-950 font-mono font-black tracking-tight truncate" x-text="'#' + t.active_order.order_number"></div>
                                         <div class="text-xs font-black text-slate-950 font-mono" x-text="'₹' + Number(t.active_order.total).toFixed(2)"></div>
                                     </div>
                                 </template>
@@ -216,25 +216,28 @@
             <div class="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-md sticky top-4 space-y-4">
                 
                 <!-- Ticket Header -->
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                            <h3 class="font-black text-base text-slate-950 tracking-tight" 
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3 gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+                            <h3 class="font-black text-base text-slate-950 tracking-tight truncate" 
                                 x-text="orderType === 'Dine-in' ? (selectedTableName ? 'Table: ' + selectedTableName : 'Select Floor Table') : 'Takeaway / Parcel Order'"></h3>
                         </div>
-                        <div class="text-[11px] text-slate-400 font-mono font-bold mt-0.5" x-show="activeOrderIds.length > 0">
-                            Token: <span x-text="activeOrderNumber" class="font-black text-slate-950"></span>
+                        <div class="text-[11px] text-slate-500 font-mono font-bold mt-0.5 flex items-center gap-1.5 flex-wrap" x-show="activeOrderIds.length > 0">
+                            <span>Token:</span>
+                            <span x-text="activeOrderNumber" class="font-black text-slate-950 bg-amber-100/80 text-amber-950 px-2 py-0.5 rounded-md border border-amber-200"></span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 shrink-0">
                         <button type="button" @click="cancelOrder()" 
-                                class="px-2.5 py-1 bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white rounded-xl text-xs font-black border border-rose-200 transition flex items-center gap-1 shadow-2xs cursor-pointer" 
-                                x-show="activeOrderIds.length > 0">
-                            <span>🚫 Cancel</span>
+                                class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white rounded-xl text-xs font-black border border-rose-700 transition flex items-center gap-1.5 shadow-sm cursor-pointer" 
+                                x-show="activeOrderIds.length > 0"
+                                title="Void or Cancel this active order">
+                            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                            <span>Cancel Order</span>
                         </button>
                         <button type="button" @click="clearTicket()" 
-                                class="text-xs text-slate-400 hover:text-rose-600 font-bold cursor-pointer" 
+                                class="px-2.5 py-1 text-xs text-slate-500 hover:text-rose-600 font-bold cursor-pointer" 
                                 x-show="cart.length > 0 && !activeOrderIds.length">
                             Clear
                         </button>

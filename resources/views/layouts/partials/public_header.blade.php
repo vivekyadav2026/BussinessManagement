@@ -1,8 +1,9 @@
 <header class="site">
   <nav class="wrap nav">
     <div class="logo">
-      <a href="{{ route('welcome') }}" style="display:flex; align-items:center; gap:9px;">
-        <div class="mark"></div>Vyapaargo
+      <a href="{{ route('welcome') }}" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+        <img src="{{ asset('images/logo.png') }}" alt="Vyapaargo Logo" style="height:36px; width:auto; max-width:44px; object-fit:contain; display:block;">
+        <span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:var(--ink); letter-spacing:-0.02em;">Vyapaargo</span>
       </a>
     </div>
     <div class="nav-links">

@@ -78,8 +78,12 @@ class PublicOrderController extends Controller
 
         $rules = [
             'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:255',
+            'customer_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'special_notes' => 'nullable|string|max:1000',
+        ];
+
+        $messages = [
+            'customer_phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ];
 
         $tableId = session('restaurant_table_id');
@@ -87,20 +91,9 @@ class PublicOrderController extends Controller
             $rules['order_type'] = 'required|in:Takeaway,Online';
         }
 
-        $request->validate($rules);
+        $request->validate($rules, $messages);
 
-        $lastOrder = RestaurantOrder::where('organization_id', $organization->id)
-            ->where('location_id', $location->id)
-            ->whereDate('created_at', \Carbon\Carbon::today())
-            ->orderBy('id', 'desc')
-            ->first();
-        
-        $nextNumber = 1;
-        if ($lastOrder && preg_match('/-(\d+)$/', $lastOrder->order_number, $matches)) {
-            $nextNumber = intval($matches[1]) + 1;
-        }
-        
-        $orderNumber = 'TKN-' . $nextNumber;
+        $orderNumber = RestaurantOrder::generateNextOrderNumber($organization->id, $location->id);
 
         DB::beginTransaction();
         try {
@@ -155,9 +148,14 @@ class PublicOrderController extends Controller
 
             return redirect()->route('public.order.track', [$organization->id, $location->id, $orderNumber]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', 'Error placing order. Please try again.');
+            \Illuminate\Support\Facades\Log::error('Error placing public order: ' . $e->getMessage(), [
+                'exception' => $e,
+                'organization_id' => $organization->id,
+                'location_id' => $location->id
+            ]);
+            return back()->with('error', 'Error placing order: ' . $e->getMessage());
         }
     }
 

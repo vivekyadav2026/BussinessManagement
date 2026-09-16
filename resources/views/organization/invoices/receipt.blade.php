@@ -126,6 +126,8 @@
         <div class="text-center">
             @if($invoice->organization->logo)
                 <img src="{{ Storage::url($invoice->organization->logo) }}" style="max-height: 38px; margin: 0 auto 4px auto; display: block;">
+            @else
+                <img src="{{ asset('images/logo.png') }}" style="max-height: 32px; margin: 0 auto 4px auto; display: block;" alt="Vyapaargo">
             @endif
             <div class="header-title uppercase">{{ $invoice->organization->name }}</div>
             

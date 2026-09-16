@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Vyapaargo') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-32.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo-180.png') }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -218,6 +220,15 @@
             box-shadow: 0 0 0 3px rgba(217, 154, 43, 0.15) !important;
         }
 
+        /* Restore left padding for inputs that have search icons or prefix addons */
+        input[class*="pl-8"], input.pl-8 { padding-left: 2rem !important; }
+        input[class*="pl-9"], input.pl-9 { padding-left: 2.25rem !important; }
+        input[class*="pl-10"], input.pl-10 { padding-left: 2.5rem !important; }
+        input[class*="pl-11"], input.pl-11 { padding-left: 2.75rem !important; }
+        input[class*="pl-12"], input.pl-12 { padding-left: 3rem !important; }
+        input[class*="pl-14"], input.pl-14 { padding-left: 3.5rem !important; }
+        input[class*="pl-16"], input.pl-16 { padding-left: 4rem !important; }
+
         /* Buttons Overrides */
         .btn, button.btn {
             font-family: 'Space Grotesk', sans-serif !important;
@@ -399,11 +410,14 @@
                     </button>
                 </div>
                 <div class="flex items-center px-4 mb-3 mt-3">
-                    <div class="logo text-white flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-lg bg-[#D99A2B] flex items-center justify-center shadow-sm">
-                            <span class="text-gray-900 font-extrabold text-xl">{{ auth()->user()->organization ? substr(auth()->user()->organization->name, 0, 1) : 'V' }}</span>
+                    <div class="logo text-white flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 shadow-sm shrink-0">
+                            <img src="{{ asset('images/logo.png') }}" alt="Vyapaargo" class="w-full h-full object-contain">
                         </div>
-                        <span class="truncate max-w-[150px] font-bold text-lg tracking-tight">{{ auth()->user()->organization->name ?? 'Vyapaargo' }}</span>
+                        <div class="flex flex-col">
+                            <span class="font-extrabold text-base tracking-tight leading-tight">Vyapaargo</span>
+                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Business Suite</span>
+                        </div>
                     </div>
                 </div>
                 <nav class="mt-5 flex-1 space-y-1 px-2">
@@ -419,12 +433,13 @@
             <div class="flex flex-1 flex-col overflow-y-auto sidebar-scroll pt-5 pb-6">
                 <div class="flex flex-shrink-0 items-center justify-between px-4 mb-3 mt-1">
                     <div class="logo text-white flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-[#D99A2B] flex items-center justify-center shadow-sm">
-                            <span class="text-gray-900 font-extrabold text-xl">{{ auth()->user()->organization ? substr(auth()->user()->organization->name, 0, 1) : 'V' }}</span>
+                        <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1 shadow-sm shrink-0">
+                            <img src="{{ asset('images/logo.png') }}" alt="Vyapaargo" class="w-full h-full object-contain">
                         </div>
-                        <span x-show="!sidebarCollapsed" class="truncate max-w-[140px] font-bold text-lg tracking-tight" title="{{ auth()->user()->organization->name ?? 'Vyapaargo' }}">
-                            {{ auth()->user()->organization->name ?? 'Vyapaargo' }}
-                        </span>
+                        <div x-show="!sidebarCollapsed" class="flex flex-col">
+                            <span class="font-extrabold text-base tracking-tight leading-tight">Vyapaargo</span>
+                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Business Suite</span>
+                        </div>
                     </div>
                 </div>
 
@@ -475,8 +490,8 @@
                             @if(auth()->user()->organization->logo)
                                 <img src="{{ asset('storage/' . auth()->user()->organization->logo) }}" class="org-header-logo w-7 h-7 rounded-md object-cover border border-gray-200 shadow-sm">
                             @else
-                                <div class="w-7 h-7 rounded-md bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
-                                    {{ substr(auth()->user()->organization->name, 0, 1) }}
+                                <div class="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center p-0.5 shadow-2xs">
+                                    <img src="{{ asset('images/logo.png') }}" alt="Vyapaargo" class="w-full h-full object-contain">
                                 </div>
                             @endif
                             <span class="font-bold text-gray-900 text-sm hidden sm:inline-block truncate max-w-[160px]" title="{{ auth()->user()->organization->name }}">

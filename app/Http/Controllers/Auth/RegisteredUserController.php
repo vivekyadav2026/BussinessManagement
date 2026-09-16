@@ -50,7 +50,9 @@ class RegisteredUserController extends Controller
             'business_name' => 'nullable|string|max:255',
             'owner_name' => 'nullable|string|max:255',
             'owner_email' => 'nullable|email|max:255',
-            'owner_phone' => 'nullable|string|max:20',
+            'owner_phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+        ], [
+            'owner_phone.regex' => 'Please enter a valid 10-digit Indian mobile number.',
         ]);
 
         $plan = \App\Models\Plan::where('id', $request->plan_id)
@@ -144,7 +146,7 @@ class RegisteredUserController extends Controller
             // Step 1: Business Details
             'organization_name' => ['required', 'string', 'max:255'],
             'business_type' => ['required', 'string', 'in:business,restaurant'],
-            'business_phone' => ['required', 'string', 'max:20'],
+            'business_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'gst_number' => ['nullable', 'string', 'max:50'],
             'country' => ['required', 'string', 'max:100'],
             'state' => ['required', 'string', 'max:100'],
@@ -153,7 +155,7 @@ class RegisteredUserController extends Controller
             
             // Step 2: Admin Details
             'name' => ['required', 'string', 'max:255'],
-            'admin_phone' => ['required', 'string', 'max:20'],
+            'admin_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             
@@ -165,6 +167,9 @@ class RegisteredUserController extends Controller
             'razorpay_order_id' => ['nullable', 'string'],
             'razorpay_payment_id' => ['nullable', 'string'],
             'razorpay_signature' => ['nullable', 'string'],
+        ], [
+            'business_phone.regex' => 'Please enter a valid 10-digit Indian mobile number (e.g. 9876543210).',
+            'admin_phone.regex' => 'Please enter a valid 10-digit Indian mobile number (e.g. 9876543210).',
         ]);
 
         $selectedPlanValue = $request->input('plan');

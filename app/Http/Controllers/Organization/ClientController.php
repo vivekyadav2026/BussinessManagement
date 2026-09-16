@@ -91,13 +91,14 @@ class ClientController extends Controller implements HasMiddleware
         }
 
         $request->validate([
-
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:50',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
             'gst_number' => 'nullable|string|max:50',
             'notes' => 'nullable|string',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
         Client::create([
@@ -132,11 +133,13 @@ class ClientController extends Controller implements HasMiddleware
         
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:50',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
             'gst_number' => 'nullable|string|max:50',
             'notes' => 'nullable|string',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
         $client->update([
@@ -185,10 +188,11 @@ class ClientController extends Controller implements HasMiddleware
         }
 
         $request->validate([
-
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:50',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'email' => 'nullable|email|max:255',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
         $client = Client::create([

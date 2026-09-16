@@ -88,7 +88,7 @@ class EmployeeController extends Controller implements HasMiddleware
             'last_name' => 'nullable|string|max:255',
             'employee_code' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'designation' => 'nullable|string|max:255',
             'joining_date' => 'nullable|date',
             'locations' => 'nullable|array',
@@ -97,6 +97,8 @@ class EmployeeController extends Controller implements HasMiddleware
             'create_account' => 'nullable|boolean',
             'password' => ['nullable', 'required_if:create_account,1', Password::defaults()],
             'role' => 'nullable|required_if:create_account,1|exists:roles,name',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
 
@@ -168,7 +170,7 @@ class EmployeeController extends Controller implements HasMiddleware
             'last_name' => 'nullable|string|max:255',
             'employee_code' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'designation' => 'nullable|string|max:255',
             'joining_date' => 'nullable|date',
             'locations' => 'nullable|array',
@@ -178,6 +180,8 @@ class EmployeeController extends Controller implements HasMiddleware
             'role' => 'nullable|exists:roles,name',
             'reset_password' => 'nullable|boolean',
             'password' => ['nullable', Password::defaults()],
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
         if ($employee->user_id) {

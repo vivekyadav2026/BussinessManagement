@@ -98,9 +98,12 @@
 
         <!-- Subscription Plan Distribution Pie Chart -->
         <div class="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-2xs lg:col-span-1 space-y-4 flex flex-col justify-between">
-            <div>
-                <h3 class="font-black text-base text-slate-900">Plan Distribution</h3>
-                <p class="text-xs text-gray-400">Tenant active subscription tiers</p>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-black text-base text-slate-900">Plan Distribution</h3>
+                    <p class="text-xs text-gray-400">Tenant active subscription tiers</p>
+                </div>
+                <span class="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">{{ array_sum($planData) }} Active</span>
             </div>
             <div class="relative h-64 flex items-center justify-center my-auto">
                 <canvas id="subsChart"></canvas>
@@ -188,75 +191,133 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // MRR Revenue Bar Chart
-    const mrrCtx = document.getElementById('mrrChart').getContext('2d');
-    
-    const blueGradient = mrrCtx.createLinearGradient(0, 0, 0, 300);
-    blueGradient.addColorStop(0, 'rgba(79, 70, 229, 0.85)');
-    blueGradient.addColorStop(1, 'rgba(79, 70, 229, 0.20)');
+  function initDashboardCharts() {
+    if (typeof Chart === 'undefined') {
+      setTimeout(initDashboardCharts, 100);
+      return;
+    }
 
-    new Chart(mrrCtx, {
-      type: 'bar',
-      data: {
-        labels: {!! json_encode($mrrLabels) !!},
-        datasets: [{
-          label: 'Revenue (₹)',
-          data: {!! json_encode($mrrData) !!},
-          backgroundColor: blueGradient,
-          borderColor: '#4f46e5',
-          borderWidth: 1.5,
-          borderRadius: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
+    // MRR Revenue Bar Chart
+    const mrrEl = document.getElementById('mrrChart');
+    if (mrrEl) {
+      const mrrCtx = mrrEl.getContext('2d');
+      const blueGradient = mrrCtx.createLinearGradient(0, 0, 0, 300);
+      blueGradient.addColorStop(0, 'rgba(79, 70, 229, 0.90)');
+      blueGradient.addColorStop(1, 'rgba(79, 70, 229, 0.15)');
+
+      new Chart(mrrCtx, {
+        type: 'bar',
+        data: {
+          labels: {!! json_encode($mrrLabels) !!},
+          datasets: [{
+            label: 'Revenue',
+            data: {!! json_encode($mrrData) !!},
+            backgroundColor: blueGradient,
+            hoverBackgroundColor: '#4338ca',
+            borderColor: '#4f46e5',
+            borderWidth: 1.5,
+            borderRadius: 8,
+            maxBarThickness: 45
+          }]
         },
-        scales: {
-          y: { 
-            beginAtZero: true,
-            grid: { color: '#f1f5f9' },
-            ticks: { color: '#64748b', font: { size: 11 } }
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleFont: { size: 12, weight: 'bold' },
+              bodyFont: { size: 12 },
+              padding: 10,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  return ' Revenue: ₹' + Number(context.parsed.y).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                }
+              }
+            }
           },
-          x: {
-            grid: { display: false },
-            ticks: { color: '#64748b', font: { size: 11 } }
+          scales: {
+            y: { 
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: { 
+                color: '#64748b', 
+                font: { size: 11, family: 'IBM Plex Mono' },
+                callback: function(val) {
+                  return '₹' + (val >= 1000 ? (val / 1000) + 'k' : val);
+                }
+              }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#64748b', font: { size: 11, family: 'Inter' } }
+            }
           }
         }
-      }
-    });
+      });
+    }
 
-    // Subscriptions Breakdown Pie Chart
-    const subsCtx = document.getElementById('subsChart').getContext('2d');
-    new Chart(subsCtx, {
-      type: 'doughnut',
-      data: {
-        labels: {!! json_encode($planLabels) !!},
-        datasets: [{
-          data: {!! json_encode($planData) !!},
-          backgroundColor: [
-            '#6366f1',
-            '#10b981',
-            '#f59e0b',
-            '#ec4899',
-            '#64748b'
-          ],
-          borderWidth: 3,
-          borderColor: '#ffffff'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 11 } } }
+    // Subscriptions Breakdown Doughnut Chart
+    const subsEl = document.getElementById('subsChart');
+    if (subsEl) {
+      const subsCtx = subsEl.getContext('2d');
+      const planData = {!! json_encode($planData) !!};
+      const totalSubs = planData.reduce((a, b) => a + b, 0);
+
+      new Chart(subsCtx, {
+        type: 'doughnut',
+        data: {
+          labels: {!! json_encode($planLabels) !!},
+          datasets: [{
+            data: planData,
+            backgroundColor: [
+              '#4f46e5', '#10b981', '#f59e0b', '#ec4899', 
+              '#06b6d4', '#8b5cf6', '#f97316', '#14b8a6', 
+              '#64748b', '#3b82f6', '#84cc16', '#a855f7'
+            ],
+            borderWidth: 3,
+            borderColor: '#ffffff',
+            hoverOffset: 4
+          }]
         },
-        cutout: '68%'
-      }
-    });
-  });
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              position: 'bottom', 
+              labels: { 
+                boxWidth: 10, 
+                padding: 10, 
+                font: { size: 11, family: 'Inter', weight: '600' },
+                color: '#334155'
+              } 
+            },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              padding: 10,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  const val = context.parsed;
+                  const pct = totalSubs > 0 ? ((val / totalSubs) * 100).toFixed(1) : 0;
+                  return ' ' + context.label + ': ' + val + ' tenants (' + pct + '%)';
+                }
+              }
+            }
+          },
+          cutout: '68%'
+        }
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDashboardCharts);
+  } else {
+    initDashboardCharts();
+  }
 </script>
 @endpush

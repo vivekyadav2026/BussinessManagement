@@ -40,7 +40,7 @@ class OrganizationProfileController extends Controller
             'name' => 'required|string|max:255',
             'business_type' => 'nullable|string|in:business,restaurant',
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'address' => 'nullable|string|max:500',
             'gst_number' => 'nullable|string|max:15|regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
             'upi_id' => 'nullable|string|max:255',
@@ -50,7 +50,7 @@ class OrganizationProfileController extends Controller
             'sgst_percent' => 'nullable|numeric|min:0|max:100',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
-
+            'phone.regex' => 'Please enter a valid 10-digit Indian mobile number (e.g. 9876543210).',
             'gst_number.regex' => 'Please enter a valid 15-digit GSTIN number format.',
         ]);
 

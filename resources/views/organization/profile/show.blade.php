@@ -264,6 +264,9 @@
                                 </label>
                                 <input type="text" 
                                        name="phone" 
+                                       maxlength="14"
+                                       pattern="(\+91[\-\s]?|0)?[6-9][0-9]{9}"
+                                       title="Please enter a valid 10-digit Indian mobile number (e.g. 9876543210 or +91 9876543210)"
                                        value="{{ old('phone', $organization->phone) }}" 
                                        placeholder="+91 98765 43210"
                                        class="w-full bg-white border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-lg px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-950 outline-none transition @error('phone') border-rose-300 @enderror">
@@ -317,15 +320,16 @@
                             <label class="block text-xs font-bold text-slate-900 mb-1.5">
                                 Merchant UPI ID / VPA
                             </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-600 font-bold text-xs">
+                            <div class="flex rounded-lg overflow-hidden border border-slate-300 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/20 transition bg-white shadow-2xs @error('upi_id') border-rose-300 @enderror">
+                                <span class="inline-flex items-center px-3.5 bg-slate-100 text-slate-700 font-black text-xs tracking-wider border-r border-slate-200 select-none shrink-0">
                                     UPI
-                                </div>
+                                </span>
                                 <input type="text" 
                                        name="upi_id" 
                                        value="{{ old('upi_id', $organization->upi_id) }}" 
                                        placeholder="merchant@okhdfcbank or 9876543210@paytm"
-                                       class="w-full pl-11 bg-white border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-lg px-3.5 py-2.5 text-xs sm:text-sm font-mono font-semibold text-slate-950 outline-none transition @error('upi_id') border-rose-300 @enderror">
+                                       class="!border-0 !rounded-none !shadow-none !px-3.5 !py-2.5 text-xs sm:text-sm font-mono font-semibold text-slate-950 focus:!ring-0 w-full"
+                                       style="border: none !important; box-shadow: none !important; border-radius: 0 !important; padding-left: 12px !important; padding-right: 12px !important;">
                             </div>
 
                             <!-- Compact Callout -->

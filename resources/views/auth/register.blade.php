@@ -623,6 +623,17 @@
             <!-- Left Branding & Trust Showcase -->
             <div class="reg-showcase">
                 <div>
+                    <!-- Brand Logo -->
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                        <div style="width: 48px; height: 48px; border-radius: 14px; background: #ffffff; display: flex; align-items: center; justify-content: center; padding: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.25); flex-shrink: 0;">
+                            <img src="{{ asset('images/logo.png') }}" alt="Vyapaargo" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                        <div>
+                            <span style="font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: -0.02em; display: block; line-height: 1.1;">Vyapaargo</span>
+                            <span style="font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;">Unified Business Cloud</span>
+                        </div>
+                    </div>
+
                     <!-- Badge -->
                     <div class="reg-badge">
                         <span class="reg-badge-dot"></span>

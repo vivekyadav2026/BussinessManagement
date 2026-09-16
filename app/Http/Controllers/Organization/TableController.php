@@ -28,6 +28,12 @@ class TableController extends Controller
     public function store(Request $request)
     {
         $orgId = auth()->user()->organization_id;
+        $locationId = session('active_location_id');
+
+        if (!$locationId) {
+            return back()->with('error', 'Please select a location first.');
+        }
+
         $currentTablesCount = RestaurantTable::where('organization_id', $orgId)->count();
 
         if (\App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_tables', $currentTablesCount)) {
@@ -35,13 +41,23 @@ class TableController extends Controller
             return back()->with('error', "Table limit reached ({$currentTablesCount}/{$limit}). Please upgrade your plan to add more tables.");
         }
 
-        $request->validate(['name' => 'required|string|max:255']);
-
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('restaurant_tables')->where(function ($query) use ($orgId, $locationId) {
+                    return $query->where('organization_id', $orgId)->where('location_id', $locationId);
+                })
+            ]
+        ], [
+            'name.unique' => 'A table with this name already exists in this branch. Please use a unique table name (e.g. Table 1, Table 2, VIP 1).'
+        ]);
 
         RestaurantTable::create([
-            'organization_id' => auth()->user()->organization_id,
-            'location_id' => session('active_location_id'),
-            'name' => $request->name,
+            'organization_id' => $orgId,
+            'location_id' => $locationId,
+            'name' => trim($request->name),
         ]);
 
         return back()->with('success', 'Table created successfully.');
@@ -49,17 +65,29 @@ class TableController extends Controller
 
     public function update(Request $request, RestaurantTable $table)
     {
+        $orgId = auth()->user()->organization_id;
+        $locationId = session('active_location_id');
+
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('restaurant_tables')->where(function ($query) use ($orgId, $locationId) {
+                    return $query->where('organization_id', $orgId)->where('location_id', $locationId);
+                })->ignore($table->id)
+            ],
             'is_active' => 'boolean'
+        ], [
+            'name.unique' => 'A table with this name already exists in this branch. Please use a unique table name.'
         ]);
 
         $table->update([
-            'name' => $request->name,
+            'name' => trim($request->name),
             'is_active' => $request->has('is_active')
         ]);
 
-        return back()->with('success', 'Table updated.');
+        return back()->with('success', 'Table updated successfully.');
     }
 
     public function destroy(RestaurantTable $table)

@@ -43,12 +43,10 @@ class CounterBillingController extends Controller
         $orgId = auth()->user()->organization_id;
         $locationId = LocationManager::getActiveLocationId();
 
-        $activeOrders = RestaurantOrder::with('items')
+        $activeOrders = RestaurantOrder::with(['items', 'table'])
             ->where('organization_id', $orgId)
             ->where('location_id', $locationId)
-            ->where('restaurant_table_id', null) // Counter orders have no tables
             ->whereNotIn('status', ['Cancelled', 'Completed'])
-            ->where('payment_status', 'Pending')
             ->latest()
             ->get();
 
@@ -60,10 +58,9 @@ class CounterBillingController extends Controller
         $orgId = auth()->user()->organization_id;
         $locationId = LocationManager::getActiveLocationId();
 
-        $completedOrders = RestaurantOrder::with('items')
+        $completedOrders = RestaurantOrder::with(['items', 'table'])
             ->where('organization_id', $orgId)
             ->where('location_id', $locationId)
-            ->where('restaurant_table_id', null)
             ->where('status', 'Completed')
             ->whereDate('created_at', now()->toDateString()) // Only today's
             ->latest()
@@ -84,12 +81,14 @@ class CounterBillingController extends Controller
         $request->validate([
             'order_id' => 'nullable|exists:restaurant_orders,id',
             'customer_name' => 'nullable|string|max:255',
-            'customer_phone' => 'nullable|string|max:20',
+            'customer_phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'order_type' => 'nullable|string|max:50',
             'notes' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',
             'items.*.menu_item_id' => 'required|exists:menu_items,id',
             'items.*.quantity' => 'required|integer|min:1',
+        ], [
+            'customer_phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
         try {
@@ -103,18 +102,7 @@ class CounterBillingController extends Controller
                 }
 
                 if (!$order) {
-                    $lastOrder = RestaurantOrder::where('organization_id', $orgId)
-                        ->where('location_id', $locationId)
-                        ->whereDate('created_at', \Carbon\Carbon::today())
-                        ->orderBy('id', 'desc')
-                        ->first();
-                    
-                    $nextNumber = 1;
-                    if ($lastOrder && preg_match('/-(\d+)$/', $lastOrder->order_number, $matches)) {
-                        $nextNumber = intval($matches[1]) + 1;
-                    }
-                    
-                    $orderNumber = 'TKN-' . $nextNumber;
+                    $orderNumber = RestaurantOrder::generateNextOrderNumber($orgId, $locationId);
                     $order = RestaurantOrder::create([
                         'organization_id' => $orgId,
                         'location_id' => $locationId,

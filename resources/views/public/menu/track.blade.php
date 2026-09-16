@@ -183,7 +183,7 @@
         </div>
 
         <!-- Payment Status Card -->
-        <div class="pt-4 border-t border-slate-100">
+        <div class="pt-4 border-t border-slate-100 space-y-4">
             @if($order->payment_status === 'Paid')
                 <div class="w-full bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-2xl p-4 flex items-center justify-between">
                     <div class="flex items-center gap-2.5">
@@ -200,29 +200,82 @@
                     </span>
                 </div>
             @elseif($order->status !== 'Cancelled')
-                <div class="w-full bg-slate-950 text-white border border-slate-800 rounded-2xl p-5 space-y-3.5">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <span class="text-[10px] font-black text-amber-400 uppercase tracking-widest block">Instant Digital Payment</span>
-                            <h4 class="text-sm font-black text-white">Pay via UPI QR, Cards, or Netbanking</h4>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                            Payment Pending
-                        </span>
-                    </div>
+                @php
+                    $orgUpi = $organization->upi_id;
+                    $upiString = $orgUpi ? "upi://pay?pa=" . rawurlencode($orgUpi) . "&pn=" . rawurlencode($organization->name) . "&am=" . number_format($order->total, 2, '.', '') . "&cu=INR&tn=" . rawurlencode('Order #' . $order->order_number) : null;
+                @endphp
 
-                    <button id="rzp-order-pay-btn" class="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black py-3.5 px-5 rounded-xl shadow-lg shadow-amber-500/10 transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider active:scale-98 cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-                        <span>Pay ₹{{ number_format($order->total, 2) }} Online Now</span>
-                    </button>
-                    <p class="text-[11px] text-slate-400 text-center font-medium">
-                        Instant confirmation with Razorpay secure checkout. Cash / Counter payment also accepted.
-                    </p>
-                </div>
+                @if($orgUpi)
+                    <!-- Direct Merchant UPI QR Card (Pay Directly to Organization) -->
+                    <div class="w-full bg-white border border-slate-200/90 rounded-2xl p-5 space-y-4 shadow-2xs text-center">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3 text-left">
+                            <div>
+                                <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest block">Direct Merchant Payment</span>
+                                <h4 class="text-sm font-black text-slate-950">Pay Directly to {{ $organization->name }}</h4>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
+                                Store UPI QR
+                            </span>
+                        </div>
+
+                        <!-- Dynamic QR Code Container -->
+                        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 inline-block mx-auto shadow-2xs">
+                            <div id="directUpiQr" class="flex justify-center items-center"></div>
+                            <div class="mt-3 space-y-0.5">
+                                <p class="text-xs font-bold text-slate-800 font-mono">UPI ID: <span class="text-slate-950 bg-slate-200/80 px-2 py-0.5 rounded">{{ $orgUpi }}</span></p>
+                                <p class="text-[11px] font-semibold text-slate-500">Amount: <span class="font-bold text-slate-950">₹{{ number_format($order->total, 2) }}</span></p>
+                            </div>
+                        </div>
+
+                        <!-- Direct App Link for Mobile -->
+                        <div class="space-y-2">
+                            <a href="{{ $upiString }}" class="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-black py-3.5 px-5 rounded-xl shadow-md transition text-xs uppercase tracking-wider">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                <span>Pay via GPay / PhonePe / Paytm / BHIM</span>
+                            </a>
+
+                            <button type="button" 
+                                    id="btn-mark-upi-done"
+                                    onclick="markUpiPaid(this)" 
+                                    class="w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 font-bold text-xs rounded-xl border border-emerald-300/80 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                <span>✅ I Have Completed Payment via UPI</span>
+                            </button>
+                        </div>
+                        
+                        <p class="text-[10px] text-slate-400 font-medium">
+                            Scan QR Code or tap button to pay directly to {{ $organization->name }}'s bank account. Cash/Counter payment also accepted.
+                        </p>
+                    </div>
+                @else
+                    <!-- Online Razorpay Gateway Option (Fallback if no store UPI set) -->
+                    <div class="w-full bg-slate-950 text-white border border-slate-800 rounded-2xl p-5 space-y-3.5">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] font-black text-amber-400 uppercase tracking-widest block">Online Gateway Payment</span>
+                                <h4 class="text-sm font-black text-white">Pay via Online Gateway</h4>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                Payment Pending
+                            </span>
+                        </div>
+
+                        <button id="rzp-order-pay-btn" class="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black py-3.5 px-5 rounded-xl shadow-lg shadow-amber-500/10 transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider active:scale-98 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                            <span>Pay ₹{{ number_format($order->total, 2) }} via Gateway</span>
+                        </button>
+                        <p class="text-[11px] text-slate-400 text-center font-medium">
+                            Instant confirmation with Razorpay secure checkout. Cash / Counter payment also accepted.
+                        </p>
+                    </div>
+                @endif
             @endif
         </div>
     </div>
 </div>
+
+<script>
+window.isPaymentModalOpen = false;
+</script>
 
 @if($order->payment_status !== 'Paid' && $order->status !== 'Cancelled')
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -261,10 +314,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     btn.onclick = function(e) {
         e.preventDefault();
+        window.isPaymentModalOpen = true;
 
         if (isMock) {
             if (confirm("Test Mode: Simulate online payment completion for Order #{{ $order->order_number }}?")) {
                 verifyAndComplete('pay_mock_' + Date.now(), null);
+            } else {
+                window.isPaymentModalOpen = false;
             }
             return;
         }
@@ -283,21 +339,60 @@ document.addEventListener('DOMContentLoaded', function () {
             "theme": { "color": "#020617" },
             "handler": function (response) {
                 verifyAndComplete(response.razorpay_payment_id, response.razorpay_signature);
+            },
+            "modal": {
+                "ondismiss": function() {
+                    window.isPaymentModalOpen = false;
+                }
             }
         };
         var rzp = new Razorpay(options);
-        rzp.on('payment.failed', function(res){ alert("Payment failed: " + res.error.description); });
+        rzp.on('payment.failed', function(res){ 
+            window.isPaymentModalOpen = false;
+            alert("Payment failed: " + res.error.description); 
+        });
         rzp.open();
     };
 });
 </script>
 @endif
 
+@if($order->payment_status !== 'Paid' && !empty($organization->upi_id))
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var qrContainer = document.getElementById("directUpiQr");
+    if (qrContainer) {
+        new QRCode(qrContainer, {
+            text: "{{ "upi://pay?pa=" . rawurlencode($organization->upi_id) . "&pn=" . rawurlencode($organization->name) . "&am=" . number_format($order->total, 2, '.', '') . "&cu=INR&tn=" . rawurlencode('Order #' . $order->order_number) }}",
+            width: 160,
+            height: 160,
+            colorDark : "#020617",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    }
+});
+
+function markUpiPaid(btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>🎉 Payment Notified! Waiting for staff confirmation.</span>';
+    btn.className = 'w-full py-2.5 px-4 bg-emerald-600 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs cursor-default';
+}
+</script>
+@endif
+
 @if($order->status !== 'Served' && $order->status !== 'Cancelled')
 <script>
-    setTimeout(function() {
-        window.location.reload();
+    setInterval(function() {
+        if (!window.isPaymentModalOpen) {
+            window.location.reload();
+        }
     }, 15000);
 </script>
 @endif
+
 @endsection
+
+
+

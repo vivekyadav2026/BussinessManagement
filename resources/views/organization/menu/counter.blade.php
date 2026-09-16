@@ -30,7 +30,7 @@
                 <span class="font-mono text-slate-700" x-text="liveClock">--:--:--</span>
             </div>
 
-            <a href="{{ route('organization.menu.kitchen.index') }}" target="_blank" 
+            <a href="{{ route('organization.menu.kitchen.index') }}" 
                class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-lg shadow-2xs transition">
                 <span>👨‍🍳 Kitchen KOT &rarr;</span>
             </a>
@@ -470,50 +470,89 @@
 
             <!-- Active Token Cards -->
             <template x-for="order in filteredActiveOrders" :key="order.id">
-                <div class="border border-slate-200/90 rounded-xl p-4.5 flex flex-col justify-between hover:border-amber-400 hover:shadow-xs transition bg-white space-y-3.5 shadow-2xs">
+                <div class="bg-white border-2 border-slate-200/90 hover:border-amber-500 rounded-2xl p-4.5 flex flex-col justify-between transition-all duration-200 shadow-2xs hover:shadow-md space-y-4 relative overflow-hidden group">
+                    
+                    <!-- Top Status Bar & Token Badge -->
                     <div>
-                        <div class="flex justify-between items-start mb-2.5">
-                            <div>
-                                <span class="font-extrabold text-sm text-slate-950 truncate block" x-text="order.customer_name"></span>
-                                <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[10px] text-slate-500 font-mono" x-text="formatTime(order.created_at)"></span>
-                                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200 uppercase" x-text="order.order_type || 'Takeaway'"></span>
+                        <div class="flex items-start justify-between gap-2 mb-3">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="font-black text-base text-slate-950 truncate tracking-tight" x-text="order.customer_name"></span>
+                                    <template x-if="order.customer_phone">
+                                        <span class="text-[10px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" x-text="order.customer_phone"></span>
+                                    </template>
+                                </div>
+
+                                <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                                          :class="order.table || order.order_type === 'Dine-in' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' : 'bg-amber-50 text-amber-900 border border-amber-200'"
+                                          x-text="order.table ? ('🪑 ' + order.table.name) : ((order.order_type === 'Dine-in' ? '🪑 ' : '🛍️ ') + (order.order_type || 'Takeaway'))">
+                                    </span>
+                                    
+                                    <!-- Kitchen Status Badge -->
+                                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                                          :class="order.status === 'Ready' ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : (order.status === 'Preparing' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200')"
+                                          x-text="'Kitchen: ' + (order.status || 'Received')">
+                                    </span>
+
+                                    <span class="text-[10px] text-slate-500 font-mono font-medium" x-text="formatTime(order.created_at)"></span>
                                 </div>
                             </div>
-                            <span class="text-xs font-mono font-black bg-amber-500 text-slate-950 px-2.5 py-1 rounded-md shadow-2xs" x-text="order.order_number"></span>
-                        </div>
-                        
-                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-1.5 text-xs">
-                            <div class="flex justify-between font-bold text-slate-700">
-                                <span>Items Summary</span>
-                                <span class="text-slate-500 font-mono" x-text="order.items.length + ' items'"></span>
+
+                            <!-- Token Number Badge -->
+                            <div class="text-right shrink-0">
+                                <span class="text-xs font-mono font-black bg-slate-950 text-amber-400 px-3 py-1.5 rounded-xl border border-slate-800 shadow-xs block tracking-wider" x-text="order.order_number"></span>
                             </div>
-                            <div class="text-[11px] text-slate-600 truncate" x-text="order.items.map(i => i.quantity + 'x ' + i.name_snapshot).join(', ')"></div>
+                        </div>
+
+                        <!-- Items Breakdown Box -->
+                        <div class="bg-slate-50/80 rounded-xl p-3 border border-slate-200 space-y-2 text-xs">
+                            <div class="flex justify-between items-center font-bold text-slate-700 pb-1.5 border-b border-slate-200/80">
+                                <span class="uppercase tracking-wider text-[10px] text-slate-500">Items Ordered</span>
+                                <span class="text-slate-900 font-mono font-extrabold bg-slate-200/80 px-2 py-0.5 rounded text-[11px]" x-text="order.items ? order.items.length + ' Item(s)' : '0 Items'"></span>
+                            </div>
+
+                            <div class="space-y-1 max-h-24 overflow-y-auto pr-1 text-[11px] scrollbar-thin">
+                                <template x-for="item in order.items" :key="item.id">
+                                    <div class="flex justify-between items-center py-0.5">
+                                        <span class="font-semibold text-slate-900 truncate">
+                                            <span class="font-mono font-black text-slate-950 bg-white border border-slate-200 px-1.5 py-0.2 rounded mr-1" x-text="item.quantity + 'x'"></span>
+                                            <span x-text="item.name_snapshot"></span>
+                                        </span>
+                                        <span class="font-mono font-bold text-slate-700 ml-2" x-text="'₹' + (parseFloat(item.price_snapshot) * item.quantity).toFixed(2)"></span>
+                                    </div>
+                                </template>
+                            </div>
                             
                             <div class="flex justify-between items-center pt-2 border-t border-slate-200 font-black">
-                                <span class="text-slate-600 text-xs">Total</span>
-                                <span class="text-slate-950 font-mono text-sm">₹<span x-text="parseFloat(order.total).toFixed(2)"></span></span>
+                                <span class="text-slate-700 text-xs uppercase tracking-wider">Total Payable</span>
+                                <span class="text-emerald-700 font-mono text-base font-black">₹<span x-text="parseFloat(order.total).toFixed(2)"></span></span>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="space-y-1.5 pt-1">
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" @click="editOrder(order)" class="py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer shadow-2xs">
+
+                    <!-- Action Buttons -->
+                    <div class="space-y-2 pt-1">
+                        <button type="button" @click="openSettleModalForOrder(order)" 
+                                class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black rounded-xl shadow-2xs hover:shadow-xs transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer">
+                            <span>💳 Settle Bill (UPI / Cash / Card)</span>
+                            <span>&rarr;</span>
+                        </button>
+
+                        <div class="grid grid-cols-3 gap-1.5 text-[11px]">
+                            <button type="button" @click="editOrder(order)" 
+                                    class="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold transition border border-slate-300/80 flex items-center justify-center gap-1 cursor-pointer">
                                 ✏️ Edit
                             </button>
-                            <button type="button" @click="openSettleModalForOrder(order)" class="py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1 shadow-xs cursor-pointer">
-                                💳 Settle Bill
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-between px-1 pt-1 text-[11px]">
+
                             <a :href="'/organization/menu/pos/orders/' + order.id + '/print-kot'" target="_blank" 
-                               class="text-slate-600 hover:text-slate-950 font-bold hover:underline flex items-center gap-1">
+                               class="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold transition border border-slate-300/80 flex items-center justify-center gap-1 text-center">
                                 🖨️ KOT Slip
                             </a>
+
                             <button type="button" @click="cancelOrder(order)" 
-                                    class="text-rose-700 hover:text-rose-900 font-bold hover:underline cursor-pointer">
-                                ✕ Void Token
+                                    class="py-2 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-lg font-bold transition border border-rose-200 flex items-center justify-center gap-1 cursor-pointer">
+                                ✕ Void
                             </button>
                         </div>
                     </div>
@@ -792,8 +831,26 @@ function counterBilling() {
             this.fetchActiveOrders();
             this.fetchCompletedOrders();
             
-            // Auto refresh active queue every 20s
-            setInterval(() => this.fetchActiveOrders(), 20000);
+            // Live Real-Time Auto-Refresh Active Queue Every 5 Seconds
+            setInterval(() => this.fetchActiveOrders(), 5000);
+            setInterval(() => this.fetchCompletedOrders(), 10000);
+        },
+
+        playChimeSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.3);
+            } catch(e) {}
         },
 
         updateLiveClock() {
@@ -974,7 +1031,15 @@ function counterBilling() {
         fetchActiveOrders() {
             fetch('{{ route("organization.menu.counter.orders.active") }}')
                 .then(res => res.json())
-                .then(data => { this.activeOrders = data; });
+                .then(data => { 
+                    if (Array.isArray(data)) {
+                        if (this.activeOrders.length > 0 && data.length > this.activeOrders.length) {
+                            this.playChimeSound();
+                        }
+                        this.activeOrders = data;
+                    }
+                })
+                .catch(err => {});
         },
 
         fetchCompletedOrders() {

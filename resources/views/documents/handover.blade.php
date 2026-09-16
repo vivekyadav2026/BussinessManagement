@@ -90,7 +90,10 @@
 <body>
 
     <div class="header">
-        <div class="logo">Vyapaargo</div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
+            <img src="{{ public_path('images/logo.png') }}" style="height: 42px; width: auto; display: inline-block; vertical-align: middle;" alt="Vyapaargo">
+            <span class="logo" style="margin: 0; display: inline-block; vertical-align: middle;">Vyapaargo</span>
+        </div>
         <div class="subtitle">Complete Handover Documentation & User Manual</div>
         <div style="font-size: 11px; color: #999999; margin-top: 10px;">Generated on: {{ date('Y-m-d H:i') }}</div>
     </div>

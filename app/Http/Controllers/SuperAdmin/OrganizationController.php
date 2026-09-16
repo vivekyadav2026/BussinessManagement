@@ -40,11 +40,13 @@ class OrganizationController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'gst_number' => 'nullable|string|max:50',
             'admin_name' => 'required|string|max:255',
             'admin_email' => 'required|email|unique:users,email',
             'admin_password' => 'required|string|min:8',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -86,8 +88,10 @@ class OrganizationController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'gst_number' => 'nullable|string|max:50',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
         $organization->update($request->only('name', 'email', 'phone', 'gst_number'));

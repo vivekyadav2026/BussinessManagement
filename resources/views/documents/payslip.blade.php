@@ -31,7 +31,11 @@
                 @endphp
                 <img src="{{ $logoPath }}" class="logo">
             @else
-                <h2>{{ $organization->name }}</h2>
+                @if(file_exists(public_path('images/logo.png')))
+                    <img src="{{ public_path('images/logo.png') }}" class="logo" style="max-height: 44px; width: auto;" alt="Vyapaargo">
+                @else
+                    <h2>{{ $organization->name }}</h2>
+                @endif
             @endif
         </td>
         <td width="50%" style="text-align: right;">

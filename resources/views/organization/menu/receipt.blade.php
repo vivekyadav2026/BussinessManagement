@@ -73,6 +73,8 @@
     <div class="text-center">
         @if($order->organization && $order->organization->logo)
             <img src="{{ asset('storage/' . $order->organization->logo) }}" style="max-height: 40px; margin-bottom: 5px;">
+        @else
+            <img src="{{ asset('images/logo.png') }}" style="max-height: 34px; margin-bottom: 5px; display: inline-block;" alt="Vyapaargo">
         @endif
         <div class="header-title">{{ $order->organization->name ?? 'RESTRO POS' }}</div>
         <div>{{ $order->location->name ?? 'Main Branch' }}</div>

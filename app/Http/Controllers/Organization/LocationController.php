@@ -53,10 +53,11 @@ class LocationController extends Controller
         }
 
         $request->validate([
-
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'address' => 'nullable|string',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
         Location::create([
@@ -83,8 +84,10 @@ class LocationController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'address' => 'nullable|string',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
         $location->update($request->only('name', 'phone', 'address'));

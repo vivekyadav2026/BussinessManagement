@@ -37,7 +37,6 @@ class WaiterPosController extends Controller
                     ->where('location_id', $locationId)
                     ->where('restaurant_table_id', $table->id)
                     ->whereNotIn('status', ['Cancelled', 'Completed'])
-                    ->where('payment_status', 'Pending')
                     ->latest()
                     ->first();
 
@@ -69,7 +68,6 @@ class WaiterPosController extends Controller
             ->where('location_id', $locationId)
             ->where('restaurant_table_id', $table->id)
             ->whereNotIn('status', ['Cancelled', 'Completed'])
-            ->where('payment_status', 'Pending')
             ->oldest()
             ->get();
 
@@ -95,26 +93,17 @@ class WaiterPosController extends Controller
             'items.*.menu_item_id' => 'required|exists:menu_items,id',
             'items.*.quantity' => 'required|integer|min:1',
             'customer_name' => 'nullable|string|max:255',
-            'customer_phone' => 'nullable|string|max:20',
+            'customer_phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
             'notes' => 'nullable|string|max:500'
+        ], [
+            'customer_phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
         ]);
 
         try {
             $order = DB::transaction(function () use ($request, $orgId, $locationId) {
                 $tableId = $request->restaurant_table_id;
 
-                $lastOrder = RestaurantOrder::where('organization_id', $orgId)
-                    ->where('location_id', $locationId)
-                    ->whereDate('created_at', \Carbon\Carbon::today())
-                    ->orderBy('id', 'desc')
-                    ->first();
-                
-                $nextNumber = 1;
-                if ($lastOrder && preg_match('/-(\d+)$/', $lastOrder->order_number, $matches)) {
-                    $nextNumber = intval($matches[1]) + 1;
-                }
-                
-                $orderNumber = 'TKN-' . $nextNumber;
+                $orderNumber = RestaurantOrder::generateNextOrderNumber($orgId, $locationId);
                 $order = RestaurantOrder::create([
                     'organization_id' => $orgId,
                     'location_id' => $locationId,

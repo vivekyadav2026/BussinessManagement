@@ -58,16 +58,19 @@ class DashboardController extends Controller
         }
 
         // Subscriptions plan breakdown
-        $plans = Plan::withCount('subscriptions')->get();
+        $plans = Plan::withCount('subscriptions')
+            ->having('subscriptions_count', '>', 0)
+            ->orderByDesc('subscriptions_count')
+            ->get();
         $planLabels = [];
         $planData = [];
         foreach ($plans as $plan) {
             $planLabels[] = $plan->name;
-            $planData[] = $plan->subscriptions_count;
+            $planData[] = (int) $plan->subscriptions_count;
         }
         if (empty($planLabels) || array_sum($planData) == 0) {
             $planLabels = ['Free Trial', 'Active Plan', 'Expired'];
-            $planData = [$trialOrgs, max(0, $activeOrgs - $trialOrgs), $expiredOrgs];
+            $planData = [(int)$trialOrgs, max(0, (int)($activeOrgs - $trialOrgs)), (int)$expiredOrgs];
         }
 
         // Recent Organizations List
