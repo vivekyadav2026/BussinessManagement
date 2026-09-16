@@ -45,6 +45,6 @@ class PublicMenuController extends Controller
         
         session(['restaurant_table_id' => $table->id]);
 
-        return $this->show($table->organization, $table->location);
+        return redirect()->route('public.menu', [$table->organization_id, $table->location_id]);
     }
 }
