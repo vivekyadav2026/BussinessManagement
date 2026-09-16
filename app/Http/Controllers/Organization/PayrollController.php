@@ -24,7 +24,7 @@ class PayrollController extends Controller
         $employees = Employee::where('organization_id', $orgId)
             ->with(['payrolls' => function($q) use ($month, $year) {
                 $q->where('month', $month)->where('year', $year);
-            }, 'salaryStructure'])
+            }, 'salaryStructure', 'location'])
             ->get();
 
         return view('organization.payroll.index', compact('employees', 'dateObj', 'month', 'year'));
@@ -52,9 +52,10 @@ class PayrollController extends Controller
     public function show(Payroll $payroll)
     {
         abort_if($payroll->organization_id !== auth()->user()->organization_id, 403);
-        $payroll->load('employee');
+        $payroll->load(['employee.location']);
+        $organization = auth()->user()->organization;
         $dateObj = Carbon::create($payroll->year, $payroll->month, 1);
-        return view('organization.payroll.show', compact('payroll', 'dateObj'));
+        return view('organization.payroll.show', compact('payroll', 'dateObj', 'organization'));
     }
 
     public function updateAdjustment(Request $request, Payroll $payroll)

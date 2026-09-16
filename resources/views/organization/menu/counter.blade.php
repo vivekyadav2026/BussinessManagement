@@ -437,8 +437,8 @@ function counterBilling() {
         searchQuery: '',
         
         // Tax Rates from Org
-        cgstPercent: {{ $org->cgst_percent ?? 2.5 }},
-        sgstPercent: {{ $org->sgst_percent ?? 2.5 }},
+        cgstPercent: {{ (float)($org->cgst_percent ?? 0) }},
+        sgstPercent: {{ (float)($org->sgst_percent ?? 0) }},
 
         // Cart / Order State
         editingOrderId: null,

@@ -114,15 +114,11 @@ class PublicOrderController extends Controller
 
             $cgstPercent = (float)($organization->cgst_percent ?? 0);
             $sgstPercent = (float)($organization->sgst_percent ?? 0);
-            if ($cgstPercent <= 0 && $sgstPercent <= 0) {
-                $cgstPercent = 2.5;
-                $sgstPercent = 2.5;
-            }
 
-            $cgstAmount = ($subtotal * $cgstPercent) / 100;
-            $sgstAmount = ($subtotal * $sgstPercent) / 100;
-            $tax = $cgstAmount + $sgstAmount;
-            $total = $subtotal + $tax;
+            $cgstAmount = round(($subtotal * $cgstPercent) / 100, 2);
+            $sgstAmount = round(($subtotal * $sgstPercent) / 100, 2);
+            $tax = round($cgstAmount + $sgstAmount, 2);
+            $total = round($subtotal + $tax, 2);
 
             $order = RestaurantOrder::create([
                 'organization_id' => $organization->id,
@@ -134,6 +130,8 @@ class PublicOrderController extends Controller
                 'order_type' => $tableId ? 'Dine-in' : $request->order_type,
                 'special_notes' => $request->special_notes,
                 'subtotal' => $subtotal,
+                'cgst' => $cgstAmount,
+                'sgst' => $sgstAmount,
                 'tax' => $tax,
                 'total' => $total,
                 'status' => 'Received',

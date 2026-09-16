@@ -95,32 +95,32 @@
             </div>
         </div>
 
-        <!-- Petpooja Style Category Carousel -->
+        <!-- Category Carousel -->
         <div class="px-4 pt-1">
             <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 <!-- All Items Card -->
                 <div @click="selectedCat = 'all'" 
-                     :class="selectedCat === 'all' ? 'border-orange-500 bg-orange-50/30 text-orange-600 font-bold shadow-2xs' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'"
+                     :class="selectedCat === 'all' ? 'border-slate-950 bg-slate-950 text-amber-400 font-black shadow-xs' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'"
                      class="relative shrink-0 flex flex-col items-center justify-center p-2.5 rounded-2xl border min-w-[80px] cursor-pointer transition">
                     <!-- Checkmark Badge on Active -->
-                    <span x-show="selectedCat === 'all'" class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-orange-500 text-white flex items-center justify-center text-[9px] font-black shadow-2xs">✓</span>
+                    <span x-show="selectedCat === 'all'" class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-[9px] font-black shadow-2xs">✓</span>
                     <span class="text-xl mb-1">🍽️</span>
-                    <span class="text-[11px] font-extrabold whitespace-nowrap">All Items</span>
-                    <!-- Orange Bottom Line Indicator -->
-                    <span x-show="selectedCat === 'all'" class="absolute bottom-0 left-3 right-3 h-0.5 bg-orange-500 rounded-full"></span>
+                    <span class="text-[11px] font-black whitespace-nowrap">All Items</span>
+                    <!-- Amber Bottom Line Indicator -->
+                    <span x-show="selectedCat === 'all'" class="absolute bottom-0 left-3 right-3 h-0.5 bg-amber-400 rounded-full"></span>
                 </div>
 
                 @foreach($categories as $cat)
                     @if($cat->items->isNotEmpty())
                         <div @click="selectedCat = {{ $cat->id }}" 
-                             :class="selectedCat === {{ $cat->id }} ? 'border-orange-500 bg-orange-50/30 text-orange-600 font-bold shadow-2xs' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'"
+                             :class="selectedCat === {{ $cat->id }} ? 'border-slate-950 bg-slate-950 text-amber-400 font-black shadow-xs' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'"
                              class="relative shrink-0 flex flex-col items-center justify-center p-2.5 rounded-2xl border min-w-[80px] cursor-pointer transition">
                             <!-- Checkmark Badge on Active -->
-                            <span x-show="selectedCat === {{ $cat->id }}" class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-orange-500 text-white flex items-center justify-center text-[9px] font-black shadow-2xs">✓</span>
+                            <span x-show="selectedCat === {{ $cat->id }}" class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-[9px] font-black shadow-2xs">✓</span>
                             <span class="text-xl mb-1">🍲</span>
-                            <span class="text-[11px] font-extrabold whitespace-nowrap">{{ $cat->name }}</span>
-                            <!-- Orange Bottom Line Indicator -->
-                            <span x-show="selectedCat === {{ $cat->id }}" class="absolute bottom-0 left-3 right-3 h-0.5 bg-orange-500 rounded-full"></span>
+                            <span class="text-[11px] font-black whitespace-nowrap">{{ $cat->name }}</span>
+                            <!-- Amber Bottom Line Indicator -->
+                            <span x-show="selectedCat === {{ $cat->id }}" class="absolute bottom-0 left-3 right-3 h-0.5 bg-amber-400 rounded-full"></span>
                         </div>
                     @endif
                 @endforeach
@@ -212,31 +212,31 @@
                                             @if($item->is_available)
                                                 @if($inCartQty > 0)
                                                     <!-- Quantity Stepper -->
-                                                    <div class="flex items-center bg-orange-500 text-white rounded-lg shadow-xs font-bold text-xs overflow-hidden">
+                                                    <div class="flex items-center bg-slate-950 text-white rounded-xl shadow-xs font-bold text-xs overflow-hidden border border-slate-800">
                                                         <form action="{{ route('public.order.update-quantity', [$organization->id, $location->id, $item->id]) }}" method="POST" class="m-0 p-0">
                                                             @csrf
                                                             <input type="hidden" name="action" value="decrease">
-                                                            <button type="submit" class="px-2.5 py-1 text-white hover:bg-orange-600 transition text-sm font-black">&minus;</button>
+                                                            <button type="submit" class="px-2.5 py-1 text-slate-300 hover:text-white hover:bg-slate-900 transition text-sm font-black">&minus;</button>
                                                         </form>
-                                                        <span class="px-2 py-1 font-mono font-black text-xs text-white">{{ $inCartQty }}</span>
+                                                        <span class="px-2 py-1 font-mono font-black text-xs text-amber-400">{{ $inCartQty }}</span>
                                                         <form action="{{ route('public.order.update-quantity', [$organization->id, $location->id, $item->id]) }}" method="POST" class="m-0 p-0">
                                                             @csrf
                                                             <input type="hidden" name="action" value="increase">
-                                                            <button type="submit" class="px-2.5 py-1 text-white hover:bg-orange-600 transition text-sm font-black">+</button>
+                                                            <button type="submit" class="px-2.5 py-1 text-slate-300 hover:text-white hover:bg-slate-900 transition text-sm font-black">+</button>
                                                         </form>
                                                     </div>
                                                 @else
-                                                    <!-- Petpooja + Add Button -->
+                                                    <!-- Add Button -->
                                                     <form action="{{ route('public.order.add', [$organization->id, $location->id]) }}" method="POST" class="m-0 p-0">
                                                         @csrf
                                                         <input type="hidden" name="menu_item_id" value="{{ $item->id }}">
-                                                        <button type="submit" class="bg-white border border-orange-500 hover:bg-orange-50 text-orange-600 font-extrabold px-5 py-1 rounded-lg text-xs tracking-wider shadow-2xs transition active:scale-95 flex items-center gap-1 cursor-pointer">
+                                                        <button type="submit" class="bg-white border-2 border-slate-900 hover:bg-slate-950 hover:text-amber-400 text-slate-950 font-black px-4 py-1 rounded-xl text-xs uppercase tracking-wider shadow-2xs transition active:scale-95 flex items-center gap-1 cursor-pointer whitespace-nowrap">
                                                             <span>+ Add</span>
                                                         </button>
                                                     </form>
                                                 @endif
                                             @else
-                                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-100 px-2 py-0.5 rounded-md">
+                                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md">
                                                     Sold Out
                                                 </span>
                                             @endif
@@ -477,36 +477,60 @@
     </div>
 
     <!-- Dish Quick View Modal -->
-    <div x-show="dishModalOpen" x-cloak class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl border border-gray-100 space-y-4" @click.away="dishModalOpen = false">
-            <div class="relative w-full h-48 bg-orange-50 flex items-center justify-center">
+    <div x-show="dishModalOpen" x-cloak class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-200 space-y-0 transform transition-all" @click.away="dishModalOpen = false">
+            <div class="relative w-full h-56 bg-slate-900 flex items-center justify-center overflow-hidden">
                 <template x-if="modalDish.photo">
                     <img :src="'/storage/' + modalDish.photo" class="w-full h-full object-cover">
                 </template>
                 <template x-if="!modalDish.photo">
-                    <span class="text-5xl text-orange-400">🍱</span>
+                    <div class="w-full h-full bg-gradient-to-br from-slate-900 to-slate-950 flex items-center justify-center">
+                        <span class="text-6xl filter drop-shadow-md">🍱</span>
+                    </div>
                 </template>
-                <button type="button" @click="dishModalOpen = false" 
-                        class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center font-bold text-sm backdrop-blur-md">
-                    ✕
-                </button>
+
+                <!-- Top badges & close button -->
+                <div class="absolute top-3.5 inset-x-3.5 flex items-center justify-between pointer-events-none">
+                    <span class="pointer-events-auto px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase tracking-wider bg-slate-950/80 backdrop-blur-md text-amber-400 border border-slate-700/60 shadow-xs" x-text="modalCategory"></span>
+                    
+                    <button type="button" @click="dishModalOpen = false" 
+                            class="pointer-events-auto w-9 h-9 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center font-bold text-sm backdrop-blur-md transition shadow-xs">
+                        ✕
+                    </button>
+                </div>
             </div>
 
-            <div class="px-5 pb-5 space-y-3">
-                <div>
-                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-orange-600" x-text="modalCategory"></span>
-                    <h3 class="text-base font-black text-gray-900" x-text="modalDish.name"></h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed" x-text="modalDish.description || 'Authentic flavors freshly prepared to order.'"></p>
+            <div class="p-6 space-y-4">
+                <div class="space-y-1.5">
+                    <div class="flex items-center gap-2">
+                        <template x-if="modalDish.name && (modalDish.name.toLowerCase().includes('chicken') || modalDish.name.toLowerCase().includes('mutton') || modalDish.name.toLowerCase().includes('egg') || modalDish.name.toLowerCase().includes('fish') || modalDish.name.toLowerCase().includes('meat'))">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-black uppercase bg-red-50 text-red-700 border border-red-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span> Non-Veg
+                            </span>
+                        </template>
+                        <template x-if="modalDish.name && !(modalDish.name.toLowerCase().includes('chicken') || modalDish.name.toLowerCase().includes('mutton') || modalDish.name.toLowerCase().includes('egg') || modalDish.name.toLowerCase().includes('fish') || modalDish.name.toLowerCase().includes('meat'))">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Pure Veg
+                            </span>
+                        </template>
+                    </div>
+
+                    <h3 class="text-xl font-black text-slate-950 tracking-tight" x-text="modalDish.name"></h3>
+                    <p class="text-xs text-slate-600 font-medium leading-relaxed" x-text="modalDish.description || 'Authentic gourmet recipe freshly prepared to order with handpicked ingredients.'"></p>
                 </div>
 
-                <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-                    <span class="text-lg font-black text-gray-900 font-mono">₹<span x-text="parseFloat(modalDish.price || 0).toFixed(2)"></span></span>
+                <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Price</span>
+                        <span class="text-2xl font-black text-slate-950 font-mono">₹<span x-text="parseFloat(modalDish.price || 0).toFixed(2)"></span></span>
+                    </div>
                     
                     <form action="{{ route('public.order.add', [$organization->id, $location->id]) }}" method="POST" class="m-0">
                         @csrf
                         <input type="hidden" name="menu_item_id" :value="modalDish.id">
-                        <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-extrabold px-6 py-2 rounded-xl text-xs shadow-md transition active:scale-95">
-                            + Add to Order
+                        <button type="submit" class="bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition active:scale-95 flex items-center gap-1.5 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            <span>Add to Order</span>
                         </button>
                     </form>
                 </div>
@@ -514,67 +538,71 @@
         </div>
     </div>
 
-    <!-- FIXED PETPOOJA 4-TAB BOTTOM NAVIGATION BAR -->
-    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-[0_-4px_25px_rgba(0,0,0,0.06)]">
+    <!-- FIXED 4-TAB BOTTOM NAVIGATION BAR -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_25px_rgba(0,0,0,0.06)]">
         <div class="max-w-2xl mx-auto px-6 py-2 flex justify-between items-center text-center">
             
             <!-- 1. Home Tab -->
             <button type="button" @click="activeTab = 'home'" 
                     class="flex flex-col items-center justify-center flex-1 py-1 transition group">
                 <svg class="w-5 h-5 mb-0.5 transition" 
-                     :class="activeTab === 'home' ? 'text-orange-500 stroke-[2.5]' : 'text-gray-400 stroke-[1.8] group-hover:text-gray-600'" 
+                     :class="activeTab === 'home' ? 'text-slate-950 stroke-[2.5]' : 'text-slate-400 stroke-[1.8] group-hover:text-slate-600'" 
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>
                 <span class="text-[10px] tracking-tight transition" 
-                      :class="activeTab === 'home' ? 'text-orange-600 font-extrabold' : 'text-gray-400 font-medium group-hover:text-gray-600'">
+                      :class="activeTab === 'home' ? 'text-slate-950 font-black' : 'text-slate-400 font-medium group-hover:text-slate-600'">
                     Home
                 </span>
+                <span x-show="activeTab === 'home'" class="w-1 h-1 rounded-full bg-amber-500 mt-0.5"></span>
             </button>
 
             <!-- 2. Menu Tab -->
             <button type="button" @click="activeTab = 'menu'" 
                     class="flex flex-col items-center justify-center flex-1 py-1 transition group">
                 <svg class="w-5 h-5 mb-0.5 transition" 
-                     :class="activeTab === 'menu' ? 'text-orange-500 stroke-[2.5]' : 'text-gray-400 stroke-[1.8] group-hover:text-gray-600'" 
+                     :class="activeTab === 'menu' ? 'text-slate-950 stroke-[2.5]' : 'text-slate-400 stroke-[1.8] group-hover:text-slate-600'" 
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
                 </svg>
                 <span class="text-[10px] tracking-tight transition" 
-                      :class="activeTab === 'menu' ? 'text-orange-600 font-extrabold' : 'text-gray-400 font-medium group-hover:text-gray-600'">
+                      :class="activeTab === 'menu' ? 'text-slate-950 font-black' : 'text-slate-400 font-medium group-hover:text-slate-600'">
                     Menu
                 </span>
+                <span x-show="activeTab === 'menu'" class="w-1 h-1 rounded-full bg-amber-500 mt-0.5"></span>
             </button>
 
             <!-- 3. Orders Tab -->
             <button type="button" @click="activeTab = 'orders'" 
                     class="flex flex-col items-center justify-center flex-1 py-1 transition group relative">
                 @if($activeOrders->count() > 0)
-                    <span class="absolute top-0 right-1/4 w-2 h-2 rounded-full bg-orange-500 animate-ping"></span>
+                    <span class="absolute top-0 right-1/4 w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
                 @endif
                 <svg class="w-5 h-5 mb-0.5 transition" 
-                     :class="activeTab === 'orders' ? 'text-orange-500 stroke-[2.5]' : 'text-gray-400 stroke-[1.8] group-hover:text-gray-600'" 
+                     :class="activeTab === 'orders' ? 'text-slate-950 stroke-[2.5]' : 'text-slate-400 stroke-[1.8] group-hover:text-slate-600'" 
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
                 </svg>
                 <span class="text-[10px] tracking-tight transition" 
-                      :class="activeTab === 'orders' ? 'text-orange-600 font-extrabold' : 'text-gray-400 font-medium group-hover:text-gray-600'">
+                      :class="activeTab === 'orders' ? 'text-slate-950 font-black' : 'text-slate-400 font-medium group-hover:text-slate-600'">
                     Orders
                 </span>
+                <span x-show="activeTab === 'orders'" class="w-1 h-1 rounded-full bg-amber-500 mt-0.5"></span>
             </button>
 
             <!-- 4. Pay Bill Tab -->
             <button type="button" @click="activeTab = 'bill'" 
                     class="flex flex-col items-center justify-center flex-1 py-1 transition group">
                 <svg class="w-5 h-5 mb-0.5 transition" 
-                     :class="activeTab === 'bill' ? 'text-orange-500 stroke-[2.5]' : 'text-gray-400 stroke-[1.8] group-hover:text-gray-600'" 
+                     :class="activeTab === 'bill' ? 'text-slate-950 stroke-[2.5]' : 'text-slate-400 stroke-[1.8] group-hover:text-slate-600'" 
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
                 <span class="text-[10px] tracking-tight transition" 
-                      :class="activeTab === 'bill' ? 'text-orange-600 font-extrabold' : 'text-gray-400 font-medium group-hover:text-gray-600'">
+                      :class="activeTab === 'bill' ? 'text-slate-950 font-black' : 'text-slate-400 font-medium group-hover:text-slate-600'">
                     Pay Bill
                 </span>
+                <span x-show="activeTab === 'bill'" class="w-1 h-1 rounded-full bg-amber-500 mt-0.5"></span>
             </button>
 
         </div>

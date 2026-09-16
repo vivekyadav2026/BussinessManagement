@@ -22,12 +22,16 @@ class AttendanceController extends Controller
         $date = $request->input('date', now()->toDateString());
         $dateObj = Carbon::parse($date);
 
-        $employees = Employee::where('organization_id', $orgId)
-            ->where('location_id', $locationId)
-            ->whereIn('status', ['active', 'Active'])
-            ->with(['attendances' => function($q) use ($date) {
+        $query = Employee::where('organization_id', $orgId)
+            ->whereIn('status', ['active', 'Active']);
+
+        if ($locationId) {
+            $query->where('location_id', $locationId);
+        }
+
+        $employees = $query->with(['attendances' => function($q) use ($date) {
                 $q->whereDate('date', $date);
-            }])
+            }, 'location'])
             ->orderBy('first_name')
             ->get();
 
@@ -49,10 +53,12 @@ class AttendanceController extends Controller
         $date = $request->date;
         DB::transaction(function () use ($request, $orgId, $locationId, $date) {
             // Pre-fetch all active employees for this location to prevent N+1 queries in the loop
-            $employees = Employee::where('organization_id', $orgId)
-                ->where('location_id', $locationId)
-                ->get()
-                ->keyBy('id');
+            $query = Employee::where('organization_id', $orgId)
+                ->whereIn('status', ['active', 'Active']);
+            if ($locationId) {
+                $query->where('location_id', $locationId);
+            }
+            $employees = $query->get()->keyBy('id');
 
             // Pre-fetch existing attendance records for the date to optimize queries
             $existingAttendances = Attendance::whereIn('employee_id', $employees->keys())
@@ -117,9 +123,14 @@ class AttendanceController extends Controller
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
         
-        $employees = Employee::where('organization_id', $orgId)
-            ->where('location_id', $locationId)
-            ->get();
+        $query = Employee::where('organization_id', $orgId)
+            ->whereIn('status', ['active', 'Active']);
+
+        if ($locationId) {
+            $query->where('location_id', $locationId);
+        }
+
+        $employees = $query->with(['location'])->orderBy('first_name')->get();
             
         $reportData = [];
         foreach ($employees as $emp) {
