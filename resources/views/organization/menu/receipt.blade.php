@@ -9,13 +9,18 @@
             size: 80mm auto;
             margin: 0;
         }
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
         body {
             font-family: 'Courier New', Courier, monospace, sans-serif;
             width: 78mm;
             margin: 0 auto;
             padding: 10px;
-            color: #000;
-            background: #fff;
+            color: #000000 !important;
+            background: #ffffff !important;
             font-size: 12px;
             line-height: 1.3;
         }
@@ -24,13 +29,14 @@
         .text-left { text-align: left; }
         .bold { font-weight: bold; }
         .divider {
-            border-top: 1px dashed #000;
+            border-top: 1px dashed #000000;
             margin: 8px 0;
         }
         .header-title {
             font-size: 16px;
             font-weight: bold;
             text-transform: uppercase;
+            color: #000000 !important;
         }
         table {
             width: 100%;
@@ -38,27 +44,31 @@
             margin: 5px 0;
         }
         th {
-            border-bottom: 1px solid #000;
+            border-bottom: 1px solid #000000;
             padding: 4px 0;
             text-align: left;
             font-size: 11px;
+            color: #000000 !important;
         }
         td {
             padding: 4px 0;
             vertical-align: top;
             font-size: 11px;
+            color: #000000 !important;
         }
         .badge {
             display: inline-block;
             padding: 2px 6px;
-            background: #000;
-            color: #fff;
+            background: #000000;
+            color: #ffffff !important;
             font-size: 10px;
             font-weight: bold;
             border-radius: 3px;
+            border: 1px solid #000000;
         }
         @media print {
             .no-print { display: none !important; }
+            body { padding: 0; margin: 0; }
         }
     </style>
 </head>
@@ -117,6 +127,8 @@
                 $grossSubtotal = isset($allOrders) ? $allOrders->sum('subtotal') : $order->subtotal;
                 $grossCgst = isset($allOrders) ? $allOrders->sum('cgst') : $order->cgst;
                 $grossSgst = isset($allOrders) ? $allOrders->sum('sgst') : $order->sgst;
+                $cgstPercent = (float)($order->organization->cgst_percent ?? 0);
+                $sgstPercent = (float)($order->organization->sgst_percent ?? 0);
             @endphp
             @foreach($itemsToPrint as $item)
             <tr>
@@ -139,13 +151,13 @@
         </tr>
         @if($grossCgst > 0)
         <tr>
-            <td class="text-left">CGST ({{ (float)auth()->user()->organization->cgst_percent }}%):</td>
+            <td class="text-left">CGST ({{ $cgstPercent }}%):</td>
             <td class="text-right">₹{{ number_format($grossCgst, 2) }}</td>
         </tr>
         @endif
         @if($grossSgst > 0)
         <tr>
-            <td class="text-left">SGST ({{ (float)auth()->user()->organization->sgst_percent }}%):</td>
+            <td class="text-left">SGST ({{ $sgstPercent }}%):</td>
             <td class="text-right">₹{{ number_format($grossSgst, 2) }}</td>
         </tr>
         @endif
@@ -157,9 +169,9 @@
             <td class="text-left">Payment Status:</td>
             <td class="text-right bold" style="text-transform: uppercase;">
                 @if($order->payment_status === 'Paid')
-                    <span class="badge" style="background: #15803d; color: #ffffff; padding: 2px 6px;">PAID ONLINE ✅</span>
+                    <span class="badge" style="background: #15803d; color: #ffffff !important; border: 1px solid #14532d; padding: 2px 6px;">PAID ONLINE ✅</span>
                 @else
-                    <span style="color: #dc2626;">PENDING ⏳</span>
+                    <span style="color: #dc2626 !important; font-weight: 900;">PENDING ⏳</span>
                 @endif
             </td>
         </tr>
@@ -169,8 +181,8 @@
 
     @if($order->payment_status === 'Paid')
         <div class="text-center" style="margin: 8px 0; padding: 6px; border: 1.5px solid #15803d; border-radius: 4px; background: #f0fdf4;">
-            <div style="font-size: 11px; font-weight: 900; color: #15803d; text-transform: uppercase;">✅ FULLY PAID (ONLINE UPI)</div>
-            <div style="font-size: 9px; font-weight: bold; color: #166534; margin-top: 2px;">AMOUNT DUE: ₹0.00 (NO PAYMENT REQUIRED)</div>
+            <div style="font-size: 11px; font-weight: 900; color: #15803d !important; text-transform: uppercase;">✅ FULLY PAID (ONLINE UPI)</div>
+            <div style="font-size: 9px; font-weight: bold; color: #166534 !important; margin-top: 2px;">AMOUNT DUE: ₹0.00 (NO PAYMENT REQUIRED)</div>
         </div>
     @else
         @php
@@ -179,16 +191,16 @@
         @endphp
 
         <div class="text-center" style="margin-top: 6px;">
-            <div style="font-size: 9px; font-weight: bold;">SCAN TO PAY EXACT BILL AMOUNT</div>
-            <div style="font-size: 12px; font-weight: 900; margin-top: 2px;">₹{{ number_format($order->total, 2) }}</div>
+            <div style="font-size: 9px; font-weight: bold; color: #000000 !important;">SCAN TO PAY EXACT BILL AMOUNT</div>
+            <div style="font-size: 12px; font-weight: 900; margin-top: 2px; color: #000000 !important;">₹{{ number_format($order->total, 2) }}</div>
             <div id="orderUpiQrCode" style="display: flex; justify-content: center; margin: 4px 0;"></div>
-            <div style="font-size: 8px; color: #333;">GPay | PhonePe | Paytm | BHIM</div>
+            <div style="font-size: 8px; color: #000000 !important;">GPay | PhonePe | Paytm | BHIM</div>
         </div>
     @endif
 
     <div class="text-center" style="margin-top: 10px;">
-        <div class="bold">Thank you for dining with us!</div>
-        <div style="font-size: 10px; margin-top: 3px;">Please Visit Again 🙏</div>
+        <div class="bold" style="color: #000000 !important;">Thank you for dining with us!</div>
+        <div style="font-size: 10px; margin-top: 3px; color: #000000 !important;">Please Visit Again 🙏</div>
     </div>
 
     @if($order->payment_status !== 'Paid')

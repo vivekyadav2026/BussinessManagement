@@ -514,7 +514,7 @@
                                         @foreach($c['orders'] as $ord)
                                             <a href="{{ route('organization.menu.pos.orders.print-receipt', $ord->id) }}" target="_blank" 
                                                title="View/Print Receipt for Order {{ $ord->token_number ? '#'.$ord->token_number : '#'.$ord->id }} (₹{{ number_format($ord->total, 2) }})"
-                                               class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-500 hover:text-white transition">
+                                               class="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1 rounded-md bg-slate-900 text-white hover:bg-amber-500 hover:text-slate-950 transition border border-slate-800 shadow-2xs">
                                                 🧾 {{ $ord->token_number ? '#'.$ord->token_number : 'Receipt' }}
                                             </a>
                                         @endforeach
