@@ -1,253 +1,970 @@
-<x-guest-layout maxWidth="max-w-2xl">
-    <x-slot name="header">
-        <h2 class="text-center text-xl sm:text-2xl font-bold tracking-tight text-gray-900">Create your account</h2>
-        <p class="mt-1 text-center text-xs sm:text-sm text-gray-600">
-            Already registered?
-            <a href="{{ route('login') }}" class="font-bold text-indigo-600 hover:text-indigo-500">Sign in instead</a>
-        </p>
-    </x-slot>
-
-    <div x-data="{ 
-        step: 1, 
-        validateStep1() {
-            let isValid = true;
-            const requiredFields = ['organization_name', 'business_type', 'business_phone', 'country', 'state', 'pincode', 'address'];
-            
-            requiredFields.forEach(field => {
-                const el = document.getElementById(field);
-                if(!el.value) {
-                    isValid = false;
-                    el.classList.add('border-red-500', 'ring-red-500/20');
-                } else {
-                    el.classList.remove('border-red-500', 'ring-red-500/20');
-                }
-            });
-
-            if(isValid) { this.step = 2; window.scrollTo({top:0, behavior:'smooth'}); }
-            else alert('Please fill all required business details.');
-        },
-        validateStep2() {
-            let isValid = true;
-            const requiredFields = ['name', 'admin_phone', 'email', 'password', 'password_confirmation'];
-            
-            requiredFields.forEach(field => {
-                const el = document.getElementById(field);
-                if(!el.value) {
-                    isValid = false;
-                    el.classList.add('border-red-500', 'ring-red-500/20');
-                } else {
-                    el.classList.remove('border-red-500', 'ring-red-500/20');
-                }
-            });
-
-            const pass = document.getElementById('password');
-            const confirm = document.getElementById('password_confirmation');
-            
-            if(pass.value && confirm.value && pass.value !== confirm.value) {
-                alert('Passwords do not match.');
-                pass.classList.add('border-red-500');
-                confirm.classList.add('border-red-500');
-                isValid = false;
-            }
-
-            if(isValid) { this.step = 3; window.scrollTo({top:0, behavior:'smooth'}); }
-            else if(isValid === false && pass.value === confirm.value) alert('Please fill all required admin details.');
+<x-guest-layout :fullCard="true">
+    @php
+        $initialStep = 1;
+        if ($errors->has('name') || $errors->has('admin_phone') || $errors->has('email') || $errors->has('password') || $errors->has('password_confirmation')) {
+            $initialStep = 2;
         }
-    }">
+        $trialDays = (int)\App\Models\SystemSetting::get('trial_days', 14);
+        $enableTrial = \App\Models\SystemSetting::get('enable_free_trial', '1') === '1';
+    @endphp
 
-        <!-- Form -->
-        <form method="POST" action="{{ route('register') }}" class="w-full">
-            @csrf
+    <style>
+        /* Scoped styles for Vyapaargo Multi-Step Registration */
+        .reg-wrapper {
+            width: 100%;
+            margin: 0 auto;
+        }
+        .reg-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 20px 45px -12px rgba(11, 19, 43, 0.12), 0 2px 10px rgba(11, 19, 43, 0.04);
+            display: grid;
+            grid-template-columns: 1fr;
+            overflow: hidden;
+            min-height: 680px;
+        }
+        @media (min-width: 1024px) {
+            .reg-card {
+                grid-template-columns: 42% 58%;
+            }
+        }
+        
+        /* Left Column (Branding & Showcase) */
+        .reg-showcase {
+            background: linear-gradient(150deg, #0B132B 0%, #111C38 45%, #17233F 100%);
+            color: #FFFFFF;
+            padding: 40px 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+        .reg-showcase::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            left: -60px;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(217, 154, 43, 0.18) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .reg-showcase::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(20, 99, 86, 0.22) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .reg-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(217, 154, 43, 0.35);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+            color: #F8D38D;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        .reg-badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #D99A2B;
+            box-shadow: 0 0 8px #D99A2B;
+        }
+        .reg-headline {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            line-height: 1.25;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+        @media (min-width: 640px) {
+            .reg-headline { font-size: 32px; }
+        }
+        .reg-subhead {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #94A3B8;
+            margin-bottom: 28px;
+        }
+        .reg-feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .reg-feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .reg-feature-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(217, 154, 43, 0.15);
+            border: 1px solid rgba(217, 154, 43, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #D99A2B;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .reg-feature-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+        .reg-feature-desc {
+            font-size: 12px;
+            color: #94A3B8;
+            margin-top: 2px;
+            line-height: 1.45;
+        }
+        .reg-trust-box {
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+        .reg-trust-rating {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .reg-stars {
+            color: #F59E0B;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+        .reg-rating-val {
+            font-size: 12px;
+            font-weight: 700;
+            color: #E2E8F0;
+            margin-left: 6px;
+        }
+        .reg-chips {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 11px;
+            color: #94A3B8;
+        }
+        .reg-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* Right Column (Interactive Form) */
+        .reg-form-pane {
+            padding: 36px 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #FFFFFF;
+        }
+        @media (min-width: 640px) {
+            .reg-form-pane {
+                padding: 40px 44px;
+            }
+        }
+        .reg-top-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+        @media (min-width: 640px) {
+            .reg-top-bar {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+        .reg-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+        .reg-login-link {
+            font-size: 13px;
+            color: #64748B;
+        }
+        .reg-login-link a {
+            color: var(--gold-deep);
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .reg-login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Stepper Component */
+        .reg-stepper {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 28px;
+            position: relative;
+        }
+        .reg-step-btn {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            padding: 0;
+            width: 100%;
+        }
+        .reg-step-bar {
+            height: 4px;
+            border-radius: 999px;
+            width: 100%;
+            background: #E2E8F0;
+            transition: background 0.3s ease;
+        }
+        .reg-step-bar.active {
+            background: var(--gold-deep);
+        }
+        .reg-step-label-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .reg-step-num {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10.5px;
+            font-weight: 700;
+            background: #E2E8F0;
+            color: #64748B;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .reg-step-num.active {
+            background: #0B132B;
+            color: #FFFFFF;
+        }
+        .reg-step-num.done {
+            background: #10B981;
+            color: #FFFFFF;
+        }
+        .reg-step-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: #94A3B8;
+            transition: color 0.2s;
+        }
+        .reg-step-text.active {
+            color: #0F172A;
+        }
+        
+        /* Form Inputs & Elements */
+        .reg-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+        .reg-section-tag {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #334155;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        .reg-field-group {
+            margin-bottom: 16px;
+        }
+        .reg-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+        .reg-input-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .reg-input-icon {
+            position: absolute;
+            left: 12px;
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+            color: #94A3B8;
+        }
+        .reg-input {
+            width: 100%;
+            height: 42px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid #CBD5E1;
+            background: #FFFFFF;
+            color: #0F172A;
+            font-size: 13.5px;
+            font-family: inherit;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .reg-input.with-icon {
+            padding-left: 38px;
+        }
+        .reg-input:focus {
+            border-color: #D99A2B;
+            box-shadow: 0 0 0 3px rgba(217, 154, 43, 0.18);
+            outline: none;
+        }
+        .reg-input::placeholder {
+            color: #94A3B8;
+        }
+        .reg-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 640px) {
+            .reg-grid-2 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .reg-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media (min-width: 640px) {
+            .reg-grid-3 {
+                grid-template-columns: 1fr 1.2fr 1fr;
+            }
+        }
+        
+        /* Action Buttons */
+        .reg-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #F1F5F9;
+        }
+        .reg-btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .reg-btn-back:hover {
+            background: #F8FAFC;
+            color: #0F172A;
+            border-color: #94A3B8;
+        }
+        .reg-btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 24px;
+            font-size: 13.5px;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            color: #FFFFFF;
+            background: #0B132B;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(11, 19, 43, 0.15);
+            transition: all 0.15s ease;
+        }
+        .reg-btn-primary:hover {
+            background: var(--gold-deep);
+            color: #0B132B;
+            box-shadow: 0 6px 16px rgba(184, 127, 27, 0.25);
+        }
+        
+        /* Summary Box for Step 3 */
+        .reg-summary-card {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 12.5px;
+            margin-bottom: 16px;
+        }
+        .reg-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px dashed #E2E8F0;
+        }
+        .reg-summary-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .reg-summary-label {
+            color: #64748B;
+        }
+        .reg-summary-val {
+            font-weight: 700;
+            color: #0F172A;
+            text-align: right;
+        }
+    </style>
 
-            <!-- Progress Bar & Steps -->
-            <div class="relative mb-8">
-                <div class="overflow-hidden h-1.5 mb-5 text-xs flex rounded-full bg-gray-100">
-                    <div :style="`width: ${step === 1 ? '33.33%' : (step === 2 ? '66.66%' : '100%')}`" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-600 transition-all duration-500 ease-in-out"></div>
-                </div>
+    <div class="reg-wrapper"
+         x-data="{
+            step: {{ $initialStep }},
+            business_name: '{{ old('organization_name') }}',
+            business_type: '{{ old('business_type', 'business') }}',
+            owner_name: '{{ old('name') }}',
+            owner_email: '{{ old('email') }}',
+            owner_phone: '{{ old('admin_phone') }}',
+
+            validateStep1() {
+                let isValid = true;
+                const fields = ['organization_name', 'business_type', 'business_phone', 'country', 'state', 'pincode', 'address'];
                 
-                <div class="flex justify-between items-center w-full px-2">
-                    <div class="flex flex-col items-center">
-                        <div :class="step >= 1 ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-400'" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-[11px] sm:text-xs transition-all duration-300">
-                            <svg x-show="step > 1" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span x-show="step === 1">1</span>
-                        </div>
-                        <span :class="step >= 1 ? 'text-gray-900' : 'text-gray-400'" class="text-[10px] uppercase font-bold mt-1.5">Business</span>
+                fields.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el || !el.value.trim()) {
+                        isValid = false;
+                        if (el) {
+                            el.style.borderColor = '#EF4444';
+                            el.style.backgroundColor = '#FEF2F2';
+                        }
+                    } else {
+                        if (el) {
+                            el.style.borderColor = '#CBD5E1';
+                            el.style.backgroundColor = '#FFFFFF';
+                        }
+                    }
+                });
+
+                if (isValid) {
+                    this.business_name = document.getElementById('organization_name').value;
+                    this.business_type = document.getElementById('business_type').value;
+                    this.step = 2;
+                    window.scrollTo({top: 40, behavior: 'smooth'});
+                } else {
+                    alert('Please complete all required business profile fields marked with *.');
+                    const firstInvalid = fields.find(id => {
+                        const el = document.getElementById(id);
+                        return !el || !el.value.trim();
+                    });
+                    if (firstInvalid) document.getElementById(firstInvalid).focus();
+                }
+            },
+
+            validateStep2() {
+                let isValid = true;
+                const fields = ['name', 'admin_phone', 'email', 'password', 'password_confirmation'];
+
+                fields.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el || !el.value.trim()) {
+                        isValid = false;
+                        if (el) {
+                            el.style.borderColor = '#EF4444';
+                            el.style.backgroundColor = '#FEF2F2';
+                        }
+                    } else {
+                        if (el) {
+                            el.style.borderColor = '#CBD5E1';
+                            el.style.backgroundColor = '#FFFFFF';
+                        }
+                    }
+                });
+
+                const p1 = document.getElementById('password');
+                const p2 = document.getElementById('password_confirmation');
+                if (p1 && p2 && p1.value && p2.value && p1.value !== p2.value) {
+                    alert('Password and Confirm Password do not match.');
+                    p1.style.borderColor = '#EF4444';
+                    p2.style.borderColor = '#EF4444';
+                    isValid = false;
+                    p2.focus();
+                    return;
+                }
+
+                if (isValid) {
+                    this.owner_name = document.getElementById('name').value;
+                    this.owner_email = document.getElementById('email').value;
+                    this.owner_phone = document.getElementById('admin_phone').value;
+                    this.step = 3;
+                    window.scrollTo({top: 40, behavior: 'smooth'});
+                } else {
+                    alert('Please fill out all required owner credentials.');
+                    const firstInvalid = fields.find(id => {
+                        const el = document.getElementById(id);
+                        return !el || !el.value.trim();
+                    });
+                    if (firstInvalid) document.getElementById(firstInvalid).focus();
+                }
+            }
+         }">
+
+        <div class="reg-card">
+            <!-- Left Branding & Trust Showcase -->
+            <div class="reg-showcase">
+                <div>
+                    <!-- Badge -->
+                    <div class="reg-badge">
+                        <span class="reg-badge-dot"></span>
+                        Unified ERP &amp; POS Platform
                     </div>
-                    <div class="flex flex-col items-center">
-                        <div :class="step >= 2 ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-400'" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-[11px] sm:text-xs transition-all duration-300">
-                            <svg x-show="step > 2" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span x-show="step <= 2">2</span>
+
+                    <!-- Headline -->
+                    <h2 class="reg-headline">
+                        Scale your shop or restaurant with <span style="color: var(--gold);">Vyapaargo</span>.
+                    </h2>
+                    <p class="reg-subhead">
+                        Join over 10,000+ growing retail outlets, supermarkets, and restaurants across India managing billing, inventory, and staff on one platform.
+                    </p>
+
+                    <!-- Feature Highlights -->
+                    <div class="reg-feature-list">
+                        <div class="reg-feature-item">
+                            <div class="reg-feature-icon">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            <div>
+                                <div class="reg-feature-title">Lightning Fast Billing &amp; Invoicing</div>
+                                <div class="reg-feature-desc">GST compliant bills, thermal &amp; A4 printing, UPI QR auto-payments.</div>
+                            </div>
                         </div>
-                        <span :class="step >= 2 ? 'text-gray-900' : 'text-gray-400'" class="text-[10px] uppercase font-bold mt-1.5">Admin</span>
+
+                        <div class="reg-feature-item">
+                            <div class="reg-feature-icon">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            <div>
+                                <div class="reg-feature-title">Live Inventory &amp; Stock Tracking</div>
+                                <div class="reg-feature-desc">Barcode scanning, low-stock threshold alerts &amp; supplier purchases.</div>
+                            </div>
+                        </div>
+
+                        <div class="reg-feature-item">
+                            <div class="reg-feature-icon">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            <div>
+                                <div class="reg-feature-title">Restaurant POS &amp; Table QR Orders</div>
+                                <div class="reg-feature-desc">Instant KOT printing, digital dining menus &amp; waiter apps.</div>
+                            </div>
+                        </div>
+
+                        <div class="reg-feature-item">
+                            <div class="reg-feature-icon">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            <div>
+                                <div class="reg-feature-title">Staff Attendance &amp; Payroll</div>
+                                <div class="reg-feature-desc">Automated salary calculation, shift management &amp; attendance logs.</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex flex-col items-center">
-                        <div :class="step >= 3 ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-400'" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-[11px] sm:text-xs transition-all duration-300">
-                            <span x-show="step <= 3">3</span>
-                        </div>
-                        <span :class="step >= 3 ? 'text-gray-900' : 'text-gray-400'" class="text-[10px] uppercase font-bold mt-1.5">Plan</span>
+                </div>
+
+                <!-- Bottom Trust Elements -->
+                <div class="reg-trust-box">
+                    <div class="reg-chips">
+                        <span class="reg-chip">
+                            <svg width="13" height="13" fill="none" stroke="#10B981" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            256-Bit SSL
+                        </span>
+                        <span class="reg-chip">
+                            <svg width="13" height="13" fill="none" stroke="#10B981" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            No Card Required
+                        </span>
+                        <span class="reg-chip">
+                            <svg width="13" height="13" fill="none" stroke="#10B981" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            14-Day Free Trial
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <!-- Global Error Display -->
-            @if ($errors->any())
-                <div class="bg-red-50 text-red-700 p-3 rounded-xl text-xs font-medium mb-5 border border-red-100 shadow-sm">
-                    <ul class="list-disc pl-5 space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <!-- STEP 1: BUSINESS DETAILS -->
-            <div x-show="step === 1" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4">
-                <div class="border-b border-gray-100 pb-3 mb-2">
-                    <h3 class="text-base font-bold text-gray-900">1. Business Details</h3>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="sm:col-span-2">
-                        <label for="organization_name" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Business Name <span class="text-red-500">*</span></label>
-                        <input id="organization_name" name="organization_name" type="text" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" value="{{ old('organization_name') }}" placeholder="Acme Corporation">
-                    </div>
-
-                    <div>
-                        <label for="business_type" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Business Type <span class="text-red-500">*</span></label>
-                        <select id="business_type" name="business_type" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition bg-white">
-                            <option value="business" {{ old('business_type') === 'business' ? 'selected' : '' }}>Retail & Inventory ERP</option>
-                            <option value="restaurant" {{ old('business_type') === 'restaurant' ? 'selected' : '' }}>Restaurant POS</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="business_phone" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Business Mobile <span class="text-red-500">*</span></label>
-                        <input id="business_phone" name="business_phone" type="tel" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" value="{{ old('business_phone') }}" placeholder="9876543210">
-                    </div>
-
-                    <div class="sm:col-span-2">
-                        <label for="gst_number" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">GST Number <span class="text-gray-400 font-normal lowercase">(Optional)</span></label>
-                        <input id="gst_number" name="gst_number" type="text" class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition uppercase placeholder:normal-case" value="{{ old('gst_number') }}" placeholder="22AAAAA0000A1Z5">
-                    </div>
-
-                    <div>
-                        <label for="country" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Country <span class="text-red-500">*</span></label>
-                        <input id="country" name="country" type="text" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" value="{{ old('country', 'India') }}">
-                    </div>
-                    <div>
-                        <label for="state" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">State <span class="text-red-500">*</span></label>
-                        <input id="state" name="state" type="text" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" value="{{ old('state') }}" placeholder="Gujarat">
-                    </div>
-                    
-                    <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="sm:col-span-1">
-                            <label for="pincode" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Pincode <span class="text-red-500">*</span></label>
-                            <input id="pincode" name="pincode" type="text" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" value="{{ old('pincode') }}" placeholder="380001">
+            <!-- Right Interactive Form Column -->
+            <div class="reg-form-pane">
+                <div>
+                    <!-- Top Title Bar -->
+                    <div class="reg-top-bar">
+                        <div>
+                            <h3 class="reg-title">Get Started Free</h3>
+                            <p style="font-size: 13px; color: #64748B; margin-top: 3px;">Set up your business in under 2 minutes.</p>
                         </div>
-                        <div class="sm:col-span-2">
-                            <label for="address" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Street Address <span class="text-red-500">*</span></label>
-                            <input id="address" name="address" type="text" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" value="{{ old('address') }}" placeholder="Shop No 1, Main Market...">
+                        <div class="reg-login-link">
+                            Have an account?
+                            <a href="{{ route('login') }}">Sign in &rarr;</a>
                         </div>
                     </div>
-                </div>
 
-                <div class="pt-4 flex justify-end">
-                    <button type="button" @click="validateStep1()" class="flex w-full sm:w-auto justify-center rounded-xl border border-transparent bg-indigo-600 py-2.5 px-6 text-sm font-bold text-white shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out cursor-pointer">
-                        Next: Admin Details &rarr;
-                    </button>
-                </div>
-            </div>
+                    <!-- 3-Step Wizard Navigation Bar -->
+                    <div class="reg-stepper">
+                        <!-- Step 1 Button -->
+                        <button type="button" class="reg-step-btn" @click="step = 1">
+                            <div class="reg-step-bar" :class="step >= 1 ? 'active' : ''"></div>
+                            <div class="reg-step-label-row">
+                                <span class="reg-step-num" :class="step === 1 ? 'active' : (step > 1 ? 'done' : '')">
+                                    <span x-show="step <= 1">1</span>
+                                    <svg x-show="step > 1" width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                </span>
+                                <span class="reg-step-text" :class="step >= 1 ? 'active' : ''">Business</span>
+                            </div>
+                        </button>
 
-            <!-- STEP 2: ADMIN DETAILS -->
-            <div x-show="step === 2" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4" style="display: none;">
-                <div class="border-b border-gray-100 pb-3 mb-2">
-                    <h3 class="text-base font-bold text-gray-900">2. Admin Profile</h3>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="sm:col-span-2">
-                        <label for="name" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name <span class="text-red-500">*</span></label>
-                        <input id="name" name="name" type="text" autocomplete="name" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" value="{{ old('name') }}" placeholder="Rahul Sharma">
+                        <!-- Step 2 Button -->
+                        <button type="button" class="reg-step-btn" @click="step >= 2 ? step = 2 : null">
+                            <div class="reg-step-bar" :class="step >= 2 ? 'active' : ''"></div>
+                            <div class="reg-step-label-row">
+                                <span class="reg-step-num" :class="step === 2 ? 'active' : (step > 2 ? 'done' : '')">
+                                    <span x-show="step <= 2">2</span>
+                                    <svg x-show="step > 2" width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                </span>
+                                <span class="reg-step-text" :class="step >= 2 ? 'active' : ''">Owner</span>
+                            </div>
+                        </button>
+
+                        <!-- Step 3 Button -->
+                        <button type="button" class="reg-step-btn">
+                            <div class="reg-step-bar" :class="step >= 3 ? 'active' : ''"></div>
+                            <div class="reg-step-label-row">
+                                <span class="reg-step-num" :class="step === 3 ? 'active' : ''">
+                                    <span>3</span>
+                                </span>
+                                <span class="reg-step-text" :class="step >= 3 ? 'active' : ''">Plan</span>
+                            </div>
+                        </button>
                     </div>
-                    
-                    <div>
-                        <label for="admin_phone" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Mobile Number <span class="text-red-500">*</span></label>
-                        <input id="admin_phone" name="admin_phone" type="tel" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" value="{{ old('admin_phone') }}" placeholder="9876543210">
-                    </div>
 
-                    <div>
-                        <label for="email" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Email Address <span class="text-red-500">*</span></label>
-                        <input id="email" name="email" type="email" autocomplete="email" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" value="{{ old('email') }}" placeholder="admin@company.com">
-                    </div>
+                    <!-- Server Error Notice -->
+                    @if ($errors->any())
+                        <div style="background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; font-size: 13px; color: #991B1B;">
+                            <div style="font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                Please resolve the following errors:
+                            </div>
+                            <ul style="padding-left: 20px; margin: 0; line-height: 1.5;">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
-                    <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div x-data="{ show: false }">
-                            <label for="password" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Password <span class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <input id="password" name="password" :type="show ? 'text' : 'password'" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 pr-10 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" placeholder="••••••••">
-                                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none">
-                                    <svg x-show="!show" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                    <svg x-show="show" style="display: none;" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                    <!-- Registration Form -->
+                    <form method="POST" action="{{ route('register') }}" id="registrationForm">
+                        @csrf
+
+                        <!-- ================= STEP 1: BUSINESS DETAILS ================= -->
+                        <div x-show="step === 1" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+                            <div class="reg-section-header">
+                                <span class="reg-section-tag">Step 1 · Business Profile</span>
+                                <span style="font-size: 11px; color: #94A3B8; font-weight: 600;">* Required</span>
+                            </div>
+
+                            <!-- Business / Shop Name -->
+                            <div class="reg-field-group">
+                                <label for="organization_name" class="reg-label">Business / Shop Name *</label>
+                                <div class="reg-input-box">
+                                    <div class="reg-input-icon">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12"/></svg>
+                                    </div>
+                                    <input id="organization_name" name="organization_name" type="text" required
+                                           class="reg-input with-icon"
+                                           value="{{ old('organization_name') }}" placeholder="e.g. Royal Enterprises / Cafe Delight">
+                                </div>
+                            </div>
+
+                            <!-- Category & Phone -->
+                            <div class="reg-grid-2 reg-field-group">
+                                <div>
+                                    <label for="business_type" class="reg-label">Business Category *</label>
+                                    <select id="business_type" name="business_type" required class="reg-input" style="font-weight: 500;">
+                                        <option value="business" {{ old('business_type') === 'business' ? 'selected' : '' }}>Retail &amp; Wholesale ERP</option>
+                                        <option value="restaurant" {{ old('business_type') === 'restaurant' ? 'selected' : '' }}>Restaurant / Cafe / Food POS</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="business_phone" class="reg-label">Business Mobile *</label>
+                                    <div class="reg-input-box">
+                                        <div class="reg-input-icon">
+                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                                        </div>
+                                        <input id="business_phone" name="business_phone" type="tel" required
+                                               class="reg-input with-icon"
+                                               value="{{ old('business_phone') }}" placeholder="9876543210">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- GST Number -->
+                            <div class="reg-field-group">
+                                <label for="gst_number" class="reg-label">GSTIN Number <span style="font-weight: 400; text-transform: lowercase; color: #94A3B8;">(optional)</span></label>
+                                <input id="gst_number" name="gst_number" type="text"
+                                       class="reg-input"
+                                       style="text-transform: uppercase; font-family: 'IBM Plex Mono', monospace;"
+                                       value="{{ old('gst_number') }}" placeholder="22AAAAA0000A1Z5">
+                            </div>
+
+                            <!-- Country, State, Pincode -->
+                            <div class="reg-grid-3 reg-field-group">
+                                <div>
+                                    <label for="country" class="reg-label">Country *</label>
+                                    <input id="country" name="country" type="text" required
+                                           class="reg-input"
+                                           value="{{ old('country', 'India') }}">
+                                </div>
+                                <div>
+                                    <label for="state" class="reg-label">State *</label>
+                                    <input id="state" name="state" type="text" required
+                                           class="reg-input"
+                                           value="{{ old('state') }}" placeholder="Gujarat / Delhi">
+                                </div>
+                                <div>
+                                    <label for="pincode" class="reg-label">Pincode *</label>
+                                    <input id="pincode" name="pincode" type="text" required
+                                           class="reg-input"
+                                           value="{{ old('pincode') }}" placeholder="380001">
+                                </div>
+                            </div>
+
+                            <!-- Street Address -->
+                            <div class="reg-field-group">
+                                <label for="address" class="reg-label">Shop / Office Street Address *</label>
+                                <input id="address" name="address" type="text" required
+                                       class="reg-input"
+                                       value="{{ old('address') }}" placeholder="Shop No 14, Commercial Complex, MG Road">
+                            </div>
+
+                            <!-- Step 1 Button -->
+                            <div class="reg-actions">
+                                <button type="button" @click="validateStep1()" class="reg-btn-primary">
+                                    <span>Continue to Owner Details</span>
+                                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div x-data="{ show: false }">
-                            <label for="password_confirmation" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1">Confirm Password <span class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <input id="password_confirmation" name="password_confirmation" :type="show ? 'text' : 'password'" required class="block w-full appearance-none rounded-xl border border-gray-300 px-3.5 py-2.5 pr-10 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-sm transition" placeholder="••••••••">
-                                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none">
-                                    <svg x-show="!show" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                    <svg x-show="show" style="display: none;" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                        <!-- ================= STEP 2: OWNER ACCOUNT ================= -->
+                        <div x-show="step === 2" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" style="display: none;">
+                            <div class="reg-section-header">
+                                <span class="reg-section-tag">Step 2 · Owner Credentials</span>
+                                <span style="font-size: 11px; color: #94A3B8; font-weight: 600;">Account Login</span>
+                            </div>
+
+                            <!-- Full Name & Phone -->
+                            <div class="reg-grid-2 reg-field-group">
+                                <div>
+                                    <label for="name" class="reg-label">Owner Full Name *</label>
+                                    <div class="reg-input-box">
+                                        <div class="reg-input-icon">
+                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                        </div>
+                                        <input id="name" name="name" type="text" autocomplete="name" required
+                                               class="reg-input with-icon"
+                                               value="{{ old('name') }}" placeholder="Rahul Sharma">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="admin_phone" class="reg-label">Personal Mobile *</label>
+                                    <div class="reg-input-box">
+                                        <div class="reg-input-icon">
+                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                        </div>
+                                        <input id="admin_phone" name="admin_phone" type="tel" required
+                                               class="reg-input with-icon"
+                                               value="{{ old('admin_phone') }}" placeholder="9876543210">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Email Address -->
+                            <div class="reg-field-group">
+                                <label for="email" class="reg-label">Admin Email Address *</label>
+                                <div class="reg-input-box">
+                                    <div class="reg-input-icon">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                    </div>
+                                    <input id="email" name="email" type="email" autocomplete="email" required
+                                           class="reg-input with-icon"
+                                           value="{{ old('email') }}" placeholder="owner@business.com">
+                                </div>
+                            </div>
+
+                            <!-- Password & Confirm Password -->
+                            <div class="reg-grid-2 reg-field-group">
+                                <div x-data="{ show: false }">
+                                    <label for="password" class="reg-label">Password *</label>
+                                    <div class="reg-input-box">
+                                        <input id="password" name="password" :type="show ? 'text' : 'password'" required
+                                               class="reg-input" style="padding-right: 36px;"
+                                               placeholder="••••••••">
+                                        <button type="button" @click="show = !show" style="position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: #94A3B8;">
+                                            <svg x-show="!show" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                            <svg x-show="show" style="display:none;" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div x-data="{ show: false }">
+                                    <label for="password_confirmation" class="reg-label">Confirm Password *</label>
+                                    <div class="reg-input-box">
+                                        <input id="password_confirmation" name="password_confirmation" :type="show ? 'text' : 'password'" required
+                                               class="reg-input" style="padding-right: 36px;"
+                                               placeholder="••••••••">
+                                        <button type="button" @click="show = !show" style="position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: #94A3B8;">
+                                            <svg x-show="!show" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                            <svg x-show="show" style="display:none;" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 Navigation Buttons -->
+                            <div class="reg-actions" style="justify-content: space-between;">
+                                <button type="button" @click="step = 1; window.scrollTo({top: 40, behavior: 'smooth'})" class="reg-btn-back">
+                                    &larr; Back
+                                </button>
+                                <button type="button" @click="validateStep2()" class="reg-btn-primary">
+                                    <span>Continue to Plan</span>
+                                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="pt-4 flex flex-col sm:flex-row justify-between gap-3">
-                    <button type="button" @click="step = 1; window.scrollTo({top:0, behavior:'smooth'})" class="order-2 sm:order-1 flex w-full sm:w-auto justify-center rounded-xl border border-gray-300 bg-white py-2.5 px-6 text-sm font-bold text-gray-700 hover:bg-gray-50 focus:outline-none transition cursor-pointer">
-                        &larr; Back
-                    </button>
-                    <button type="button" @click="validateStep2()" class="order-1 sm:order-2 flex w-full sm:w-auto justify-center rounded-xl border border-transparent bg-indigo-600 py-2.5 px-6 text-sm font-bold text-white shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out cursor-pointer">
-                        Next: Subscription &rarr;
-                    </button>
+                        <!-- ================= STEP 3: SUBSCRIPTION & CONFIRMATION ================= -->
+                        <div x-show="step === 3" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" style="display: none;">
+                            <div class="reg-section-header">
+                                <span class="reg-section-tag">Step 3 · Activate Subscription</span>
+                                <span style="font-size: 11px; color: #10B981; font-weight: 700; background: #ECFDF5; padding: 2px 8px; border-radius: 999px;">Ready to Launch</span>
+                            </div>
+
+                            <!-- Plan Highlight Card -->
+                            @if(request('plan'))
+                                <input type="hidden" name="plan" value="{{ request('plan') }}">
+                                <div style="border: 2px solid #D99A2B; background: #FFFDF7; border-radius: 14px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px;">
+                                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(217, 154, 43, 0.15); color: #B87F1B; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                    <div>
+                                        <div style="display: inline-block; background: #D99A2B; color: #0B132B; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; margin-bottom: 2px;">Selected Plan</div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #0F172A;">Custom Plan Selected</div>
+                                        <div style="font-size: 12px; color: #64748B;">Aapka chuna hua plan account launch hote hi apply ho jayega.</div>
+                                    </div>
+                                </div>
+                            @else
+                                <div style="border: 2px solid #34D399; background: #F0FDF4; border-radius: 14px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px;">
+                                    <div style="width: 44px; height: 44px; border-radius: 10px; background: #D1FAE5; color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                            <span style="background: #059669; color: #FFFFFF; font-size: 10.5px; font-weight: 800; text-transform: uppercase; padding: 2px 8px; border-radius: 4px;">{{ $trialDays }}-Days Free Trial</span>
+                                            <span style="font-size: 13px; font-weight: 800; color: #047857;">₹0 Today</span>
+                                        </div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #0F172A; margin-top: 2px;">All Enterprise Features Unlocked</div>
+                                        <div style="font-size: 12px; color: #4B5563; margin-top: 1px;">Retail ERP, Restaurant POS, Multi-counter Billing aur Staff Payroll fully active.</div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Summary Box -->
+                            <div class="reg-summary-card">
+                                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569; letter-spacing: 0.05em; margin-bottom: 8px;">
+                                    Review Entered Profile:
+                                </div>
+                                <div class="reg-summary-row">
+                                    <span class="reg-summary-label">Business Name:</span>
+                                    <span class="reg-summary-val" x-text="business_name || 'Not provided'"></span>
+                                </div>
+                                <div class="reg-summary-row">
+                                    <span class="reg-summary-label">Category:</span>
+                                    <span class="reg-summary-val" x-text="business_type === 'restaurant' ? 'Restaurant / Food POS' : 'Retail & Wholesale ERP'"></span>
+                                </div>
+                                <div class="reg-summary-row">
+                                    <span class="reg-summary-label">Owner Name:</span>
+                                    <span class="reg-summary-val" x-text="owner_name || 'Not provided'"></span>
+                                </div>
+                                <div class="reg-summary-row">
+                                    <span class="reg-summary-label">Email:</span>
+                                    <span class="reg-summary-val" x-text="owner_email || 'Not provided'"></span>
+                                </div>
+                                <div class="reg-summary-row">
+                                    <span class="reg-summary-label">Phone:</span>
+                                    <span class="reg-summary-val" x-text="owner_phone || 'Not provided'"></span>
+                                </div>
+                            </div>
+
+                            <!-- Terms Notice -->
+                            <div style="font-size: 11.5px; color: #64748B; text-align: center; margin-bottom: 8px;">
+                                By clicking "Create Account &amp; Launch", you agree to our 
+                                <a href="{{ route('public.terms') }}" target="_blank" style="color: var(--gold-deep); font-weight: 700; text-decoration: none;">Terms of Service</a> 
+                                and 
+                                <a href="{{ route('public.privacy') }}" target="_blank" style="color: var(--gold-deep); font-weight: 700; text-decoration: none;">Privacy Policy</a>.
+                            </div>
+
+                            <!-- Step 3 Action Buttons -->
+                            <div class="reg-actions" style="justify-content: space-between;">
+                                <button type="button" @click="step = 2; window.scrollTo({top: 40, behavior: 'smooth'})" class="reg-btn-back">
+                                    &larr; Back
+                                </button>
+                                <button type="submit" class="reg-btn-primary" style="padding: 12px 28px; font-size: 14px;">
+                                    <span>Create Account &amp; Launch &rarr;</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            <!-- STEP 3: SUBSCRIPTION -->
-            <div x-show="step === 3" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" class="space-y-5" style="display: none;">
-                <div class="border-b border-gray-100 pb-3 mb-2">
-                    <h3 class="text-base font-bold text-gray-900">3. Subscription</h3>
-                </div>
-                
-                @if(request('plan'))
-                    <input type="hidden" name="plan" value="{{ request('plan') }}">
-                    <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 text-center">
-                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 mb-3 text-indigo-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <h4 class="text-sm font-bold text-indigo-900">Premium Plan Selected</h4>
-                        <p class="text-xs text-indigo-700 mt-1">Your chosen plan will be applied upon registration.</p>
-                    </div>
-                @else
-                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-center">
-                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-200 mb-3 text-gray-700">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <h4 class="text-sm font-bold text-gray-900">14-Days Free Trial</h4>
-                        <p class="text-xs text-gray-600 mt-1">Explore all Premium features risk-free. No credit card required.</p>
-                    </div>
-                @endif
-
-                <div class="pt-4 flex flex-col sm:flex-row justify-between gap-3">
-                    <button type="button" @click="step = 2; window.scrollTo({top:0, behavior:'smooth'})" class="order-2 sm:order-1 flex w-full sm:w-auto justify-center rounded-xl border border-gray-300 bg-white py-2.5 px-6 text-sm font-bold text-gray-700 hover:bg-gray-50 focus:outline-none transition cursor-pointer">
-                        &larr; Back
-                    </button>
-                    <button type="submit" class="order-1 sm:order-2 flex w-full sm:w-auto justify-center rounded-xl border border-transparent bg-indigo-600 py-2.5 px-6 text-sm font-bold text-white shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out cursor-pointer">
-                        Create Account &rarr;
-                    </button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
 </x-guest-layout>
