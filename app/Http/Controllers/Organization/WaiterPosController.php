@@ -205,6 +205,7 @@ class WaiterPosController extends Controller
         abort_if($order->organization_id !== $orgId, 403);
 
         $request->validate([
+            'payment_status' => 'nullable|in:Paid,Pending',
             'payment_method' => 'nullable|in:Cash,UPI,Card',
             'discount' => 'nullable|numeric|min:0'
         ]);
@@ -212,6 +213,7 @@ class WaiterPosController extends Controller
         try {
             DB::transaction(function () use ($order, $request, $orgId) {
                 $discount = floatval($request->discount ?? 0);
+                $isPaid = $request->payment_status === 'Pending' ? false : true;
                 
                 $ordersToSettle = collect([$order]);
                 if ($order->restaurant_table_id) {
@@ -234,13 +236,12 @@ class WaiterPosController extends Controller
                 $grossTotal = $ordersToSettle->sum('total');
                 $finalTotal = max(0, $grossTotal - $discount);
 
-                // Mark all pending orders as Completed & Paid
+                // Update orders according to payment_status
                 foreach ($ordersToSettle as $o) {
                     $o->update([
-                        'payment_status' => 'Paid',
-                        'status' => 'Completed',
-                        // Store the final discounted total only on the primary order
-                        'total' => ($o->id === $order->id) ? $finalTotal : 0 
+                        'payment_status' => $isPaid ? 'Paid' : 'Pending',
+                        'status' => $isPaid ? 'Completed' : $o->status,
+                        'total' => ($o->id === $order->id) ? $finalTotal : $o->total 
                     ]);
                 }
 

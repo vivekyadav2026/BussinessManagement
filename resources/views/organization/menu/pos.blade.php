@@ -408,8 +408,31 @@
             </div>
 
             <div class="space-y-3.5">
-                <!-- Payment Mode Options (Hidden if already paid) -->
-                <div x-show="activeOrderPaymentStatus !== 'Paid'">
+                <!-- Payment Status Selector (Paid vs Unpaid Pre-Bill) -->
+                <div>
+                    <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Payment Action & Status</label>
+                    <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
+                        <button type="button" @click="settlePaymentStatus = 'Paid'" 
+                                :class="settlePaymentStatus === 'Paid' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'text-slate-700 font-bold hover:bg-slate-200'"
+                                class="py-2.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>✅ Mark as Paid</span>
+                        </button>
+                        <button type="button" @click="settlePaymentStatus = 'Pending'" 
+                                :class="settlePaymentStatus === 'Pending' ? 'bg-amber-500 text-slate-950 font-black shadow-xs' : 'text-slate-700 font-bold hover:bg-slate-200'"
+                                class="py-2.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>⏳ Unpaid (Pre-Bill)</span>
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-emerald-800 font-bold mt-1.5 flex items-center gap-1" x-show="settlePaymentStatus === 'Paid'">
+                        <span>💡</span> <span>Receipt prints as <b>PAID ✅</b> (No "Scan to Pay" QR code printed).</span>
+                    </p>
+                    <p class="text-[11px] text-amber-900 font-bold mt-1.5 flex items-center gap-1" x-show="settlePaymentStatus === 'Pending'">
+                        <span>💡</span> <span>Receipt prints as <b>PENDING ⏳</b> with <b>"SCAN TO PAY" QR Code 📲</b> for customer.</span>
+                    </p>
+                </div>
+
+                <!-- Payment Mode Options (Hidden if already paid or marked pending) -->
+                <div x-show="settlePaymentStatus === 'Paid' && activeOrderPaymentStatus !== 'Paid'">
                     <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Payment Method</label>
                     <select x-model="paymentMethod" class="w-full border border-slate-300 rounded-xl text-xs font-black py-3 px-3.5 bg-white text-slate-950 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                         <option value="Cash">💵 Cash Settlement</option>
@@ -427,7 +450,7 @@
                 </div>
 
                 <!-- Cash Tendered & Change Return -->
-                <div x-show="paymentMethod === 'Cash' && activeOrderPaymentStatus !== 'Paid'" class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
+                <div x-show="paymentMethod === 'Cash' && settlePaymentStatus === 'Paid' && activeOrderPaymentStatus !== 'Paid'" class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
                     <div class="flex justify-between items-center text-xs font-bold text-slate-700">
                         <span>Cash Received (₹):</span>
                         <input type="number" min="0" step="1" x-model.number="tenderAmount" 
@@ -443,9 +466,9 @@
             <!-- Confirm & Print Buttons -->
             <div class="flex gap-2 pt-3 border-t border-slate-100">
                 <button type="button" @click="confirmSettle()" :disabled="loading" 
-                        :class="activeOrderPaymentStatus === 'Paid' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-400 text-slate-950'"
+                        :class="settlePaymentStatus === 'Paid' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-400 text-slate-950'"
                         class="flex-1 py-3.5 rounded-xl text-xs font-black transition shadow-sm uppercase tracking-wider cursor-pointer">
-                    <span x-show="!loading" x-text="activeOrderPaymentStatus === 'Paid' ? '✓ Complete & Print Receipt' : '✓ Settle & Print Bill'"></span>
+                    <span x-show="!loading" x-text="settlePaymentStatus === 'Paid' ? '✓ Complete & Print Receipt' : '🖨️ Print Pre-Bill (Unpaid)'"></span>
                     <span x-show="loading">Processing...</span>
                 </button>
                 <button type="button" @click="settleModalOpen = false" class="py-3.5 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer">
@@ -482,6 +505,7 @@ function waiterPos() {
         activeOrderIds: [],
         activeOrderNumber: '',
         activeOrderPaymentStatus: 'Pending',
+        settlePaymentStatus: 'Paid',
         activeKotUrl: '#',
         activeReceiptUrl: '#',
         settleModalOpen: false,
@@ -756,6 +780,7 @@ function waiterPos() {
 
         openSettleModal() {
             if (this.combinedItems.length === 0) return;
+            this.settlePaymentStatus = (this.activeOrderPaymentStatus === 'Paid') ? 'Paid' : 'Paid';
             this.tenderAmount = this.grandTotal;
             this.settleModalOpen = true;
         },
@@ -814,6 +839,7 @@ function waiterPos() {
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
+                    payment_status: this.settlePaymentStatus,
                     payment_method: this.paymentMethod,
                     discount: this.discount,
                     extra_order_ids: this.activeOrderIds.slice(1)
