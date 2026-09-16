@@ -283,6 +283,7 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class])->group(
         Route::get('{invoice}/print', [\App\Http\Controllers\Organization\InvoiceController::class, 'print'])->name('print');
         Route::get('{invoice}/receipt', [\App\Http\Controllers\Organization\InvoiceController::class, 'receipt'])->name('receipt');
         Route::post('{invoice}/cancel', [\App\Http\Controllers\Organization\InvoiceController::class, 'cancel'])->name('cancel')->middleware('permission:invoices.cancel');
+        Route::post('{invoice}/finalize', [\App\Http\Controllers\Organization\InvoiceController::class, 'finalizeDraft'])->name('finalize');
         
         // Payments against invoice
         Route::post('{invoice}/payments', [\App\Http\Controllers\Organization\TransactionController::class, 'store'])->name('payments.store');

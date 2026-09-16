@@ -153,6 +153,19 @@ class InvoiceController extends Controller implements HasMiddleware
         }
     }
 
+    public function finalizeDraft(Request $request, Invoice $invoice)
+    {
+        abort_if($invoice->organization_id !== auth()->user()->organization_id, 403);
+        
+        try {
+            $targetStatus = $request->input('target_status', 'Due');
+            InvoiceService::finalizeDraft($invoice, $targetStatus);
+            return back()->with('success', "Draft invoice #{$invoice->invoice_number} successfully converted to official bill ({$invoice->status}) and inventory stock deducted.");
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
     public function apiProductSearch(Request $request)
     {
         $search = $request->q;

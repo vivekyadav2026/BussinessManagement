@@ -27,11 +27,27 @@ class PaymentService
                 throw new \Exception("Payment amount must be greater than zero.");
             }
 
-            $amountDue = $lockedInvoice->amount_due;
+            $isDraft = ($lockedInvoice->status === 'Draft');
+            $amountDue = $isDraft ? (float)$lockedInvoice->grand_total : $lockedInvoice->amount_due;
             
             // Allow a small floating point margin if necessary, but generally strict
             if (round($amountToPay, 2) > round($amountDue, 2)) {
                 throw new \Exception("Payment amount (₹{$amountToPay}) cannot exceed the balance due (₹{$amountDue}).");
+            }
+
+            // If draft, deduct stock upon first payment
+            if ($isDraft) {
+                foreach ($lockedInvoice->items as $item) {
+                    if ($item->product) {
+                        InventoryService::adjustStock(
+                            $item->product,
+                            $lockedInvoice->location_id,
+                            -abs($item->quantity),
+                            'out',
+                            "Invoice finalized via payment: {$lockedInvoice->invoice_number}"
+                        );
+                    }
+                }
             }
 
             // Create Transaction
@@ -47,7 +63,8 @@ class PaymentService
             ]);
 
             // Update Invoice Paid Amount
-            $newAmountPaid = $lockedInvoice->amount_paid + $amountToPay;
+            $currentPaid = $isDraft ? 0 : (float)$lockedInvoice->amount_paid;
+            $newAmountPaid = $currentPaid + $amountToPay;
             $lockedInvoice->amount_paid = $newAmountPaid;
 
             // Auto-resolve Status

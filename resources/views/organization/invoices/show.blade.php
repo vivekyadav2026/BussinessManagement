@@ -283,22 +283,57 @@
                     <span class="text-2xl font-black text-amber-400">₹{{ number_format($invoice->grand_total, 2) }}</span>
                 </div>
 
+                @php
+                    // For draft invoices without any actual payment transactions, amount_paid should be treated as 0
+                    $actualAmountPaid = $invoice->status === 'Draft' && $invoice->transactions->count() === 0 ? 0 : (float)$invoice->amount_paid;
+                    $actualBalanceDue = max(0, (float)$invoice->grand_total - $actualAmountPaid);
+                @endphp
+
                 <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
                     <div class="flex justify-between text-xs text-slate-300">
                         <span>Settled Amount</span>
-                        <span class="font-extrabold text-emerald-400">₹{{ number_format($invoice->amount_paid, 2) }}</span>
+                        <span class="font-extrabold text-emerald-400">₹{{ number_format($actualAmountPaid, 2) }}</span>
                     </div>
                     <div class="flex justify-between text-sm font-black pt-2 border-t border-slate-800 text-white">
                         <span>Balance Due</span>
-                        <span class="{{ $invoice->amount_due > 0 ? 'text-rose-400' : 'text-emerald-400' }}">
-                            ₹{{ number_format($invoice->amount_due, 2) }}
+                        <span class="{{ $actualBalanceDue > 0 ? 'text-rose-400' : 'text-emerald-400' }}">
+                            ₹{{ number_format($actualBalanceDue, 2) }}
                         </span>
                     </div>
                 </div>
             </div>
 
+            <!-- Draft Notice & Finalize Action Card -->
+            @if($invoice->status === 'Draft')
+            <div class="bg-amber-50 rounded-xl border-2 border-amber-400 shadow-sm p-5 space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📝</span>
+                    <h4 class="font-black text-amber-950 text-xs uppercase tracking-wider">Draft Invoice (Quotation/Estimate)</h4>
+                </div>
+                <p class="text-xs text-amber-900 leading-relaxed font-medium">
+                    This invoice is currently in <strong>Draft</strong> mode. Warehouse stock has <strong>NOT</strong> been deducted yet.
+                </p>
+                <div class="pt-2 border-t border-amber-200/80 flex flex-col gap-2">
+                    <form action="{{ route('organization.invoices.finalize', $invoice) }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="target_status" value="Due">
+                        <button type="submit" onclick="return confirm('Convert this draft to an official bill? Warehouse inventory stock will be deducted.');" class="w-full py-2 px-3 bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-xs rounded-lg transition shadow-xs flex items-center justify-center gap-1.5">
+                            <span>Finalize Bill & Deduct Stock &rarr;</span>
+                        </button>
+                    </form>
+                    <form action="{{ route('organization.invoices.finalize', $invoice) }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="target_status" value="Paid">
+                        <button type="submit" onclick="return confirm('Mark as fully paid and deduct warehouse stock?');" class="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-lg transition shadow-xs flex items-center justify-center gap-1.5">
+                            <span>✓ Finalize & Mark Fully Paid</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endif
+
             <!-- Record Payment Form Card -->
-            @if($invoice->amount_due > 0 && $invoice->status !== 'Cancelled')
+            @if(($actualBalanceDue > 0 || $invoice->status === 'Draft') && $invoice->status !== 'Cancelled' && $invoice->status !== 'Paid')
             <div class="bg-white rounded-xl border-2 border-emerald-500 shadow-sm p-6">
                 <div class="flex items-center gap-2 border-b border-emerald-100 pb-3 mb-4">
                     <span class="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-xs">
@@ -313,7 +348,7 @@
                     @csrf
                     <div>
                         <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Amount to Pay (₹) *</label>
-                        <input type="number" name="amount" value="{{ $invoice->amount_due }}" min="0.01" max="{{ $invoice->amount_due }}" step="0.01" class="w-full font-black text-slate-950 border border-slate-300 rounded-lg text-sm px-3 py-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" required>
+                        <input type="number" name="amount" value="{{ $actualBalanceDue }}" min="0.01" max="{{ $actualBalanceDue }}" step="0.01" class="w-full font-black text-slate-950 border border-slate-300 rounded-lg text-sm px-3 py-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" required>
                         @error('amount') <span class="text-xs text-rose-600 font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
 

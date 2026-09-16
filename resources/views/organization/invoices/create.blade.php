@@ -1,5 +1,7 @@
 @extends('layouts.sme')
 
+@section('title', 'Create Invoice')
+
 @push('styles')
 <style>
     .cart-grid { display: grid; grid-template-columns: 2fr 1.2fr 1.5fr 1.2fr 40px; gap: 10px; align-items: center; }
@@ -7,132 +9,179 @@
 @endpush
 
 @section('content')
-<div class="dash-head mb-6">
-  <a href="{{ route('organization.invoices.index') }}" class="text-sm text-gray-500 hover:text-indigo-600 mb-2 inline-block">&larr; Back to Invoices</a>
-  <h1 class="text-2xl font-bold text-gray-900">Create Invoice</h1>
-</div>
+<div class="max-w-7xl mx-auto space-y-6 pt-2 sm:pt-4 pb-20">
 
-<!-- Alert Banner Container -->
-<div id="invoiceErrorBanner" class="hidden mb-6 bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl text-sm font-semibold shadow-sm flex items-start justify-between">
-    <div class="flex items-center gap-2">
-        <svg class="w-5 h-5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span id="errorMessageText">An error occurred while generating invoice.</span>
-    </div>
-    <button type="button" onclick="document.getElementById('invoiceErrorBanner').classList.add('hidden')" class="text-rose-400 hover:text-rose-600 font-bold">&times;</button>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2">
-        <!-- Billing Details -->
-        <div class="panel mb-6 shadow-sm p-6 bg-white rounded-xl border border-gray-100">
-            <h3 class="font-bold border-b pb-2 mb-4 text-gray-800">Billing Details</h3>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div id="clientSearchGroup" class="relative">
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="block text-xs font-bold text-gray-500 uppercase">Select Client</label>
-                        <button type="button" onclick="openQuickClientModal()" class="text-xs text-indigo-600 hover:text-indigo-900 font-semibold">+ Quick Add Client</button>
-                    </div>
-                    <input type="text" id="clientSearch" placeholder="Search client by name or phone (or leave blank for Walk-in)..." class="w-full border-gray-300 rounded-lg text-sm" value="{{ request('client_id') ? \App\Models\Client::find(request('client_id'))->name ?? '' : '' }}" autocomplete="off">
-                    <input type="hidden" id="clientId" value="{{ request('client_id', '') }}">
-                    <div id="clientDropdown" class="absolute z-20 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg hidden max-h-48 overflow-y-auto"></div>
+    <!-- 1. Breadcrumb & Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+        <div class="min-w-0 flex-1">
+            <nav class="flex items-center gap-2 text-xs font-semibold text-slate-600 mb-2" aria-label="Breadcrumb">
+                <a href="{{ route('organization.invoices.index') }}" class="hover:text-slate-900 transition-colors">Operations</a>
+                <span class="text-slate-400 font-bold">/</span>
+                <a href="{{ route('organization.invoices.index') }}" class="hover:text-slate-900 transition-colors">Invoices</a>
+                <span class="text-slate-400 font-bold">/</span>
+                <span class="text-slate-950 font-extrabold">New Invoice</span>
+            </nav>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center text-slate-950 text-xl font-black shadow-sm shrink-0">
+                    🧾
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Invoice Date</label>
-                    <input type="date" id="invoiceDate" value="{{ now()->toDateString() }}" class="w-full border-gray-300 rounded-lg text-sm">
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">Create Invoice</h1>
+                    <p class="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
+                        Issue a GST tax invoice, deduct warehouse inventory, and record customer payments.
+                    </p>
                 </div>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Internal Notes</label>
-                <input type="text" id="invoiceNotes" placeholder="Optional internal reference notes..." class="w-full border-gray-300 rounded-lg text-sm">
             </div>
         </div>
 
-        <!-- Items -->
-        <div class="panel p-6 bg-white rounded-xl border border-gray-100 shadow-sm">
-            <div class="flex justify-between items-end border-b pb-2 mb-4">
-                <h3 class="font-bold">Invoice Items</h3>
-                <div id="productSearchGroup" class="w-72 relative">
-                    <input type="text" id="productSearch" placeholder="Search product name, SKU or scan barcode..." class="w-full border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-indigo-500" autocomplete="off">
-                    <div id="productDropdown" class="absolute z-20 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-xl hidden max-h-64 overflow-y-auto"></div>
-                </div>
-            </div>
-
-            <div class="cart-grid border-b pb-2 mb-3 text-xs font-bold text-gray-500 uppercase tracking-wide">
-                <div>Product</div>
-                <div>Price (₹)</div>
-                <div>Qty</div>
-                <div class="text-right">Total (₹)</div>
-                <div></div>
-            </div>
-
-            <div id="cartItems" class="space-y-2 mb-4 min-h-[100px]">
-                <div id="emptyCart" class="text-center text-gray-400 py-8 text-sm">No items added yet. Type in search bar or scan barcode above to add items.</div>
-            </div>
+        <div class="flex items-center gap-3 shrink-0">
+            <a href="{{ route('organization.invoices.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs rounded-lg transition border border-slate-300">
+                &larr; Back to Invoices
+            </a>
         </div>
     </div>
 
-    <!-- Summary Sidebar -->
-    <div class="lg:col-span-1 space-y-6">
-        <div class="panel bg-white p-6 shadow-sm border border-gray-100 rounded-xl">
-            <h3 class="font-bold border-b pb-3 mb-4 text-gray-800 text-base">Invoice Summary</h3>
-            
-            <div class="space-y-3 mb-4 text-sm text-gray-600">
-                <div class="flex justify-between">
-                    <span>Subtotal</span>
-                    <span class="font-bold text-gray-900">₹<span id="sumSubtotal">0.00</span></span>
+    <!-- Alert Banner Container -->
+    <div id="invoiceErrorBanner" class="hidden bg-rose-50 border border-rose-300 text-rose-950 p-4 rounded-xl text-xs sm:text-sm font-semibold shadow-2xs flex items-start justify-between">
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span id="errorMessageText">An error occurred while generating invoice.</span>
+        </div>
+        <button type="button" onclick="document.getElementById('invoiceErrorBanner').classList.add('hidden')" class="text-rose-500 hover:text-rose-700 font-black text-base">&times;</button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Billing Details Card -->
+            <div class="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-5 sm:p-6">
+                <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-950 border-b border-slate-200 pb-3 mb-4">
+                    1. Billing & Customer Details
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div id="clientSearchGroup" class="relative">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">Select Client</label>
+                            <button type="button" onclick="openQuickClientModal()" class="text-xs text-amber-700 hover:text-amber-800 font-extrabold">+ Quick Add Client</button>
+                        </div>
+                        <input type="text" id="clientSearch" placeholder="Search client by name or phone (or leave blank for Walk-in)..." class="w-full border border-slate-300 rounded-lg text-xs sm:text-sm px-3 py-2 text-slate-950 focus:border-amber-500 focus:ring-1 focus:ring-amber-500" value="{{ request('client_id') ? \App\Models\Client::find(request('client_id'))->name ?? '' : '' }}" autocomplete="off">
+                        <input type="hidden" id="clientId" value="{{ request('client_id', '') }}">
+                        <div id="clientDropdown" class="absolute z-20 w-full bg-white border border-slate-200 mt-1 rounded-lg shadow-xl hidden max-h-48 overflow-y-auto"></div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Invoice Date</label>
+                        <input type="date" id="invoiceDate" value="{{ now()->toDateString() }}" class="w-full border border-slate-300 rounded-lg text-xs sm:text-sm px-3 py-2 text-slate-950 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium">
+                    </div>
                 </div>
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Internal Notes</label>
+                    <input type="text" id="invoiceNotes" placeholder="Optional notes for customer or internal reference..." class="w-full border border-slate-300 rounded-lg text-xs sm:text-sm px-3 py-2 text-slate-950 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                </div>
+            </div>
+
+            <!-- Items Card -->
+            <div class="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-5 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-200 pb-3 mb-4">
+                    <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-950">
+                        2. Invoice Line Items
+                    </h3>
+                    <div id="productSearchGroup" class="w-full sm:w-80 relative">
+                        <input type="text" id="productSearch" placeholder="Search product, SKU or scan barcode..." class="w-full border border-slate-300 rounded-lg text-xs sm:text-sm px-3 py-2 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-slate-950 placeholder-slate-400" autocomplete="off">
+                        <div id="productDropdown" class="absolute z-20 w-full bg-white border border-slate-200 mt-1 rounded-lg shadow-xl hidden max-h-64 overflow-y-auto"></div>
+                    </div>
+                </div>
+
+                <div class="cart-grid border-b border-slate-200 pb-2 mb-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    <div>Product</div>
+                    <div>Price (₹)</div>
+                    <div>Qty</div>
+                    <div class="text-right">Total (₹)</div>
+                    <div></div>
+                </div>
+
+                <div id="cartItems" class="space-y-2 mb-4 min-h-[100px]">
+                    <div id="emptyCart" class="text-center text-slate-400 py-10 text-xs sm:text-sm">
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 text-base mx-auto mb-2">
+                            📦
+                        </div>
+                        No items added yet. Type in the search box above or scan a barcode to add products.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Sidebar -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-5 sm:p-6">
+                <h3 class="font-extrabold border-b border-slate-200 pb-3 mb-4 text-slate-950 text-xs uppercase tracking-wider">
+                    3. Invoice Summary
+                </h3>
                 
-                <div class="flex justify-between">
-                    <span>CGST ({{ (float)auth()->user()->organization->cgst_percent }}%)</span>
-                    <span class="font-bold text-gray-900">₹<span id="sumCgst">0.00</span></span>
+                <div class="space-y-3 mb-4 text-xs sm:text-sm text-slate-600">
+                    <div class="flex justify-between">
+                        <span>Subtotal</span>
+                        <span class="font-extrabold text-slate-950">₹<span id="sumSubtotal">0.00</span></span>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <span>CGST ({{ (float)(auth()->user()->organization->cgst_percent ?? 0) }}%)</span>
+                        <span class="font-extrabold text-slate-950">₹<span id="sumCgst">0.00</span></span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>SGST ({{ (float)(auth()->user()->organization->sgst_percent ?? 0) }}%)</span>
+                        <span class="font-extrabold text-slate-950">₹<span id="sumSgst">0.00</span></span>
+                    </div>
+
+                    <div class="pt-2 pb-3 border-y border-slate-200 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-extrabold text-slate-600 uppercase tracking-wider">Discount Type</label>
+                            <select id="discountType" onchange="calculateTotals()" class="w-36 border border-slate-300 rounded-lg text-xs font-bold py-1.5 px-2.5 bg-slate-50 focus:bg-white text-slate-800">
+                                <option value="fixed">₹ Flat (Rupees)</option>
+                                <option value="percent">% Percentage (%)</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-extrabold text-slate-600 uppercase tracking-wider">Discount Value</label>
+                            <input type="number" id="sumDiscount" value="0" min="0" step="0.01" placeholder="0" class="w-36 text-right border border-slate-300 rounded-lg text-xs py-1.5 px-2.5 bg-slate-50 focus:bg-white font-black text-slate-900" oninput="calculateTotals()">
+                        </div>
+                        <div id="discountConvertedRow" class="hidden text-right text-xs text-amber-700 font-extrabold bg-amber-50 py-1 px-2.5 rounded-lg border border-amber-200">
+                            Discount Amount: -₹<span id="sumDiscountCalculated">0.00</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex justify-between">
-                    <span>SGST ({{ (float)auth()->user()->organization->sgst_percent }}%)</span>
-                    <span class="font-bold text-gray-900">₹<span id="sumSgst">0.00</span></span>
+                <div class="flex justify-between items-baseline mb-6 pt-2">
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-slate-600">Grand Total</span>
+                    <span class="text-2xl font-black text-slate-950">₹<span id="sumGrandTotal">0.00</span></span>
                 </div>
 
-                <div class="pt-2 pb-3 border-b border-gray-100 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Discount Type</label>
-                        <select id="discountType" onchange="calculateTotals()" class="w-36 border-gray-300 rounded-lg text-xs font-bold py-1.5 px-2.5 bg-gray-50 focus:bg-white text-gray-800">
-                            <option value="fixed">₹ Flat (Rupees)</option>
-                            <option value="percent">% Percentage (%)</option>
+                <div class="space-y-4 border-t border-slate-200 pt-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Save As Status</label>
+                        <select id="invoiceStatus" class="w-full border border-slate-300 rounded-lg font-bold text-xs text-slate-800 px-3 py-2 bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                            <option value="Paid">✓ Paid (Full Payment Received & Deduct Stock)</option>
+                            <option value="Due">⏳ Due (Unpaid / Credit Sale & Deduct Stock)</option>
+                            <option value="Partially Paid">🌗 Partially Paid (Partial Advance & Deduct Stock)</option>
+                            <option value="Draft">📝 Draft (Save as Estimate/Draft - Stock & Payment deferred)</option>
                         </select>
+                        <p id="statusNoticeText" class="text-[11px] text-slate-500 font-medium mt-1">Full amount will be marked as paid and warehouse stock deducted.</p>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Discount Value</label>
-                        <input type="number" id="sumDiscount" value="0" min="0" step="0.01" placeholder="0" class="w-36 text-right border-gray-300 rounded-lg text-sm py-1.5 px-2.5 bg-gray-50 focus:bg-white font-bold text-gray-800" oninput="calculateTotals()">
-                    </div>
-                    <div id="discountConvertedRow" class="hidden text-right text-xs text-indigo-600 font-bold bg-indigo-50/70 py-1 px-2.5 rounded-lg border border-indigo-100">
-                        Discount Amount: -₹<span id="sumDiscountCalculated">0.00</span>
+
+                    <div id="paymentReceivedGroup">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">Payment Received Now (₹)</label>
+                            <span id="paymentStatusBadge" class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Auto: Full</span>
+                        </div>
+                        <input type="number" id="sumPaid" value="0" min="0" step="0.01" class="w-full border border-slate-300 rounded-lg text-base font-black bg-slate-50 focus:bg-white text-slate-950 px-3 py-2">
+                        <p id="paymentHelperText" class="text-[11px] text-slate-500 mt-1">For <strong>Draft</strong> or <strong>Due</strong>, initial payment is ₹0. You can record payments later from the invoice details screen.</p>
                     </div>
                 </div>
+
+                <button onclick="submitInvoice()" id="btnSubmit" class="w-full py-3 px-4 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-black text-xs sm:text-sm rounded-lg shadow-xs transition flex items-center justify-center gap-2">
+                    <span>Complete & Save Invoice</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                </button>
             </div>
-
-            <div class="flex justify-between items-baseline mb-6">
-                <span class="text-sm font-semibold text-gray-700">Grand Total</span>
-                <span class="text-2xl font-black text-gray-900">₹<span id="sumGrandTotal">0.00</span></span>
-            </div>
-
-            <div class="space-y-4 border-t border-gray-100 pt-4 mb-6">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Received (₹)</label>
-                    <input type="number" id="sumPaid" value="0" min="0" step="0.01" class="w-full border-gray-300 rounded-lg text-lg font-bold bg-gray-50 focus:bg-white text-gray-800">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Save As Status</label>
-                    <select id="invoiceStatus" class="w-full border-gray-300 rounded-lg font-medium text-sm">
-                        <option value="Paid">✓ Paid (Full Payment Received)</option>
-                        <option value="Due">⏳ Due (Unpaid / Credit Sale)</option>
-                        <option value="Partially Paid">🌗 Partially Paid</option>
-                        <option value="Draft">📝 Draft (Save without deducting stock)</option>
-                    </select>
-                </div>
-            </div>
-
-            <button onclick="submitInvoice()" id="btnSubmit" class="btn btn-gold w-full justify-center py-3 text-base shadow-sm">Complete & Save Invoice</button>
         </div>
     </div>
 </div>
@@ -140,29 +189,33 @@
 <!-- Quick Add Client Modal -->
 <div id="quickClientModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeQuickClientModal()"></div>
+        <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity" onclick="closeQuickClientModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4" id="modal-title">Quick Add Client</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Client Name <span class="text-red-500">*</span></label>
-                        <input type="text" id="modalClientName" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm" placeholder="Enter name">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-                        <input type="text" id="modalClientPhone" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm" placeholder="Enter phone number">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Email Address</label>
-                        <input type="email" id="modalClientEmail" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm" placeholder="Enter email (optional)">
-                    </div>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200">
+            <div class="bg-slate-900 px-5 py-4 flex items-center justify-between border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">👥</span>
+                    <h3 class="text-base font-extrabold text-white" id="modal-title">Quick Add Client</h3>
+                </div>
+                <button type="button" onclick="closeQuickClientModal()" class="text-slate-400 hover:text-white font-bold text-lg leading-none">&times;</button>
+            </div>
+            <div class="bg-white p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Client Name <span class="text-rose-600">*</span></label>
+                    <input type="text" id="modalClientName" class="w-full border border-slate-300 rounded-lg text-xs sm:text-sm px-3 py-2 text-slate-950 focus:border-amber-500 focus:ring-1 focus:ring-amber-500" placeholder="Enter company or individual name">
+                </div>
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Phone Number</label>
+                    <input type="text" id="modalClientPhone" class="w-full border border-slate-300 rounded-lg text-xs sm:text-sm px-3 py-2 text-slate-950 focus:border-amber-500 focus:ring-1 focus:ring-amber-500" placeholder="e.g. 9876543210">
+                </div>
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Email Address</label>
+                    <input type="email" id="modalClientEmail" class="w-full border border-slate-300 rounded-lg text-xs sm:text-sm px-3 py-2 text-slate-950 focus:border-amber-500 focus:ring-1 focus:ring-amber-500" placeholder="billing@clientcompany.com (optional)">
                 </div>
             </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                <button type="button" onclick="submitQuickClient()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">Save Client</button>
-                <button type="button" onclick="closeQuickClientModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
+            <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-end gap-2">
+                <button type="button" onclick="closeQuickClientModal()" class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-lg transition border border-slate-300">Cancel</button>
+                <button type="button" onclick="submitQuickClient()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-extrabold text-xs rounded-lg shadow-xs transition">Save & Select Client</button>
             </div>
         </div>
     </div>
@@ -449,8 +502,8 @@ function calculateTotals() {
         subtotal += base;
     });
 
-    let cgstPercent = {{ (float)auth()->user()->organization->cgst_percent }};
-    let sgstPercent = {{ (float)auth()->user()->organization->sgst_percent }};
+    let cgstPercent = {{ (float)(auth()->user()->organization->cgst_percent ?? 0) }};
+    let sgstPercent = {{ (float)(auth()->user()->organization->sgst_percent ?? 0) }};
 
     let cgst = (subtotal * cgstPercent) / 100;
     let sgst = (subtotal * sgstPercent) / 100;
@@ -478,8 +531,37 @@ function calculateTotals() {
     document.getElementById('sumGrandTotal').textContent = grandTotal.toFixed(2);
     
     let status = document.getElementById('invoiceStatus').value;
-    if(status === 'Paid') {
-        document.getElementById('sumPaid').value = grandTotal.toFixed(2);
+    let sumPaidInput = document.getElementById('sumPaid');
+    let badge = document.getElementById('paymentStatusBadge');
+    let notice = document.getElementById('statusNoticeText');
+    let helper = document.getElementById('paymentHelperText');
+
+    if (status === 'Paid') {
+        sumPaidInput.value = grandTotal.toFixed(2);
+        badge.textContent = 'Auto: Full';
+        badge.className = 'text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+        notice.textContent = 'Full amount will be marked as paid and warehouse stock deducted.';
+        helper.textContent = 'Full payment will be settled automatically upon creating this invoice.';
+    } else if (status === 'Draft') {
+        sumPaidInput.value = '0.00';
+        badge.textContent = 'Deferred: Draft';
+        badge.className = 'text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-700';
+        notice.textContent = 'Saved as draft/quotation. Stock will NOT be deducted and payment is deferred.';
+        helper.textContent = 'Draft invoices do not require payment upfront. You can convert to Paid/Due and record payments later.';
+    } else if (status === 'Due') {
+        sumPaidInput.value = '0.00';
+        badge.textContent = 'Credit Sale (₹0 Paid)';
+        badge.className = 'text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-800';
+        notice.textContent = 'Stock will be deducted immediately, and balance marked as Due/Receivable.';
+        helper.textContent = 'Payment is marked as ₹0 due. You can record payments later from the invoice details screen.';
+    } else if (status === 'Partially Paid') {
+        if (parseFloat(sumPaidInput.value) === 0 || parseFloat(sumPaidInput.value) >= grandTotal) {
+            sumPaidInput.value = (grandTotal / 2).toFixed(2);
+        }
+        badge.textContent = 'Partial Payment';
+        badge.className = 'text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900';
+        notice.textContent = 'Stock will be deducted immediately, and remaining balance marked as Due.';
+        helper.textContent = 'Enter the advance/partial payment received now. Remaining balance will show as Due.';
     }
 }
 

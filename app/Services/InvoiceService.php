@@ -190,4 +190,53 @@ class InvoiceService
             $invoice->update(['status' => 'Cancelled']);
         });
     }
+
+    /**
+     * Finalizes a Draft invoice into an active bill (Due or Paid) and deducts inventory stock.
+     */
+    public static function finalizeDraft(Invoice $invoice, string $targetStatus = 'Due')
+    {
+        if ($invoice->status !== 'Draft') {
+            throw new \Exception("Only draft invoices can be finalized.");
+        }
+
+        return DB::transaction(function () use ($invoice, $targetStatus) {
+            // Check stock availability
+            foreach ($invoice->items as $item) {
+                if ($item->product && $item->product->stock < $item->quantity) {
+                    throw new \Exception("Insufficient stock for product: {$item->product->name} (Available: {$item->product->stock}, Required: {$item->quantity})");
+                }
+            }
+
+            // Deduct stock for all items
+            foreach ($invoice->items as $item) {
+                if ($item->product) {
+                    InventoryService::adjustStock(
+                        $item->product,
+                        $invoice->location_id,
+                        -abs($item->quantity),
+                        'out',
+                        "Invoice finalized from draft: {$invoice->invoice_number}"
+                    );
+                }
+            }
+
+            // Determine new status
+            $newStatus = $targetStatus;
+            if ($newStatus === 'Paid') {
+                $invoice->amount_paid = $invoice->grand_total;
+            } elseif ($invoice->amount_paid >= $invoice->grand_total && $invoice->grand_total > 0) {
+                $newStatus = 'Paid';
+            } elseif ($invoice->amount_paid > 0) {
+                $newStatus = 'Partially Paid';
+            } else {
+                $newStatus = 'Due';
+            }
+
+            $invoice->status = $newStatus;
+            $invoice->save();
+
+            return $invoice;
+        });
+    }
 }
