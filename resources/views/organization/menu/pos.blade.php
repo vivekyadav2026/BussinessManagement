@@ -386,28 +386,31 @@
     </div>
 
     <!-- Settlement / Payment Modal -->
-    <div x-show="settleModalOpen" x-cloak class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200" @click.away="settleModalOpen = false">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div x-show="settleModalOpen" x-cloak class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col justify-between my-auto overflow-hidden" @click.away="settleModalOpen = false">
+            
+            <!-- Sticky Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
                 <div>
-                    <h3 class="font-black text-lg text-slate-950 tracking-tight" x-text="activeOrderPaymentStatus === 'Paid' ? 'Release Table & Complete' : 'Payment & Settlement'"></h3>
-                    <p class="text-xs text-slate-500 font-medium" x-text="activeOrderPaymentStatus === 'Paid' ? 'Order is already paid online. Confirm to release table.' : 'Select payment mode and confirm bill settlement.'"></p>
+                    <h3 class="font-black text-base sm:text-lg text-slate-950 tracking-tight" x-text="activeOrderPaymentStatus === 'Paid' ? 'Release Table & Complete' : 'Payment & Settlement'"></h3>
+                    <p class="text-[11px] sm:text-xs text-slate-500 font-medium" x-text="activeOrderPaymentStatus === 'Paid' ? 'Order is already paid online. Confirm to release table.' : 'Select payment mode and confirm bill settlement.'"></p>
                 </div>
-                <button type="button" @click="settleModalOpen = false" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-sm transition">&times;</button>
+                <button type="button" @click="settleModalOpen = false" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-sm transition shrink-0">&times;</button>
             </div>
 
-            <!-- Amount Payable Banner -->
-            <div class="bg-emerald-700 text-white rounded-2xl p-4 text-center shadow-inner space-y-1" x-show="activeOrderPaymentStatus === 'Paid'">
-                <span class="text-[10px] uppercase tracking-widest font-black text-emerald-200">✅ PAID ONLINE VIA DIRECT UPI</span>
-                <div class="text-2xl font-black text-white font-mono">₹0.00 DUE</div>
-                <p class="text-[11px] text-emerald-100 font-bold">Guest has already paid ₹<span x-text="grandTotal.toFixed(2)"></span> online. No payment required!</p>
-            </div>
-            <div class="bg-slate-950 text-white rounded-2xl p-4 text-center shadow-inner space-y-1" x-show="activeOrderPaymentStatus !== 'Paid'">
-                <span class="text-[10px] uppercase tracking-widest font-black text-amber-400">Total Amount Payable</span>
-                <div class="text-3xl font-black text-white font-mono">₹<span x-text="grandTotal.toFixed(2)"></span></div>
-            </div>
+            <!-- Scrollable Content Body -->
+            <div class="overflow-y-auto py-3 space-y-3.5 pr-1 max-h-[calc(90vh-130px)]">
+                <!-- Amount Payable Banner -->
+                <div class="bg-emerald-700 text-white rounded-2xl p-3.5 text-center shadow-inner space-y-1 shrink-0" x-show="activeOrderPaymentStatus === 'Paid'">
+                    <span class="text-[10px] uppercase tracking-widest font-black text-emerald-200">✅ PAID ONLINE VIA DIRECT UPI</span>
+                    <div class="text-2xl font-black text-white font-mono">₹0.00 DUE</div>
+                    <p class="text-[11px] text-emerald-100 font-bold">Guest has already paid ₹<span x-text="grandTotal.toFixed(2)"></span> online. No payment required!</p>
+                </div>
+                <div class="bg-slate-950 text-white rounded-2xl p-3.5 text-center shadow-inner space-y-1 shrink-0" x-show="activeOrderPaymentStatus !== 'Paid'">
+                    <span class="text-[10px] uppercase tracking-widest font-black text-amber-400">Total Amount Payable</span>
+                    <div class="text-3xl font-black text-white font-mono">₹<span x-text="grandTotal.toFixed(2)"></span></div>
+                </div>
 
-            <div class="space-y-3.5">
                 <!-- Payment Status Selector (Paid vs Unpaid Pre-Bill) -->
                 <div>
                     <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Payment Action & Status</label>
@@ -434,7 +437,7 @@
                 <!-- Payment Mode Options (Hidden if already paid or marked pending) -->
                 <div x-show="settlePaymentStatus === 'Paid' && activeOrderPaymentStatus !== 'Paid'">
                     <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Payment Method</label>
-                    <select x-model="paymentMethod" class="w-full border border-slate-300 rounded-xl text-xs font-black py-3 px-3.5 bg-white text-slate-950 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                    <select x-model="paymentMethod" class="w-full border border-slate-300 rounded-xl text-xs font-black py-2.5 px-3.5 bg-white text-slate-950 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                         <option value="Cash">💵 Cash Settlement</option>
                         <option value="UPI">📱 Instant UPI QR / PhonePe / GPay</option>
                         <option value="Card">💳 Credit / Debit Card (Swipe)</option>
@@ -446,11 +449,11 @@
                     <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Discount Amount (₹)</label>
                     <input type="number" min="0" step="0.01" x-model.number="discount" @input="calculateTotals()" 
                            placeholder="0.00"
-                           class="w-full border border-slate-300 rounded-xl text-xs font-bold py-2.5 px-3.5 bg-white text-slate-950 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-mono">
+                           class="w-full border border-slate-300 rounded-xl text-xs font-bold py-2 px-3.5 bg-white text-slate-950 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-mono">
                 </div>
 
                 <!-- Cash Tendered & Change Return -->
-                <div x-show="paymentMethod === 'Cash' && settlePaymentStatus === 'Paid' && activeOrderPaymentStatus !== 'Paid'" class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
+                <div x-show="paymentMethod === 'Cash' && settlePaymentStatus === 'Paid' && activeOrderPaymentStatus !== 'Paid'" class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
                     <div class="flex justify-between items-center text-xs font-bold text-slate-700">
                         <span>Cash Received (₹):</span>
                         <input type="number" min="0" step="1" x-model.number="tenderAmount" 
@@ -463,15 +466,15 @@
                 </div>
             </div>
 
-            <!-- Confirm & Print Buttons -->
-            <div class="flex gap-2 pt-3 border-t border-slate-100">
+            <!-- Sticky Confirm & Print Buttons -->
+            <div class="flex gap-2 pt-3 border-t border-slate-100 shrink-0">
                 <button type="button" @click="confirmSettle()" :disabled="loading" 
                         :class="settlePaymentStatus === 'Paid' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-400 text-slate-950'"
-                        class="flex-1 py-3.5 rounded-xl text-xs font-black transition shadow-sm uppercase tracking-wider cursor-pointer">
+                        class="flex-1 py-3 rounded-xl text-xs font-black transition shadow-sm uppercase tracking-wider cursor-pointer">
                     <span x-show="!loading" x-text="settlePaymentStatus === 'Paid' ? '✓ Complete & Print Receipt' : '🖨️ Print Pre-Bill (Unpaid)'"></span>
                     <span x-show="loading">Processing...</span>
                 </button>
-                <button type="button" @click="settleModalOpen = false" class="py-3.5 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer">
+                <button type="button" @click="settleModalOpen = false" class="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer">
                     Cancel
                 </button>
             </div>

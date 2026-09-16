@@ -639,8 +639,8 @@
     <!-- ========================================== -->
     <!-- SETTLEMENT & CHECKOUT MODAL                -->
     <!-- ========================================== -->
-    <div x-show="settleModalOpen" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4" style="display: none;">
-        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl space-y-5 border border-slate-200" @click.away="settleModalOpen = false">
+    <div x-show="settleModalOpen" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-slate-200 max-h-[90vh] overflow-y-auto my-auto" @click.away="settleModalOpen = false">
             <div class="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div>
                     <h3 class="font-extrabold text-base text-slate-950">Checkout & Settle Bill</h3>
