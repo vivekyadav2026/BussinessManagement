@@ -30,7 +30,7 @@
                 <span class="font-mono text-slate-700" x-text="liveClock">--:--:--</span>
             </div>
 
-            <a href="{{ route('organization.menu.kitchen.index') }}" 
+            <a href="{{ route('organization.menu.kitchen.index') }}" target="_blank"
                class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-lg shadow-2xs transition">
                 <span>👨‍🍳 Kitchen KOT &rarr;</span>
             </a>
