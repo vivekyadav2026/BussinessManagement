@@ -27,6 +27,16 @@
                     @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
+                <!-- Business Category / Type -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Business Category</label>
+                    <select name="business_type" class="w-full border border-gray-200 focus:border-[var(--theme-active)] focus:ring-2 focus:ring-[var(--theme-active)]/20 rounded-xl px-4 py-2.5 text-sm outline-none transition @error('business_type') border-red-300 @enderror">
+                        <option value="business" {{ old('business_type', $organization->business_type) === 'business' ? 'selected' : '' }}>Retail &amp; Wholesale ERP</option>
+                        <option value="restaurant" {{ old('business_type', $organization->business_type) === 'restaurant' ? 'selected' : '' }}>Restaurant / Cafe / Food POS</option>
+                    </select>
+                    @error('business_type') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
                 <!-- Email Address -->
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Business Email</label>
@@ -122,6 +132,40 @@
                 <button type="submit" class="btn btn-gold py-2.5 px-6 font-semibold text-sm shadow-sm transition">Save Changes</button>
             </div>
         </form>
+    </div>
+
+    <!-- Account Owner / Admin Details Card -->
+    @php
+        $ownerEmployee = \App\Models\Employee::where('organization_id', $organization->id)
+            ->where('designation', 'like', '%Owner%')
+            ->first();
+        $adminUser = auth()->user();
+    @endphp
+    <div class="panel p-6 shadow-sm border border-gray-200/80 rounded-2xl bg-white">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+            <div>
+                <h2 class="text-base font-bold text-gray-900">Owner &amp; Admin Account Information</h2>
+                <p class="text-xs text-gray-500">Details of the primary business account holder entered during registration.</p>
+            </div>
+            <a href="{{ route('profile.edit') }}" class="btn btn-ghost text-xs font-bold py-1.5 px-3 rounded-lg border border-gray-200 hover:bg-gray-50">
+                Edit Credentials &rarr;
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-100">
+                <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1">Owner Full Name</span>
+                <span class="text-sm font-bold text-gray-900">{{ $adminUser->name }}</span>
+            </div>
+            <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-100">
+                <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1">Login Email Address</span>
+                <span class="text-sm font-bold text-gray-900">{{ $adminUser->email }}</span>
+            </div>
+            <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-100">
+                <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1">Owner Mobile</span>
+                <span class="text-sm font-bold text-gray-900">{{ $ownerEmployee ? $ownerEmployee->phone : ($organization->phone ?? 'N/A') }}</span>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

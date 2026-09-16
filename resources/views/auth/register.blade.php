@@ -3,9 +3,19 @@
         $initialStep = 1;
         if ($errors->has('name') || $errors->has('admin_phone') || $errors->has('email') || $errors->has('password') || $errors->has('password_confirmation')) {
             $initialStep = 2;
+        } elseif ($errors->has('plan')) {
+            $initialStep = 3;
         }
-        $trialDays = (int)\App\Models\SystemSetting::get('trial_days', 14);
-        $enableTrial = \App\Models\SystemSetting::get('enable_free_trial', '1') === '1';
+        $trialDays = $trialDays ?? (int)\App\Models\SystemSetting::get('trial_days', 14);
+        $enableTrial = isset($enableTrial) ? $enableTrial : (\App\Models\SystemSetting::get('enable_free_trial', '1') === '1' && $trialDays > 0);
+        $plans = $plans ?? \App\Models\Plan::where('is_active', true)->where('type', 'base')->with('features')->get();
+        $addons = $addons ?? \App\Models\Plan::where('is_active', true)->where('type', 'addon')->with('features')->get();
+        $razorpayKey = $razorpayKey ?? config('services.razorpay.key');
+
+        $initialPlanId = request('plan');
+        if (!$initialPlanId) {
+            $initialPlanId = $enableTrial ? 'trial' : ($plans->first() ? $plans->first()->id : null);
+        }
     @endphp
 
     <style>
@@ -455,100 +465,160 @@
             color: #0F172A;
             text-align: right;
         }
+
+        /* Plan Selection Styles */
+        .plan-cycle-toggle-box {
+            display: inline-flex;
+            align-items: center;
+            background: #F1F5F9;
+            padding: 4px;
+            border-radius: 999px;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+        .plan-cycle-btn {
+            border: none;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            color: #64748B;
+        }
+        .plan-cycle-btn.active {
+            background: #0B132B;
+            color: #FFFFFF;
+            box-shadow: 0 2px 6px rgba(11, 19, 43, 0.2);
+        }
+        .plan-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .plan-card-item {
+            border: 2px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 14px 16px;
+            cursor: pointer;
+            background: #FFFFFF;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .plan-card-item:hover {
+            border-color: #CBD5E1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .plan-card-item.selected {
+            border-color: #D99A2B;
+            background: #FFFDF8;
+            box-shadow: 0 0 0 1px #D99A2B, 0 4px 14px rgba(217, 154, 43, 0.12);
+        }
+        .plan-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .plan-name-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0F172A;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .plan-price-tag {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            color: #0F172A;
+            text-align: right;
+        }
+        .plan-price-sub {
+            font-size: 10.5px;
+            color: #64748B;
+            font-weight: 500;
+        }
+        .plan-radio-circle {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid #CBD5E1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .plan-card-item.selected .plan-radio-circle {
+            border-color: #D99A2B;
+            background: #D99A2B;
+        }
+        .plan-radio-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #FFFFFF;
+        }
+        .plan-badge-pill {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 2px 7px;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+        }
+        
+        /* Add-ons Section Styles */
+        .addon-box-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 14px;
+            margin-bottom: 16px;
+        }
+        .addon-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            background: #FAFAFA;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .addon-item-row:hover {
+            border-color: #CBD5E1;
+            background: #FFFFFF;
+        }
+        .addon-item-row.selected {
+            border-color: #D99A2B;
+            background: #FFFDF8;
+        }
+        .addon-checkbox-custom {
+            width: 17px;
+            height: 17px;
+            border-radius: 5px;
+            border: 2px solid #CBD5E1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+            background: #FFFFFF;
+        }
+        .addon-item-row.selected .addon-checkbox-custom {
+            border-color: #D99A2B;
+            background: #D99A2B;
+            color: #FFFFFF;
+        }
     </style>
 
-    <div class="reg-wrapper"
-         x-data="{
-            step: {{ $initialStep }},
-            business_name: '{{ old('organization_name') }}',
-            business_type: '{{ old('business_type', 'business') }}',
-            owner_name: '{{ old('name') }}',
-            owner_email: '{{ old('email') }}',
-            owner_phone: '{{ old('admin_phone') }}',
-
-            validateStep1() {
-                let isValid = true;
-                const fields = ['organization_name', 'business_type', 'business_phone', 'country', 'state', 'pincode', 'address'];
-                
-                fields.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (!el || !el.value.trim()) {
-                        isValid = false;
-                        if (el) {
-                            el.style.borderColor = '#EF4444';
-                            el.style.backgroundColor = '#FEF2F2';
-                        }
-                    } else {
-                        if (el) {
-                            el.style.borderColor = '#CBD5E1';
-                            el.style.backgroundColor = '#FFFFFF';
-                        }
-                    }
-                });
-
-                if (isValid) {
-                    this.business_name = document.getElementById('organization_name').value;
-                    this.business_type = document.getElementById('business_type').value;
-                    this.step = 2;
-                    window.scrollTo({top: 40, behavior: 'smooth'});
-                } else {
-                    alert('Please complete all required business profile fields marked with *.');
-                    const firstInvalid = fields.find(id => {
-                        const el = document.getElementById(id);
-                        return !el || !el.value.trim();
-                    });
-                    if (firstInvalid) document.getElementById(firstInvalid).focus();
-                }
-            },
-
-            validateStep2() {
-                let isValid = true;
-                const fields = ['name', 'admin_phone', 'email', 'password', 'password_confirmation'];
-
-                fields.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (!el || !el.value.trim()) {
-                        isValid = false;
-                        if (el) {
-                            el.style.borderColor = '#EF4444';
-                            el.style.backgroundColor = '#FEF2F2';
-                        }
-                    } else {
-                        if (el) {
-                            el.style.borderColor = '#CBD5E1';
-                            el.style.backgroundColor = '#FFFFFF';
-                        }
-                    }
-                });
-
-                const p1 = document.getElementById('password');
-                const p2 = document.getElementById('password_confirmation');
-                if (p1 && p2 && p1.value && p2.value && p1.value !== p2.value) {
-                    alert('Password and Confirm Password do not match.');
-                    p1.style.borderColor = '#EF4444';
-                    p2.style.borderColor = '#EF4444';
-                    isValid = false;
-                    p2.focus();
-                    return;
-                }
-
-                if (isValid) {
-                    this.owner_name = document.getElementById('name').value;
-                    this.owner_email = document.getElementById('email').value;
-                    this.owner_phone = document.getElementById('admin_phone').value;
-                    this.step = 3;
-                    window.scrollTo({top: 40, behavior: 'smooth'});
-                } else {
-                    alert('Please fill out all required owner credentials.');
-                    const firstInvalid = fields.find(id => {
-                        const el = document.getElementById(id);
-                        return !el || !el.value.trim();
-                    });
-                    if (firstInvalid) document.getElementById(firstInvalid).focus();
-                }
-            }
-         }">
-
+    <div class="reg-wrapper" x-data="registrationApp()">
         <div class="reg-card">
             <!-- Left Branding & Trust Showcase -->
             <div class="reg-showcase">
@@ -884,43 +954,174 @@
                         <!-- ================= STEP 3: SUBSCRIPTION & CONFIRMATION ================= -->
                         <div x-show="step === 3" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" style="display: none;">
                             <div class="reg-section-header">
-                                <span class="reg-section-tag">Step 3 · Activate Subscription</span>
-                                <span style="font-size: 11px; color: #10B981; font-weight: 700; background: #ECFDF5; padding: 2px 8px; border-radius: 999px;">Ready to Launch</span>
+                                <span class="reg-section-tag">Step 3 · Choose Plan &amp; Activate</span>
+                                <span style="font-size: 11px; color: #10B981; font-weight: 700; background: #ECFDF5; padding: 2px 8px; border-radius: 999px;">Transparent Pricing</span>
                             </div>
 
-                            <!-- Plan Highlight Card -->
-                            @if(request('plan'))
-                                <input type="hidden" name="plan" value="{{ request('plan') }}">
-                                <div style="border: 2px solid #D99A2B; background: #FFFDF7; border-radius: 14px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px;">
-                                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(217, 154, 43, 0.15); color: #B87F1B; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                        <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    </div>
-                                    <div>
-                                        <div style="display: inline-block; background: #D99A2B; color: #0B132B; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; margin-bottom: 2px;">Selected Plan</div>
-                                        <div style="font-size: 14px; font-weight: 700; color: #0F172A;">Custom Plan Selected</div>
-                                        <div style="font-size: 12px; color: #64748B;">Aapka chuna hua plan account launch hote hi apply ho jayega.</div>
-                                    </div>
+                            <!-- Hidden Payment & Plan Inputs -->
+                            <input type="hidden" name="plan" :value="selected_plan">
+                            <input type="hidden" name="billing_cycle" :value="billing_cycle">
+                            <input type="hidden" name="razorpay_order_id" id="reg_razorpay_order_id">
+                            <input type="hidden" name="razorpay_payment_id" id="reg_razorpay_payment_id">
+                            <input type="hidden" name="razorpay_signature" id="reg_razorpay_signature">
+
+                            <!-- Billing Cycle Switcher -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                <div style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em;">
+                                    Select Billing Frequency:
                                 </div>
-                            @else
-                                <div style="border: 2px solid #34D399; background: #F0FDF4; border-radius: 14px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px;">
-                                    <div style="width: 44px; height: 44px; border-radius: 10px; background: #D1FAE5; color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                        <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                                            <span style="background: #059669; color: #FFFFFF; font-size: 10.5px; font-weight: 800; text-transform: uppercase; padding: 2px 8px; border-radius: 4px;">{{ $trialDays }}-Days Free Trial</span>
-                                            <span style="font-size: 13px; font-weight: 800; color: #047857;">₹0 Today</span>
+                                <div class="plan-cycle-toggle-box">
+                                    <button type="button" class="plan-cycle-btn" :class="billing_cycle === 'monthly' ? 'active' : ''" @click="billing_cycle = 'monthly'">
+                                        Monthly
+                                    </button>
+                                    <button type="button" class="plan-cycle-btn" :class="billing_cycle === 'yearly' ? 'active' : ''" @click="billing_cycle = 'yearly'">
+                                        Yearly <span style="background: #10B981; color: #FFFFFF; font-size: 9.5px; padding: 1px 5px; border-radius: 999px; margin-left: 2px;">SAVE</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Plan Selection Cards -->
+                            <div class="plan-cards-grid">
+                                {{-- 1. Free Trial Option (Only shown if Super Admin enabled it) --}}
+                                @if($enableTrial)
+                                    <div class="plan-card-item" :class="selected_plan === 'trial' ? 'selected' : ''" @click="selected_plan = 'trial'">
+                                        <div class="plan-card-header">
+                                            <div>
+                                                <div class="plan-name-title">
+                                                    <span class="plan-radio-circle">
+                                                        <span class="plan-radio-dot" x-show="selected_plan === 'trial'"></span>
+                                                    </span>
+                                                    <span>{{ $trialDays }}-Days Free Trial</span>
+                                                    <span class="plan-badge-pill" style="background: #ECFDF5; color: #059669;">Zero Risk</span>
+                                                </div>
+                                                <div style="font-size: 11.5px; color: #64748B; margin-top: 3px; padding-left: 24px;">
+                                                    Instant trial access without credit card. Full software access enabled.
+                                                </div>
+                                            </div>
+                                            <div style="text-align: right;">
+                                                <div class="plan-price-tag" style="color: #059669;">₹0</div>
+                                                <div class="plan-price-sub">Free for {{ $trialDays }} days</div>
+                                            </div>
                                         </div>
-                                        <div style="font-size: 14px; font-weight: 700; color: #0F172A; margin-top: 2px;">All Enterprise Features Unlocked</div>
-                                        <div style="font-size: 12px; color: #4B5563; margin-top: 1px;">Retail ERP, Restaurant POS, Multi-counter Billing aur Staff Payroll fully active.</div>
+                                    </div>
+                                @endif
+
+                                {{-- 2. Database Base Plans (Filtered by selected business category) --}}
+                                @foreach($plans as $plan)
+                                    @php
+                                        $isRest = $plan->category === 'restaurant';
+                                        $monthlyPrice = (float)$plan->price_monthly;
+                                        $yearlyPrice = (float)$plan->price_yearly;
+                                    @endphp
+                                    <div class="plan-card-item"
+                                         x-show="(business_type === 'restaurant' && '{{ $plan->category }}' === 'restaurant') || (business_type !== 'restaurant' && '{{ $plan->category }}' !== 'restaurant')"
+                                         :class="selected_plan == '{{ $plan->id }}' ? 'selected' : ''"
+                                         @click="selectBasePlan('{{ $plan->id }}')">
+                                        <div class="plan-card-header">
+                                            <div>
+                                                <div class="plan-name-title">
+                                                    <span class="plan-radio-circle">
+                                                        <span class="plan-radio-dot" x-show="selected_plan == '{{ $plan->id }}'"></span>
+                                                    </span>
+                                                    <span>{{ $plan->name }}</span>
+                                                    @if($isRest)
+                                                        <span class="plan-badge-pill" style="background: #FFF7ED; color: #C2410C;">Restaurant &amp; Food POS</span>
+                                                    @else
+                                                        <span class="plan-badge-pill" style="background: #EFF6FF; color: #1D4ED8;">Retail &amp; Wholesale ERP</span>
+                                                    @endif
+                                                </div>
+                                                <div style="font-size: 11.5px; color: #64748B; margin-top: 3px; padding-left: 24px;">
+                                                    {{ $plan->description ?: 'Complete business management, billing & inventory module.' }}
+                                                </div>
+                                            </div>
+                                            <div style="text-align: right;">
+                                                <div class="plan-price-tag" x-show="billing_cycle === 'monthly'">
+                                                    ₹{{ number_format($monthlyPrice, 0) }}
+                                                    <span class="plan-price-sub">/mo</span>
+                                                </div>
+                                                <div class="plan-price-tag" x-show="billing_cycle === 'yearly'" style="display:none;">
+                                                    ₹{{ number_format($yearlyPrice, 0) }}
+                                                    <span class="plan-price-sub">/yr</span>
+                                                </div>
+                                                <div class="plan-price-sub" x-show="billing_cycle === 'yearly'" style="color: #10B981; font-weight: 700; display:none;">
+                                                    + GST
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Detailed Plan Features Listing --}}
+                                        <div style="padding-left: 24px; margin-top: 8px; display: grid; grid-template-columns: 1fr; gap: 4px;">
+                                            @foreach($plan->features as $feat)
+                                                @php
+                                                    $fVal = strtolower(trim($feat->feature_value));
+                                                    $fCode = ucwords(str_replace('_', ' ', $feat->feature_code));
+                                                @endphp
+                                                @if($fVal !== 'false' && $fVal !== '0')
+                                                    <div style="font-size: 11.5px; color: #334155; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed #F1F5F9; padding: 2px 0;">
+                                                        <span>• {{ $fCode }}</span>
+                                                        <strong style="color: #0F172A; font-family: monospace;">{{ $fVal === 'true' ? 'Included' : $feat->feature_value }}</strong>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            {{-- 3. Optional Add-ons Section (Checkbox selection) --}}
+                            @if(isset($addons) && $addons->count() > 0)
+                                <div style="margin-top: 18px; margin-bottom: 8px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="font-size: 12px; font-weight: 800; color: #1E293B; text-transform: uppercase; letter-spacing: 0.04em; display: flex; align-items: center; gap: 6px;">
+                                            <span>Power-up Add-ons (Optional)</span>
+                                            <span style="font-size: 10px; background: #FEF3C7; color: #B45309; padding: 1px 6px; border-radius: 999px;">Boost Features</span>
+                                        </div>
+                                        <span style="font-size: 11px; color: #64748B;">Select any add-ons you need</span>
+                                    </div>
+
+                                    <div class="addon-box-grid">
+                                        @foreach($addons as $addon)
+                                            @php
+                                                $addonMonthly = (float)$addon->price_monthly;
+                                                $addonYearly = (float)$addon->price_yearly;
+                                            @endphp
+                                            <div class="addon-item-row"
+                                                 :class="selected_addons.includes('{{ $addon->id }}') ? 'selected' : ''"
+                                                 @click="toggleAddon('{{ $addon->id }}')">
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                    <span class="addon-checkbox-custom">
+                                                        <svg x-show="selected_addons.includes('{{ $addon->id }}')" width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                    </span>
+                                                    <div>
+                                                        <div style="font-size: 12.5px; font-weight: 700; color: #0F172A;">
+                                                            {{ $addon->name }}
+                                                        </div>
+                                                        <div style="font-size: 11px; color: #64748B;">
+                                                            {{ $addon->description ?: 'Extra capability module' }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style="text-align: right; flex-shrink: 0;">
+                                                    <div style="font-size: 13px; font-weight: 800; color: #0F172A; font-family: 'Space Grotesk', sans-serif;">
+                                                        <span x-show="billing_cycle === 'monthly'">+₹{{ number_format($addonMonthly, 0) }}/mo</span>
+                                                        <span x-show="billing_cycle === 'yearly'" style="display:none;">+₹{{ number_format($addonYearly, 0) }}/yr</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
                             @endif
 
+                            <!-- Hidden container for addon inputs -->
+                            <template x-for="addonId in selected_addons" :key="addonId">
+                                <input type="hidden" name="addon_ids[]" :value="addonId">
+                            </template>
+
                             <!-- Summary Box -->
                             <div class="reg-summary-card">
                                 <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569; letter-spacing: 0.05em; margin-bottom: 8px;">
-                                    Review Entered Profile:
+                                    Review Your Selection:
                                 </div>
                                 <div class="reg-summary-row">
                                     <span class="reg-summary-label">Business Name:</span>
@@ -931,22 +1132,23 @@
                                     <span class="reg-summary-val" x-text="business_type === 'restaurant' ? 'Restaurant / Food POS' : 'Retail & Wholesale ERP'"></span>
                                 </div>
                                 <div class="reg-summary-row">
-                                    <span class="reg-summary-label">Owner Name:</span>
-                                    <span class="reg-summary-val" x-text="owner_name || 'Not provided'"></span>
+                                    <span class="reg-summary-label">Plan Selected:</span>
+                                    <span class="reg-summary-val" x-text="getSelectedPlanName()"></span>
+                                </div>
+                                <div class="reg-summary-row" x-show="selected_addons.length > 0">
+                                    <span class="reg-summary-label">Add-ons Selected:</span>
+                                    <span class="reg-summary-val" x-text="selected_addons.length + ' Add-on(s)'"></span>
                                 </div>
                                 <div class="reg-summary-row">
-                                    <span class="reg-summary-label">Email:</span>
-                                    <span class="reg-summary-val" x-text="owner_email || 'Not provided'"></span>
-                                </div>
-                                <div class="reg-summary-row">
-                                    <span class="reg-summary-label">Phone:</span>
-                                    <span class="reg-summary-val" x-text="owner_phone || 'Not provided'"></span>
+                                    <span class="reg-summary-label">Payment Due Today:</span>
+                                    <span class="reg-summary-val" style="color: #059669; font-size: 14px;" x-text="calculateTotalDisplay()">
+                                    </span>
                                 </div>
                             </div>
 
                             <!-- Terms Notice -->
                             <div style="font-size: 11.5px; color: #64748B; text-align: center; margin-bottom: 8px;">
-                                By clicking "Create Account &amp; Launch", you agree to our 
+                                By clicking below, you agree to our 
                                 <a href="{{ route('public.terms') }}" target="_blank" style="color: var(--gold-deep); font-weight: 700; text-decoration: none;">Terms of Service</a> 
                                 and 
                                 <a href="{{ route('public.privacy') }}" target="_blank" style="color: var(--gold-deep); font-weight: 700; text-decoration: none;">Privacy Policy</a>.
@@ -957,8 +1159,15 @@
                                 <button type="button" @click="step = 2; window.scrollTo({top: 40, behavior: 'smooth'})" class="reg-btn-back">
                                     &larr; Back
                                 </button>
-                                <button type="submit" class="reg-btn-primary" style="padding: 12px 28px; font-size: 14px;">
-                                    <span>Create Account &amp; Launch &rarr;</span>
+                                
+                                <button type="button" id="btnLaunchAccount" @click="handleRegistrationCheckout()" :disabled="is_processing" class="reg-btn-primary" style="padding: 12px 28px; font-size: 14px;">
+                                    <span x-show="!is_processing">
+                                        <span x-show="selected_plan === 'trial'">Start Free Trial &amp; Launch &rarr;</span>
+                                        <span x-show="selected_plan !== 'trial'">Pay &amp; Launch Account &rarr;</span>
+                                    </span>
+                                    <span x-show="is_processing" style="display:none;" x-text="processing_msg">
+                                        Processing...
+                                    </span>
                                 </button>
                             </div>
                         </div>
@@ -967,4 +1176,269 @@
             </div>
         </div>
     </div>
+
+    <!-- Razorpay Checkout JS -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+    function registrationApp() {
+        return {
+            step: {{ $initialStep }},
+            business_name: '{{ old('organization_name') }}',
+            business_type: '{{ old('business_type', 'business') }}',
+            owner_name: '{{ old('name') }}',
+            owner_email: '{{ old('email') }}',
+            owner_phone: '{{ old('admin_phone') }}',
+            selected_plan: '{{ old('plan', $initialPlanId) }}',
+            billing_cycle: '{{ old('billing_cycle', 'monthly') }}',
+            selected_addons: [],
+            is_processing: false,
+            processing_msg: 'Processing payment...',
+
+            all_plans: @json($plans),
+            all_addons: @json($addons),
+
+            selectBasePlan(planId) {
+                this.selected_plan = planId;
+            },
+
+            toggleAddon(addonId) {
+                const idStr = String(addonId);
+                const idx = this.selected_addons.indexOf(idStr);
+                if (idx > -1) {
+                    this.selected_addons.splice(idx, 1);
+                } else {
+                    this.selected_addons.push(idStr);
+                }
+            },
+
+            getSelectedPlanName() {
+                if (this.selected_plan === 'trial') {
+                    return '{{ $trialDays }}-Days Free Trial';
+                }
+                const p = this.all_plans.find(item => String(item.id) === String(this.selected_plan));
+                return p ? p.name : 'Custom Plan';
+            },
+
+            calculateTotalDue() {
+                if (this.selected_plan === 'trial') {
+                    return 0;
+                }
+
+                let total = 0;
+                const isYearly = this.billing_cycle === 'yearly';
+
+                const p = this.all_plans.find(item => String(item.id) === String(this.selected_plan));
+                if (p) {
+                    total += parseFloat(isYearly ? p.price_yearly : p.price_monthly) || 0;
+                }
+
+                this.selected_addons.forEach(aId => {
+                    const addon = this.all_addons.find(item => String(item.id) === String(aId));
+                    if (addon) {
+                        total += parseFloat(isYearly ? addon.price_yearly : addon.price_monthly) || 0;
+                    }
+                });
+
+                return total;
+            },
+
+            calculateTotalDisplay() {
+                if (this.selected_plan === 'trial') {
+                    return '₹0 (Free Trial)';
+                }
+                const total = this.calculateTotalDue();
+                const cycleText = this.billing_cycle === 'yearly' ? ' /year' : ' /month';
+                return '₹' + Math.round(total).toLocaleString('en-IN') + cycleText;
+            },
+
+            validateStep1() {
+                let isValid = true;
+                const fields = ['organization_name', 'business_type', 'business_phone', 'country', 'state', 'pincode', 'address'];
+                
+                fields.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el || !el.value.trim()) {
+                        isValid = false;
+                        if (el) {
+                            el.style.borderColor = '#EF4444';
+                            el.style.backgroundColor = '#FEF2F2';
+                        }
+                    } else {
+                        if (el) {
+                            el.style.borderColor = '#CBD5E1';
+                            el.style.backgroundColor = '#FFFFFF';
+                        }
+                    }
+                });
+
+                if (isValid) {
+                    this.business_name = document.getElementById('organization_name').value;
+                    this.business_type = document.getElementById('business_type').value;
+
+                    // Automatically select default matching plan if switching category and not in trial
+                    if (this.selected_plan !== 'trial') {
+                        const matchingPlan = this.all_plans.find(p => 
+                            (this.business_type === 'restaurant' && p.category === 'restaurant') ||
+                            (this.business_type !== 'restaurant' && p.category !== 'restaurant')
+                        );
+                        if (matchingPlan) {
+                            this.selected_plan = String(matchingPlan.id);
+                        }
+                    }
+
+                    this.step = 2;
+                    window.scrollTo({top: 40, behavior: 'smooth'});
+                } else {
+                    alert('Please complete all required business profile fields marked with *.');
+                    const firstInvalid = fields.find(id => {
+                        const el = document.getElementById(id);
+                        return !el || !el.value.trim();
+                    });
+                    if (firstInvalid) document.getElementById(firstInvalid).focus();
+                }
+            },
+
+            validateStep2() {
+                let isValid = true;
+                const fields = ['name', 'admin_phone', 'email', 'password', 'password_confirmation'];
+
+                fields.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el || !el.value.trim()) {
+                        isValid = false;
+                        if (el) {
+                            el.style.borderColor = '#EF4444';
+                            el.style.backgroundColor = '#FEF2F2';
+                        }
+                    } else {
+                        if (el) {
+                            el.style.borderColor = '#CBD5E1';
+                            el.style.backgroundColor = '#FFFFFF';
+                        }
+                    }
+                });
+
+                const p1 = document.getElementById('password');
+                const p2 = document.getElementById('password_confirmation');
+                if (p1 && p2 && p1.value && p2.value && p1.value !== p2.value) {
+                    alert('Password and Confirm Password do not match.');
+                    p1.style.borderColor = '#EF4444';
+                    p2.style.borderColor = '#EF4444';
+                    isValid = false;
+                    p2.focus();
+                    return;
+                }
+
+                if (isValid) {
+                    this.owner_name = document.getElementById('name').value;
+                    this.owner_email = document.getElementById('email').value;
+                    this.owner_phone = document.getElementById('admin_phone').value;
+                    this.step = 3;
+                    window.scrollTo({top: 40, behavior: 'smooth'});
+                } else {
+                    alert('Please fill out all required owner credentials.');
+                    const firstInvalid = fields.find(id => {
+                        const el = document.getElementById(id);
+                        return !el || !el.value.trim();
+                    });
+                    if (firstInvalid) document.getElementById(firstInvalid).focus();
+                }
+            },
+
+            handleRegistrationCheckout() {
+                if (!this.selected_plan) {
+                    alert('Please select a plan or trial to proceed.');
+                    return;
+                }
+
+                const form = document.getElementById('registrationForm');
+
+                // If customer selected Free Trial, submit directly
+                if (this.selected_plan === 'trial') {
+                    this.is_processing = true;
+                    this.processing_msg = 'Launching your trial...';
+                    form.submit();
+                    return;
+                }
+
+                // If paid plan selected, call Razorpay order endpoint
+                this.is_processing = true;
+                this.processing_msg = 'Connecting to Payment Gateway...';
+
+                fetch('{{ route("register.order") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        plan_id: this.selected_plan,
+                        addon_ids: this.selected_addons,
+                        billing_cycle: this.billing_cycle,
+                        business_name: this.business_name,
+                        owner_name: this.owner_name,
+                        owner_email: this.owner_email,
+                        owner_phone: this.owner_phone
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        this.is_processing = false;
+                        alert(data.message || 'Unable to start payment session. Please try again.');
+                        return;
+                    }
+
+                    if (data.is_free) {
+                        this.processing_msg = 'Activating free plan...';
+                        form.submit();
+                        return;
+                    }
+
+                    this.processing_msg = 'Waiting for payment completion...';
+
+                    const options = {
+                        "key": data.key,
+                        "amount": data.amount,
+                        "currency": data.currency || "INR",
+                        "name": data.business_name || "{{ config('app.name') }}",
+                        "description": "Subscription for " + data.plan_name,
+                        "order_id": data.order_id,
+                        "prefill": {
+                            "name": data.owner_name,
+                            "email": data.owner_email,
+                            "contact": data.owner_phone
+                        },
+                        "theme": { "color": "#0B132B" },
+                        "handler": (response) => {
+                            this.processing_msg = 'Verifying payment and creating account...';
+                            document.getElementById('reg_razorpay_order_id').value = response.razorpay_order_id;
+                            document.getElementById('reg_razorpay_payment_id').value = response.razorpay_payment_id;
+                            document.getElementById('reg_razorpay_signature').value = response.razorpay_signature;
+                            form.submit();
+                        },
+                        "modal": {
+                            "ondismiss": () => {
+                                this.is_processing = false;
+                            }
+                        }
+                    };
+
+                    const rzp = new Razorpay(options);
+                    rzp.on('payment.failed', (err) => {
+                        this.is_processing = false;
+                        alert('Payment failed: ' + (err.error ? err.error.description : 'Transaction was not completed.'));
+                    });
+                    rzp.open();
+                })
+                .catch(err => {
+                    this.is_processing = false;
+                    alert('Error connecting to payment gateway: ' + err.message);
+                });
+            }
+        };
+    }
+    </script>
 </x-guest-layout>

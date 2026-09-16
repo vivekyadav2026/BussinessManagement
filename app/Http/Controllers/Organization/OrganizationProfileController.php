@@ -20,6 +20,7 @@ class OrganizationProfileController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'business_type' => 'nullable|string|in:business,restaurant',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
