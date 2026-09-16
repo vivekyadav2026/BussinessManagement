@@ -205,11 +205,12 @@
                                             <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">{{ $feat->feature_code }}</span>
                                         </td>
                                         <td class="py-3 text-right pr-2">
-                                            @if($val === 'true' || $val === 'yes' || $val === '1')
+                                            @php $isQuota = str_starts_with($feat->feature_code, 'max_'); @endphp
+                                            @if(!$isQuota && ($val === 'true' || $val === 'yes'))
                                                 <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                                     ✓ Enabled
                                                 </span>
-                                            @elseif($val === 'false' || $val === 'no' || $val === '0')
+                                            @elseif(!$isQuota && ($val === 'false' || $val === 'no' || $val === '0'))
                                                 <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-400 border border-gray-200">
                                                     ✕ Disabled
                                                 </span>

@@ -61,6 +61,7 @@
                     $meta = $featureMap[$feature->feature_code] ?? null;
                     $label = $meta['name'] ?? ucwords(str_replace('_', ' ', $feature->feature_code));
                     $val = strtolower(trim($feature->feature_value));
+                    $isQuotaFeature = str_starts_with($feature->feature_code, 'max_');
                     
                     if ($val === 'false' || $val === 'no' || $val === '0') {
                         continue;
@@ -71,7 +72,7 @@
                         <span style="color: var(--teal); font-weight: bold; font-size: 13px;">✓</span>
                         <span style="font-weight: 500; font-size: 12.5px;">{{ $label }}</span>
                     </span>
-                    @if($val !== 'true' && $val !== 'yes' && $val !== '1')
+                    @if($isQuotaFeature || ($val !== 'true' && $val !== 'yes'))
                         <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; background: var(--bg); padding: 2px 7px; border-radius: 6px; border: 1px solid var(--border); color: var(--ink);">
                             {{ $feature->feature_value }}
                         </span>

@@ -177,10 +177,11 @@
                             $val = strtolower(trim($feature->feature_value));
                             if ($val === 'false' || $val === 'no' || $val === '0') continue;
                             $label = $featureMap[$feature->feature_code] ?? ucwords(str_replace('_', ' ', $feature->feature_code));
+                            $isQuotaFeature = str_starts_with($feature->feature_code, 'max_');
                         @endphp
                         <div class="bg-slate-50/80 border border-slate-200/80 p-3 rounded-lg flex items-center justify-between">
                             <span class="text-xs font-bold text-slate-800">{{ $label }}</span>
-                            @if($val === 'true' || $val === 'yes' || $val === '1')
+                            @if(!$isQuotaFeature && ($val === 'true' || $val === 'yes'))
                                 <span class="text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md">✓ Enabled</span>
                             @else
                                 <span class="text-xs font-black bg-white text-slate-900 border border-slate-300 px-2.5 py-0.5 rounded-md font-mono shadow-2xs">{{ $feature->feature_value }}</span>
@@ -269,12 +270,13 @@
                             @php
                                 $label = $featureMap[$feature->feature_code] ?? ucwords(str_replace('_', ' ', $feature->feature_code));
                                 $val = strtolower(trim($feature->feature_value));
+                                $isQuotaFeature = str_starts_with($feature->feature_code, 'max_');
                             @endphp
                             <div class="flex items-center justify-between text-xs">
                                 <span class="font-medium text-slate-700">{{ $label }}:</span>
-                                @if($val === 'true' || $val === 'yes' || $val === '1')
+                                @if(!$isQuotaFeature && ($val === 'true' || $val === 'yes'))
                                     <span class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[11px] border border-emerald-200">✓ Yes</span>
-                                @elseif($val === 'false' || $val === 'no' || $val === '0')
+                                @elseif(!$isQuotaFeature && ($val === 'false' || $val === 'no' || $val === '0'))
                                     <span class="font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded text-[11px]">✗ No</span>
                                 @else
                                     <strong class="text-slate-900 font-mono bg-slate-100 px-2 py-0.5 rounded text-[11px] font-bold border border-slate-200">{{ $feature->feature_value }}</strong>
