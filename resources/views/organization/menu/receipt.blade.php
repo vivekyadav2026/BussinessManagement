@@ -191,19 +191,24 @@
         <div style="font-size: 10px; margin-top: 3px;">Please Visit Again 🙏</div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        new QRCode(document.getElementById("orderUpiQrCode"), {
-            text: "{{ $orderUpiString }}",
-            width: 72,
-            height: 72,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.M
+    @if($order->payment_status !== 'Paid')
+        <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var qrElem = document.getElementById("orderUpiQrCode");
+            if (qrElem) {
+                new QRCode(qrElem, {
+                    text: "{{ $orderUpiString }}",
+                    width: 72,
+                    height: 72,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+            }
         });
-    });
-    </script>
+        </script>
+    @endif
 
 </body>
 </html>
