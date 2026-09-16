@@ -456,6 +456,7 @@
                             <th class="p-3 text-right">Total Spend</th>
                             <th class="p-3">Dishes Ordered</th>
                             <th class="p-3 text-right">Last Dining Time</th>
+                            <th class="p-3 text-right">Receipt / Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
@@ -506,10 +507,23 @@
                                 <td class="p-3 text-right font-mono text-xs text-slate-600 whitespace-nowrap">
                                     {{ \Carbon\Carbon::parse($c['last_order_at'])->format('d M Y, h:i A') }}
                                 </td>
+
+                                <!-- Receipt / Action Buttons -->
+                                <td class="p-3 text-right">
+                                    <div class="flex flex-wrap justify-end gap-1.5">
+                                        @foreach($c['orders'] as $ord)
+                                            <a href="{{ route('organization.menu.pos.orders.print-receipt', $ord->id) }}" target="_blank" 
+                                               title="View/Print Receipt for Order {{ $ord->token_number ? '#'.$ord->token_number : '#'.$ord->id }} (₹{{ number_format($ord->total, 2) }})"
+                                               class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-500 hover:text-white transition">
+                                                🧾 {{ $ord->token_number ? '#'.$ord->token_number : 'Receipt' }}
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-12 text-slate-400 text-xs font-semibold">
+                                <td colspan="7" class="text-center py-12 text-slate-400 text-xs font-semibold">
                                     👤 No customer order records found in the selected period.
                                 </td>
                             </tr>
