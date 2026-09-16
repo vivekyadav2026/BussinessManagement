@@ -155,23 +155,36 @@
         </tr>
         <tr>
             <td class="text-left">Payment Status:</td>
-            <td class="text-right bold" style="text-transform: uppercase;">{{ $order->payment_status }}</td>
+            <td class="text-right bold" style="text-transform: uppercase;">
+                @if($order->payment_status === 'Paid')
+                    <span class="badge" style="background: #15803d; color: #ffffff; padding: 2px 6px;">PAID ONLINE ✅</span>
+                @else
+                    <span style="color: #dc2626;">PENDING ⏳</span>
+                @endif
+            </td>
         </tr>
     </table>
 
     <div class="divider"></div>
 
-    @php
-        $orgUpi = $order->organization->upi_id ?? 'pay@upi';
-        $orderUpiString = "upi://pay?pa=" . rawurlencode($orgUpi) . "&pn=" . rawurlencode($order->organization->name ?? 'POS') . "&am=" . number_format($order->total, 2, '.', '') . "&cu=INR&tn=" . rawurlencode('Order #' . $order->order_number);
-    @endphp
+    @if($order->payment_status === 'Paid')
+        <div class="text-center" style="margin: 8px 0; padding: 6px; border: 1.5px solid #15803d; border-radius: 4px; background: #f0fdf4;">
+            <div style="font-size: 11px; font-weight: 900; color: #15803d; text-transform: uppercase;">✅ FULLY PAID (ONLINE UPI)</div>
+            <div style="font-size: 9px; font-weight: bold; color: #166534; margin-top: 2px;">AMOUNT DUE: ₹0.00 (NO PAYMENT REQUIRED)</div>
+        </div>
+    @else
+        @php
+            $orgUpi = $order->organization->upi_id ?? 'pay@upi';
+            $orderUpiString = "upi://pay?pa=" . rawurlencode($orgUpi) . "&pn=" . rawurlencode($order->organization->name ?? 'POS') . "&am=" . number_format($order->total, 2, '.', '') . "&cu=INR&tn=" . rawurlencode('Order #' . $order->order_number);
+        @endphp
 
-    <div class="text-center" style="margin-top: 6px;">
-        <div style="font-size: 9px; font-weight: bold;">SCAN TO PAY EXACT BILL AMOUNT</div>
-        <div style="font-size: 12px; font-weight: 900; margin-top: 2px;">₹{{ number_format($order->total, 2) }}</div>
-        <div id="orderUpiQrCode" style="display: flex; justify-content: center; margin: 4px 0;"></div>
-        <div style="font-size: 8px; color: #333;">GPay | PhonePe | Paytm | BHIM</div>
-    </div>
+        <div class="text-center" style="margin-top: 6px;">
+            <div style="font-size: 9px; font-weight: bold;">SCAN TO PAY EXACT BILL AMOUNT</div>
+            <div style="font-size: 12px; font-weight: 900; margin-top: 2px;">₹{{ number_format($order->total, 2) }}</div>
+            <div id="orderUpiQrCode" style="display: flex; justify-content: center; margin: 4px 0;"></div>
+            <div style="font-size: 8px; color: #333;">GPay | PhonePe | Paytm | BHIM</div>
+        </div>
+    @endif
 
     <div class="text-center" style="margin-top: 10px;">
         <div class="bold">Thank you for dining with us!</div>

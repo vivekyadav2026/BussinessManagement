@@ -205,7 +205,7 @@ class WaiterPosController extends Controller
         abort_if($order->organization_id !== $orgId, 403);
 
         $request->validate([
-            'payment_method' => 'required|in:Cash,UPI,Card',
+            'payment_method' => 'nullable|in:Cash,UPI,Card',
             'discount' => 'nullable|numeric|min:0'
         ]);
 

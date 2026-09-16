@@ -226,6 +226,12 @@
                         <div class="text-[11px] text-slate-500 font-mono font-bold mt-0.5 flex items-center gap-1.5 flex-wrap" x-show="activeOrderIds.length > 0">
                             <span>Token:</span>
                             <span x-text="activeOrderNumber" class="font-black text-slate-950 bg-amber-100/80 text-amber-950 px-2 py-0.5 rounded-md border border-amber-200"></span>
+                            <span x-show="activeOrderPaymentStatus === 'Paid'" class="font-black text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-md border border-emerald-300 uppercase tracking-wider text-[10px]">
+                                ✅ PAID ONLINE
+                            </span>
+                            <span x-show="activeOrderPaymentStatus !== 'Paid'" class="font-black text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 uppercase tracking-wider text-[10px]">
+                                ⏳ PENDING
+                            </span>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
@@ -355,8 +361,9 @@
                         </button>
 
                         <button type="button" @click="openSettleModal()" :disabled="loading || combinedItems.length === 0" 
-                            class="w-full py-3.5 bg-slate-950 hover:bg-slate-900 active:bg-slate-800 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-40 uppercase tracking-wider cursor-pointer">
-                            <span>💳 Settle Bill</span>
+                            :class="activeOrderPaymentStatus === 'Paid' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-slate-950 hover:bg-slate-900 text-white'"
+                            class="w-full py-3.5 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-40 uppercase tracking-wider cursor-pointer">
+                            <span x-text="activeOrderPaymentStatus === 'Paid' ? '✓ Complete & Release' : '💳 Settle Bill'"></span>
                         </button>
                     </div>
 
@@ -383,21 +390,26 @@
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200" @click.away="settleModalOpen = false">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
-                    <h3 class="font-black text-lg text-slate-950 tracking-tight">Payment & Settlement</h3>
-                    <p class="text-xs text-slate-500 font-medium">Select payment mode and confirm bill settlement.</p>
+                    <h3 class="font-black text-lg text-slate-950 tracking-tight" x-text="activeOrderPaymentStatus === 'Paid' ? 'Release Table & Complete' : 'Payment & Settlement'"></h3>
+                    <p class="text-xs text-slate-500 font-medium" x-text="activeOrderPaymentStatus === 'Paid' ? 'Order is already paid online. Confirm to release table.' : 'Select payment mode and confirm bill settlement.'"></p>
                 </div>
                 <button type="button" @click="settleModalOpen = false" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-sm transition">&times;</button>
             </div>
 
             <!-- Amount Payable Banner -->
-            <div class="bg-slate-950 text-white rounded-2xl p-4 text-center shadow-inner space-y-1">
+            <div class="bg-emerald-700 text-white rounded-2xl p-4 text-center shadow-inner space-y-1" x-show="activeOrderPaymentStatus === 'Paid'">
+                <span class="text-[10px] uppercase tracking-widest font-black text-emerald-200">✅ PAID ONLINE VIA DIRECT UPI</span>
+                <div class="text-2xl font-black text-white font-mono">₹0.00 DUE</div>
+                <p class="text-[11px] text-emerald-100 font-bold">Guest has already paid ₹<span x-text="grandTotal.toFixed(2)"></span> online. No payment required!</p>
+            </div>
+            <div class="bg-slate-950 text-white rounded-2xl p-4 text-center shadow-inner space-y-1" x-show="activeOrderPaymentStatus !== 'Paid'">
                 <span class="text-[10px] uppercase tracking-widest font-black text-amber-400">Total Amount Payable</span>
                 <div class="text-3xl font-black text-white font-mono">₹<span x-text="grandTotal.toFixed(2)"></span></div>
             </div>
 
             <div class="space-y-3.5">
-                <!-- Payment Mode Options -->
-                <div>
+                <!-- Payment Mode Options (Hidden if already paid) -->
+                <div x-show="activeOrderPaymentStatus !== 'Paid'">
                     <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Payment Method</label>
                     <select x-model="paymentMethod" class="w-full border border-slate-300 rounded-xl text-xs font-black py-3 px-3.5 bg-white text-slate-950 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                         <option value="Cash">💵 Cash Settlement</option>
@@ -415,7 +427,7 @@
                 </div>
 
                 <!-- Cash Tendered & Change Return -->
-                <div x-show="paymentMethod === 'Cash'" class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
+                <div x-show="paymentMethod === 'Cash' && activeOrderPaymentStatus !== 'Paid'" class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
                     <div class="flex justify-between items-center text-xs font-bold text-slate-700">
                         <span>Cash Received (₹):</span>
                         <input type="number" min="0" step="1" x-model.number="tenderAmount" 
@@ -431,8 +443,9 @@
             <!-- Confirm & Print Buttons -->
             <div class="flex gap-2 pt-3 border-t border-slate-100">
                 <button type="button" @click="confirmSettle()" :disabled="loading" 
-                        class="flex-1 py-3.5 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 rounded-xl text-xs font-black transition shadow-sm uppercase tracking-wider cursor-pointer">
-                    <span x-show="!loading">✓ Settle & Print Bill</span>
+                        :class="activeOrderPaymentStatus === 'Paid' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-amber-500 hover:bg-amber-400 text-slate-950'"
+                        class="flex-1 py-3.5 rounded-xl text-xs font-black transition shadow-sm uppercase tracking-wider cursor-pointer">
+                    <span x-show="!loading" x-text="activeOrderPaymentStatus === 'Paid' ? '✓ Complete & Print Receipt' : '✓ Settle & Print Bill'"></span>
                     <span x-show="loading">Processing...</span>
                 </button>
                 <button type="button" @click="settleModalOpen = false" class="py-3.5 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer">
@@ -468,6 +481,7 @@ function waiterPos() {
         sgstPercent: {{ (float)auth()->user()->organization->sgst_percent }},
         activeOrderIds: [],
         activeOrderNumber: '',
+        activeOrderPaymentStatus: 'Pending',
         activeKotUrl: '#',
         activeReceiptUrl: '#',
         settleModalOpen: false,
@@ -585,6 +599,7 @@ function waiterPos() {
                         
                         this.activeOrderIds = data.active_orders.map(o => o.id);
                         this.activeOrderNumber = data.active_orders[0].order_number;
+                        this.activeOrderPaymentStatus = data.active_orders[0].payment_status || 'Pending';
                         if (!isBackground || !this.customerName) {
                             this.customerName = data.active_orders[0].customer_name || '';
                         }
@@ -667,6 +682,7 @@ function waiterPos() {
             this.selectedTableName = '';
             this.activeOrderIds = [];
             this.activeOrderNumber = '';
+            this.activeOrderPaymentStatus = 'Pending';
             this.customerName = '';
             this.customerPhone = '';
             this.cookingNotes = '';
