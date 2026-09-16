@@ -95,6 +95,16 @@
             font-weight: 700 !important;
         }
 
+        /* Prevent global heading override from clobbering headings in dark banners/headers/modals */
+        .text-white, 
+        [class*="text-white"], 
+        .bg-slate-900 h1, .bg-slate-900 h2, .bg-slate-900 h3, .bg-slate-900 h4,
+        .bg-slate-950 h1, .bg-slate-950 h2, .bg-slate-950 h3, .bg-slate-950 h4,
+        .bg-black h1, .bg-black h2, .bg-black h3, .bg-black h4,
+        .bg-gray-900 h1, .bg-gray-900 h2, .bg-gray-900 h3, .bg-gray-900 h4 {
+            color: #ffffff !important;
+        }
+
         .mono, .font-mono, [class*="mono"] {
             font-family: 'IBM Plex Mono', monospace !important;
         }

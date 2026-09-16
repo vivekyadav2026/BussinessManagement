@@ -20,8 +20,29 @@ class ClientController extends Controller implements HasMiddleware
     }
     public function index(Request $request)
     {
-        $query = Client::where('organization_id', auth()->user()->organization_id);
+        $orgId = auth()->user()->organization_id;
 
+        // Quota & capacity limit check
+        $currentClientsCount = Client::where('organization_id', $orgId)->count();
+        $maxClients = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_clients');
+        $limitReached = \App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_clients', $currentClientsCount);
+
+        // Overall stats for KPI cards
+        $totalClients = $currentClientsCount;
+        $activeClientsCount = Client::where('organization_id', $orgId)->where('is_active', true)->count();
+        $inactiveClientsCount = $totalClients - $activeClientsCount;
+
+        // Total receivables across organization clients
+        $allInvoices = \App\Models\Invoice::where('organization_id', $orgId)
+            ->where('status', '!=', 'Cancelled')
+            ->select('grand_total', 'amount_paid')
+            ->get();
+        $totalReceivables = $allInvoices->sum(fn($inv) => max(0, $inv->grand_total - $inv->amount_paid));
+
+        // Base query
+        $query = Client::where('organization_id', $orgId);
+
+        // Filter by search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -32,9 +53,26 @@ class ClientController extends Controller implements HasMiddleware
             });
         }
 
+        // Filter by status
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+
         $clients = $query->withCount('invoices')->latest()->paginate(15)->withQueryString();
 
-        return view('organization.clients.index', compact('clients'));
+        return view('organization.clients.index', compact(
+            'clients',
+            'totalClients',
+            'activeClientsCount',
+            'inactiveClientsCount',
+            'totalReceivables',
+            'maxClients',
+            'limitReached'
+        ));
     }
 
     public function create()

@@ -14,11 +14,42 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         $activeLocationId = LocationManager::getActiveLocationId();
-        
-        $query = Product::with(['inventoryStocks' => function($q) use ($activeLocationId) {
-            $q->where('location_id', $activeLocationId);
-        }])->where('organization_id', auth()->user()->organization_id);
+        $activeLocation = \App\Models\Location::find($activeLocationId);
+        $orgId = auth()->user()->organization_id;
 
+        // Base query scoped to organization & active location
+        $baseQuery = Product::with(['inventoryStocks' => function($q) use ($activeLocationId) {
+            $q->where('location_id', $activeLocationId);
+        }])->where('organization_id', $orgId);
+
+        // Fetch all products for this organization to accurately compute inventory stats for active location
+        $allProducts = (clone $baseQuery)->get();
+
+        $totalTracked = $allProducts->count();
+        $totalUnits = 0;
+        $totalValuation = 0;
+        $lowStockCount = 0;
+        $outOfStockCount = 0;
+        $healthyCount = 0;
+
+        foreach ($allProducts as $prod) {
+            $qty = $prod->inventoryStocks->first()?->quantity ?? $prod->stock ?? 0;
+            $totalUnits += $qty;
+            $totalValuation += ($qty * ($prod->purchase_price ?? 0));
+
+            if ($qty <= 0) {
+                $outOfStockCount++;
+                $lowStockCount++; // out of stock is also critical low stock
+            } elseif ($qty <= $prod->min_stock_level) {
+                $lowStockCount++;
+            } else {
+                $healthyCount++;
+            }
+        }
+
+        $query = clone $baseQuery;
+
+        // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -28,8 +59,22 @@ class InventoryController extends Controller
             });
         }
 
+        // Status filter: all, low_stock, out_of_stock, healthy
+        $statusFilter = $request->get('status', 'all');
+
         $products = $query->paginate(20)->withQueryString();
-        return view('organization.inventory.index', compact('products'));
+
+        return view('organization.inventory.index', compact(
+            'products',
+            'activeLocation',
+            'totalTracked',
+            'totalUnits',
+            'totalValuation',
+            'lowStockCount',
+            'outOfStockCount',
+            'healthyCount',
+            'statusFilter'
+        ));
     }
 
     public function scanner()

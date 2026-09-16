@@ -44,19 +44,29 @@ class InvoiceController extends Controller implements HasMiddleware
             $query->where('status', $request->status);
         }
 
+        // Subscription monthly quota calculation
+        $orgId = auth()->user()->organization_id;
+        $monthlyCount = Invoice::where('organization_id', $orgId)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+        $maxInvoices = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_invoices_per_month');
+        $limitReached = \App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_invoices_per_month', $monthlyCount);
+
         // Calculate KPI stats for active location using database aggregate queries for high performance
-        $statsQuery = Invoice::where('organization_id', auth()->user()->organization_id)
+        $statsQuery = Invoice::where('organization_id', $orgId)
             ->where('location_id', $locationId);
 
         $stats = [
             'paid_sum' => (clone $statsQuery)->where('status', 'Paid')->sum('grand_total'),
             'unpaid_sum' => (clone $statsQuery)->whereIn('status', ['Due', 'Partially Paid', 'Overdue'])->sum(\Illuminate\Support\Facades\DB::raw('grand_total - amount_paid')),
             'overdue_count' => (clone $statsQuery)->where('status', 'Overdue')->count(),
-            'total_count' => $statsQuery->count()
+            'total_count' => (clone $statsQuery)->count(),
+            'total_invoiced' => (clone $statsQuery)->sum('grand_total'),
         ];
 
         $invoices = $query->with('client')->latest()->paginate(15)->withQueryString();
-        return view('organization.invoices.index', compact('invoices', 'stats'));
+        return view('organization.invoices.index', compact('invoices', 'stats', 'monthlyCount', 'maxInvoices', 'limitReached'));
     }
 
     public function create()
