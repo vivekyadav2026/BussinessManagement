@@ -470,88 +470,103 @@
 
             <!-- Active Token Cards -->
             <template x-for="order in filteredActiveOrders" :key="order.id">
-                <div class="bg-white border-2 border-slate-200/90 hover:border-amber-500 rounded-2xl p-4.5 flex flex-col justify-between transition-all duration-200 shadow-2xs hover:shadow-md space-y-4 relative overflow-hidden group">
+                <div class="bg-white border border-slate-200/90 hover:border-amber-500 rounded-2xl p-4 flex flex-col justify-between transition-all duration-200 shadow-2xs hover:shadow-md space-y-3.5 relative overflow-hidden group">
                     
-                    <!-- Top Status Bar & Token Badge -->
                     <div>
-                        <div class="flex items-start justify-between gap-2 mb-3">
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="font-black text-base text-slate-950 truncate tracking-tight" x-text="order.customer_name"></span>
-                                    <template x-if="order.customer_phone">
-                                        <span class="text-[10px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" x-text="order.customer_phone"></span>
-                                    </template>
+                        <!-- Top Customer Name & Token Number Header -->
+                        <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-2.5">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-700 font-black flex items-center justify-center text-xs shrink-0 border border-amber-500/20">
+                                    <span x-text="(order.customer_name || 'G').charAt(0).toUpperCase()"></span>
                                 </div>
-
-                                <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-                                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider"
-                                          :class="order.table || order.order_type === 'Dine-in' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' : 'bg-amber-50 text-amber-900 border border-amber-200'"
-                                          x-text="order.table ? ('🪑 ' + order.table.name) : ((order.order_type === 'Dine-in' ? '🪑 ' : '🛍️ ') + (order.order_type || 'Takeaway'))">
-                                    </span>
-                                    
-                                    <!-- Kitchen Status Badge -->
-                                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider"
-                                          :class="order.status === 'Ready' ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : (order.status === 'Preparing' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-100 text-slate-800 border border-slate-200')"
-                                          x-text="'Kitchen: ' + (order.status || 'Received')">
-                                    </span>
-
-                                    <span class="text-[10px] text-slate-500 font-mono font-medium" x-text="formatTime(order.created_at)"></span>
+                                <div class="min-w-0">
+                                    <div class="font-extrabold text-sm text-slate-950 truncate" x-text="order.customer_name || 'Walk-in Guest'"></div>
+                                    <template x-if="order.customer_phone">
+                                        <div class="text-[10px] font-mono text-slate-500 leading-tight" x-text="order.customer_phone"></div>
+                                    </template>
                                 </div>
                             </div>
 
                             <!-- Token Number Badge -->
-                            <div class="text-right shrink-0">
-                                <span class="text-xs font-mono font-black bg-slate-950 text-amber-400 px-3 py-1.5 rounded-xl border border-slate-800 shadow-xs block tracking-wider" x-text="order.order_number"></span>
+                            <div class="shrink-0 text-right">
+                                <span class="inline-block text-[11px] font-mono font-black bg-slate-950 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-800 shadow-2xs tracking-wider" x-text="order.order_number"></span>
                             </div>
                         </div>
 
-                        <!-- Items Breakdown Box -->
-                        <div class="bg-slate-50/80 rounded-xl p-3 border border-slate-200 space-y-2 text-xs">
-                            <div class="flex justify-between items-center font-bold text-slate-700 pb-1.5 border-b border-slate-200/80">
-                                <span class="uppercase tracking-wider text-[10px] text-slate-500">Items Ordered</span>
-                                <span class="text-slate-900 font-mono font-extrabold bg-slate-200/80 px-2 py-0.5 rounded text-[11px]" x-text="order.items ? order.items.length + ' Item(s)' : '0 Items'"></span>
+                        <!-- Badges Bar: Order Type, Kitchen Status & Time -->
+                        <div class="flex items-center justify-between gap-1.5 flex-wrap mb-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <!-- Order Type Badge -->
+                                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider inline-flex items-center gap-1"
+                                      :class="order.table || order.order_type === 'Dine-in' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-amber-50 text-amber-900 border border-amber-200'"
+                                      x-text="order.table ? ('🪑 ' + order.table.name) : ((order.order_type === 'Dine-in' ? '🪑 ' : '🛍️ ') + (order.order_type || 'Takeaway'))">
+                                </span>
+                                
+                                <!-- Kitchen Status Badge -->
+                                <span class="text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider inline-flex items-center gap-1"
+                                      :class="{
+                                          'bg-emerald-100 text-emerald-900 border border-emerald-300': order.status === 'Ready' || order.status === 'Served',
+                                          'bg-amber-100 text-amber-900 border border-amber-300': order.status === 'Preparing',
+                                          'bg-slate-100 text-slate-700 border border-slate-200': !order.status || order.status === 'Received'
+                                      }"
+                                      x-text="'Kitchen: ' + (order.status || 'Received')">
+                                </span>
                             </div>
 
-                            <div class="space-y-1 max-h-24 overflow-y-auto pr-1 text-[11px] scrollbar-thin">
+                            <!-- Created Time -->
+                            <span class="text-[10px] text-slate-500 font-mono font-semibold" x-text="formatTime(order.created_at)"></span>
+                        </div>
+
+                        <!-- Items Breakdown Box -->
+                        <div class="bg-slate-50/90 rounded-xl p-3 border border-slate-200 space-y-2 text-xs">
+                            <div class="flex justify-between items-center font-extrabold text-slate-600 pb-1.5 border-b border-slate-200">
+                                <span class="uppercase tracking-wider text-[10px] text-slate-500">Items Ordered</span>
+                                <span class="text-slate-900 font-mono font-black bg-white border border-slate-200 px-2 py-0.5 rounded-md text-[10px]" x-text="order.items ? order.items.length + ' Item(s)' : '0 Items'"></span>
+                            </div>
+
+                            <div class="space-y-1.5 max-h-28 overflow-y-auto pr-1 text-[11px]">
                                 <template x-for="item in order.items" :key="item.id">
                                     <div class="flex justify-between items-center py-0.5">
-                                        <span class="font-semibold text-slate-900 truncate">
-                                            <span class="font-mono font-black text-slate-950 bg-white border border-slate-200 px-1.5 py-0.2 rounded mr-1" x-text="item.quantity + 'x'"></span>
+                                        <span class="font-semibold text-slate-900 truncate flex items-center gap-1.5">
+                                            <span class="font-mono font-black text-slate-950 bg-white border border-slate-200 px-1.5 py-0.5 rounded text-[10px]" x-text="item.quantity + 'x'"></span>
                                             <span x-text="item.name_snapshot"></span>
                                         </span>
-                                        <span class="font-mono font-bold text-slate-700 ml-2" x-text="'₹' + (parseFloat(item.price_snapshot) * item.quantity).toFixed(2)"></span>
+                                        <span class="font-mono font-bold text-slate-700 ml-2 shrink-0" x-text="'₹' + (parseFloat(item.price_snapshot) * item.quantity).toFixed(2)"></span>
                                     </div>
                                 </template>
                             </div>
                             
-                            <div class="flex justify-between items-center pt-2 border-t border-slate-200 font-black">
-                                <span class="text-slate-700 text-xs uppercase tracking-wider">Total Payable</span>
+                            <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+                                <span class="text-slate-700 text-xs uppercase tracking-wider font-extrabold">Total Payable</span>
                                 <span class="text-emerald-700 font-mono text-base font-black">₹<span x-text="parseFloat(order.total).toFixed(2)"></span></span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
+                    <!-- Action Buttons Footer -->
                     <div class="space-y-2 pt-1">
                         <button type="button" @click="openSettleModalForOrder(order)" 
-                                class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black rounded-xl shadow-2xs hover:shadow-xs transition flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer">
-                            <span>💳 Settle Bill (UPI / Cash / Card)</span>
-                            <span>&rarr;</span>
+                                class="w-full py-1.5 px-3 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold rounded-lg shadow-2xs hover:shadow-xs transition flex items-center justify-between text-xs cursor-pointer">
+                            <span class="flex items-center gap-1.5">
+                                <span>💳</span>
+                                <span>Settle & Checkout</span>
+                            </span>
+                            <span class="text-xs font-black">&rarr;</span>
                         </button>
 
                         <div class="grid grid-cols-3 gap-1.5 text-[11px]">
                             <button type="button" @click="editOrder(order)" 
-                                    class="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold transition border border-slate-300/80 flex items-center justify-center gap-1 cursor-pointer">
+                                    class="py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-extrabold transition border border-slate-300/80 flex items-center justify-center gap-1 cursor-pointer">
                                 ✏️ Edit
                             </button>
 
                             <a :href="'/organization/menu/pos/orders/' + order.id + '/print-kot'" target="_blank" 
-                               class="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold transition border border-slate-300/80 flex items-center justify-center gap-1 text-center">
+                               class="py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-extrabold transition border border-slate-300/80 flex items-center justify-center gap-1 text-center">
                                 🖨️ KOT Slip
                             </a>
 
                             <button type="button" @click="cancelOrder(order)" 
-                                    class="py-2 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-lg font-bold transition border border-rose-200 flex items-center justify-center gap-1 cursor-pointer">
+                                    class="py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg font-extrabold transition border border-rose-200 flex items-center justify-center gap-1 cursor-pointer">
                                 ✕ Void
                             </button>
                         </div>
