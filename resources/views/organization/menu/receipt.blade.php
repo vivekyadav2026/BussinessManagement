@@ -65,8 +65,8 @@
 <body onload="window.print();">
 
     <div class="no-print" style="margin-bottom: 15px; text-align: center;">
-        <button onclick="window.print()" style="padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">🖨️ Print Bill Receipt</button>
-        <button onclick="window.close()" style="padding: 8px 16px; background: #6b7280; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: 8px;">Close Window</button>
+        <button onclick="window.print()" style="padding: 9px 18px; background: #020617; color: white; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);">🖨️ Print Bill Receipt</button>
+        <button onclick="window.close()" style="padding: 9px 16px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: bold; cursor: pointer; margin-left: 8px; font-size: 12px;">Close Window</button>
     </div>
 
     <!-- Header -->

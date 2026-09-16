@@ -152,10 +152,10 @@
         
         <!-- Screen Action Buttons -->
         <div class="no-print" style="margin-bottom: 15px; text-align: center;">
-            <button onclick="window.print()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+            <button onclick="window.print()" style="padding: 10px 20px; background: #020617; color: white; border: none; border-radius: 8px; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                 🖨️ Print Thermal KOT Slip
             </button>
-            <button onclick="window.close()" style="padding: 10px 16px; background: #64748b; color: white; border: none; border-radius: 6px; font-weight: 900; font-size: 13px; cursor: pointer; margin-left: 8px;">
+            <button onclick="window.close()" style="padding: 10px 16px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 900; font-size: 13px; cursor: pointer; margin-left: 8px;">
                 Close
             </button>
         </div>

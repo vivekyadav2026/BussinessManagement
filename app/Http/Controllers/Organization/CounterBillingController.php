@@ -84,6 +84,8 @@ class CounterBillingController extends Controller
         $request->validate([
             'order_id' => 'nullable|exists:restaurant_orders,id',
             'customer_name' => 'nullable|string|max:255',
+            'customer_phone' => 'nullable|string|max:20',
+            'order_type' => 'nullable|string|max:50',
             'notes' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',
             'items.*.menu_item_id' => 'required|exists:menu_items,id',
@@ -119,7 +121,8 @@ class CounterBillingController extends Controller
                         'restaurant_table_id' => null, // No table
                         'order_number' => $orderNumber,
                         'customer_name' => $request->customer_name ?? 'Token ' . rand(100, 999),
-                        'order_type' => 'Counter',
+                        'customer_phone' => $request->customer_phone,
+                        'order_type' => $request->order_type ?? 'Takeaway',
                         'status' => 'Received',
                         'payment_status' => 'Pending',
                         'special_notes' => $request->notes,
@@ -127,6 +130,8 @@ class CounterBillingController extends Controller
                 } else {
                     $order->update([
                         'customer_name' => $request->customer_name ?? $order->customer_name,
+                        'customer_phone' => $request->customer_phone ?? $order->customer_phone,
+                        'order_type' => $request->order_type ?? $order->order_type,
                         'special_notes' => $request->notes,
                     ]);
                     $order->items()->delete();

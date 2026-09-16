@@ -65,6 +65,7 @@ class RestaurantMenuController extends Controller
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
+            'is_veg' => 'nullable|boolean',
         ]);
 
         $category = MenuCategory::find($request->menu_category_id);
@@ -80,6 +81,7 @@ class RestaurantMenuController extends Controller
             'price' => $request->price,
             'description' => $request->description,
             'photo' => $path,
+            'is_veg' => $request->boolean('is_veg', true),
             'sort_order' => MenuItem::where('menu_category_id', $request->menu_category_id)->count()
         ]);
 
@@ -97,12 +99,14 @@ class RestaurantMenuController extends Controller
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
+            'is_veg' => 'nullable|boolean',
         ]);
 
         $data = [
             'name' => $request->name,
             'price' => $request->price,
             'description' => $request->description,
+            'is_veg' => $request->boolean('is_veg', true),
             'is_available' => $request->has('is_available'),
             'is_active' => $request->has('is_active'),
         ];

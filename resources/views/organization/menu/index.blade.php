@@ -227,8 +227,15 @@
 
                                     <!-- Dish Name & Description -->
                                     <td class="py-3 px-4 max-w-sm">
-                                        <div class="font-extrabold text-slate-950 text-sm flex items-center gap-2">
+                                        <div class="font-extrabold text-slate-950 text-sm flex items-center gap-2 flex-wrap">
+                                            <!-- Veg / Non-Veg Dot -->
+                                            <span class="w-3.5 h-3.5 rounded-xs border flex items-center justify-center shrink-0 {{ ($item->is_veg ?? true) ? 'border-emerald-600' : 'border-rose-600' }}" title="{{ ($item->is_veg ?? true) ? 'Vegetarian' : 'Non-Vegetarian' }}">
+                                                <span class="w-1.5 h-1.5 rounded-full {{ ($item->is_veg ?? true) ? 'bg-emerald-600' : 'bg-rose-600' }}"></span>
+                                            </span>
                                             <span>{{ $item->name }}</span>
+                                            <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded {{ ($item->is_veg ?? true) ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200' }}">
+                                                {{ ($item->is_veg ?? true) ? 'Veg' : 'Non-Veg' }}
+                                            </span>
                                             @if(!$item->is_active)
                                                 <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Hidden</span>
                                             @endif
@@ -404,6 +411,27 @@
                 <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Price (₹) <span class="text-rose-600">*</span></label>
                 <input type="number" step="0.01" name="price" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-bold text-slate-950 p-3 font-mono outline-none transition bg-white" required placeholder="280.00">
             </div>
+
+            <!-- Dietary Type: Veg vs Non-Veg -->
+            <div>
+                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dietary Food Preference <span class="text-rose-600">*</span></label>
+                <div class="grid grid-cols-2 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                    <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-emerald-400 transition">
+                        <input type="radio" name="is_veg" value="1" checked class="text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
+                        <span class="w-3 h-3 rounded-xs border border-emerald-600 flex items-center justify-center shrink-0">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                        </span>
+                        <span class="text-xs font-black text-slate-900">🟢 Veg (Vegetarian)</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-rose-400 transition">
+                        <input type="radio" name="is_veg" value="0" class="text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer">
+                        <span class="w-3 h-3 rounded-xs border border-rose-600 flex items-center justify-center shrink-0">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                        </span>
+                        <span class="text-xs font-black text-slate-900">🔴 Non-Veg</span>
+                    </label>
+                </div>
+            </div>
             
             <div>
                 <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Description / Ingredients</label>
@@ -446,6 +474,27 @@
             <div>
                 <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Price (₹) <span class="text-rose-600">*</span></label>
                 <input type="number" step="0.01" id="edit-item-price" name="price" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-bold text-slate-950 p-3 font-mono outline-none transition bg-white" required>
+            </div>
+
+            <!-- Dietary Type: Veg vs Non-Veg -->
+            <div>
+                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dietary Food Preference <span class="text-rose-600">*</span></label>
+                <div class="grid grid-cols-2 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                    <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-emerald-400 transition">
+                        <input type="radio" id="edit-item-is-veg-1" name="is_veg" value="1" class="text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
+                        <span class="w-3 h-3 rounded-xs border border-emerald-600 flex items-center justify-center shrink-0">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                        </span>
+                        <span class="text-xs font-black text-slate-900">🟢 Veg (Vegetarian)</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-rose-400 transition">
+                        <input type="radio" id="edit-item-is-veg-0" name="is_veg" value="0" class="text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer">
+                        <span class="w-3 h-3 rounded-xs border border-rose-600 flex items-center justify-center shrink-0">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                        </span>
+                        <span class="text-xs font-black text-slate-900">🔴 Non-Veg</span>
+                    </label>
+                </div>
             </div>
             
             <div>
@@ -500,6 +549,9 @@
         document.getElementById('edit-item-name').value = itemData.name || '';
         document.getElementById('edit-item-price').value = itemData.price || '';
         document.getElementById('edit-item-description').value = itemData.description || '';
+        const isVeg = (itemData.is_veg === undefined || itemData.is_veg === null) ? true : Boolean(itemData.is_veg);
+        document.getElementById('edit-item-is-veg-1').checked = isVeg;
+        document.getElementById('edit-item-is-veg-0').checked = !isVeg;
         document.getElementById('edit-item-available').checked = Boolean(itemData.is_available);
         document.getElementById('edit-item-active').checked = Boolean(itemData.is_active);
         document.getElementById('edit-item-modal').classList.remove('hidden');
