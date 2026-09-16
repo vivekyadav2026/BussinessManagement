@@ -74,12 +74,18 @@ class TableController extends Controller
         return back()->with('success', 'QR Code regenerated. The old one is now invalid.');
     }
 
-    public function printSheet()
+    public function printSheet(Request $request)
     {
-        $tables = RestaurantTable::where('organization_id', auth()->user()->organization_id)
-                                 ->where('location_id', session('active_location_id'))
-                                 ->where('is_active', true)
-                                 ->get();
+        $query = RestaurantTable::where('organization_id', auth()->user()->organization_id)
+                                 ->where('location_id', session('active_location_id'));
+
+        if ($request->filled('table_id')) {
+            $query->where('id', $request->table_id);
+        } else {
+            $query->where('is_active', true);
+        }
+
+        $tables = $query->get();
                                  
         return view('organization.tables.print', compact('tables'));
     }
