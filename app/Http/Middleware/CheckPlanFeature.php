@@ -26,6 +26,15 @@ class CheckPlanFeature
             return $next($request);
         }
 
+        if ($featureCode === 'module_retail') {
+            $hasRetail = SubscriptionService::hasFeature($orgId, 'module_retail');
+            $hasRestaurant = SubscriptionService::hasFeature($orgId, 'module_restaurant');
+            if (!$hasRetail && !$hasRestaurant) {
+                abort(403, 'Your current plan does not include access to ' . $featureCode . '. Please upgrade your plan.');
+            }
+            return $next($request);
+        }
+
         if (!SubscriptionService::hasFeature($orgId, $featureCode)) {
             abort(403, 'Your current plan does not include access to ' . $featureCode . '. Please upgrade your plan.');
         }

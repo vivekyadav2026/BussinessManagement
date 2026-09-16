@@ -437,11 +437,41 @@
                 <!-- Payment Mode Options (Hidden if already paid or marked pending) -->
                 <div x-show="settlePaymentStatus === 'Paid' && activeOrderPaymentStatus !== 'Paid'">
                     <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Payment Method</label>
-                    <select x-model="paymentMethod" class="w-full border border-slate-300 rounded-xl text-xs font-black py-2.5 px-3.5 bg-white text-slate-950 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                    <select x-model="paymentMethod" @change="if(paymentMethod === 'UPI') renderUpiQrCode()" class="w-full border border-slate-300 rounded-xl text-xs font-black py-2.5 px-3.5 bg-white text-slate-950 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                         <option value="Cash">💵 Cash Settlement</option>
                         <option value="UPI">📱 Instant UPI QR / PhonePe / GPay</option>
                         <option value="Card">💳 Credit / Debit Card (Swipe)</option>
                     </select>
+                </div>
+
+                <!-- Live Organization UPI QR Code Display (POS) -->
+                <div x-show="paymentMethod === 'UPI' && settlePaymentStatus === 'Paid' && activeOrderPaymentStatus !== 'Paid'" class="bg-amber-50/90 p-3.5 rounded-2xl border border-amber-200 text-center space-y-2">
+                    <div class="text-[11px] font-black text-amber-900 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                        <span>📱 SCAN QR CODE TO PAY BILL</span>
+                    </div>
+                    
+                    <div class="flex justify-center py-1">
+                        <div id="posUpiQrCode" class="p-2 bg-white rounded-xl border-2 border-amber-300 shadow-xs inline-block min-w-[130px] min-h-[130px]"></div>
+                    </div>
+
+                    <div class="text-sm font-mono font-black text-slate-950">
+                        Amount: ₹<span x-text="grandTotal.toFixed(2)"></span>
+                    </div>
+
+                    <template x-if="orgUpiId">
+                        <div class="text-[11px] font-mono text-slate-800 bg-white/90 py-1 px-3 rounded-lg border border-slate-200 inline-block font-bold">
+                            UPI ID: <span class="text-amber-800 font-extrabold" x-text="orgUpiId"></span>
+                        </div>
+                    </template>
+                    <template x-if="!orgUpiId">
+                        <div class="text-[11px] text-rose-700 font-bold bg-rose-50 p-2 rounded-lg border border-rose-200">
+                            ⚠️ Organization UPI ID not configured. Please add UPI ID in <a href="{{ route('organization.profile') }}" target="_blank" class="underline text-rose-900 font-black">Organization Profile</a>.
+                        </div>
+                    </template>
+
+                    <div class="text-[10px] text-slate-500 font-bold pt-0.5">
+                        Accepts GPay • PhonePe • Paytm • BHIM • All UPI Apps
+                    </div>
                 </div>
 
                 <!-- Discount Amount -->
@@ -483,6 +513,7 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 function waiterPos() {
     return {
@@ -503,8 +534,10 @@ function waiterPos() {
         sgst: 0,
         totalTax: 0,
         grandTotal: 0,
-        cgstPercent: {{ (float)auth()->user()->organization->cgst_percent }},
-        sgstPercent: {{ (float)auth()->user()->organization->sgst_percent }},
+        cgstPercent: {{ (float)($org->cgst_percent ?? 0) }},
+        sgstPercent: {{ (float)($org->sgst_percent ?? 0) }},
+        orgUpiId: '{{ $org->upi_id ?? "" }}',
+        orgName: '{{ addslashes($org->name ?? "POS") }}',
         activeOrderIds: [],
         activeOrderNumber: '',
         activeOrderPaymentStatus: 'Pending',
@@ -781,11 +814,34 @@ function waiterPos() {
             });
         },
 
+        renderUpiQrCode() {
+            this.$nextTick(() => {
+                const qrContainer = document.getElementById("posUpiQrCode");
+                if (!qrContainer) return;
+                qrContainer.innerHTML = "";
+                const upiId = this.orgUpiId || '';
+                if (!upiId) return;
+                const amount = (this.grandTotal || 0).toFixed(2);
+                const upiString = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(this.orgName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('POS Order Payment')}`;
+                if (typeof QRCode !== 'undefined') {
+                    new QRCode(qrContainer, {
+                        text: upiString,
+                        width: 130,
+                        height: 130,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                }
+            });
+        },
+
         openSettleModal() {
             if (this.combinedItems.length === 0) return;
             this.settlePaymentStatus = (this.activeOrderPaymentStatus === 'Paid') ? 'Paid' : 'Paid';
             this.tenderAmount = this.grandTotal;
             this.settleModalOpen = true;
+            if (this.paymentMethod === 'UPI') this.renderUpiQrCode();
         },
 
         confirmSettle() {

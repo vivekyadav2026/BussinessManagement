@@ -53,7 +53,9 @@ class WaiterPosController extends Controller
            ->orderBy('sort_order')
            ->get();
 
-        return view('organization.menu.pos', compact('tables', 'categories'));
+        $org = \App\Models\Organization::find($orgId);
+
+        return view('organization.menu.pos', compact('tables', 'categories', 'org'));
     }
 
     public function fetchTablesStatus()

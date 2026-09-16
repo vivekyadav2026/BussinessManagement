@@ -681,7 +681,7 @@
                             <span class="text-lg">💵</span>
                             <span>Cash</span>
                         </button>
-                        <button type="button" @click="paymentMethod = 'UPI'" 
+                        <button type="button" @click="paymentMethod = 'UPI'; renderUpiQrCode()" 
                                 :class="paymentMethod === 'UPI' ? 'border-2 border-amber-500 bg-amber-50 text-slate-950 font-extrabold shadow-2xs' : 'border border-slate-300 text-slate-800 hover:bg-slate-50 font-bold'" 
                                 class="py-2.5 px-2 rounded-lg text-xs text-center transition flex flex-col items-center gap-1 cursor-pointer">
                             <span class="text-lg">📱</span>
@@ -693,6 +693,36 @@
                             <span class="text-lg">💳</span>
                             <span>Card POS</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- Live Organization UPI QR Code Box -->
+                <div x-show="paymentMethod === 'UPI'" class="bg-amber-50/90 p-4 rounded-xl border border-amber-200 text-center space-y-2">
+                    <div class="text-[11px] font-black text-amber-900 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                        <span>📱 SCAN QR CODE TO PAY BILL</span>
+                    </div>
+                    
+                    <div class="flex justify-center py-1">
+                        <div id="counterUpiQrCode" class="p-2.5 bg-white rounded-xl border-2 border-amber-300 shadow-xs inline-block min-w-[130px] min-h-[130px]"></div>
+                    </div>
+
+                    <div class="text-sm font-mono font-black text-slate-950">
+                        Amount: ₹<span x-text="modalGrandTotal.toFixed(2)"></span>
+                    </div>
+
+                    <template x-if="orgUpiId">
+                        <div class="text-[11px] font-mono text-slate-800 bg-white/90 py-1 px-3 rounded-lg border border-slate-200 inline-block font-bold">
+                            UPI ID: <span class="text-amber-800 font-extrabold" x-text="orgUpiId"></span>
+                        </div>
+                    </template>
+                    <template x-if="!orgUpiId">
+                        <div class="text-[11px] text-rose-700 font-bold bg-rose-50 p-2 rounded-lg border border-rose-200">
+                            ⚠️ Organization UPI ID not configured. Please add UPI ID in <a href="{{ route('organization.profile') }}" target="_blank" class="underline text-rose-900 font-black">Organization Profile</a>.
+                        </div>
+                    </template>
+
+                    <div class="text-[10px] text-slate-500 font-bold pt-0.5">
+                        Accepts GPay • PhonePe • Paytm • BHIM • All UPI Apps
                     </div>
                 </div>
 
@@ -799,6 +829,7 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 function counterBilling() {
     return {
@@ -812,9 +843,11 @@ function counterBilling() {
         // Clock
         liveClock: '',
 
-        // Tax Rates from Org
+        // Tax Rates & Organization Details
         cgstPercent: {{ (float)($org->cgst_percent ?? 0) }},
         sgstPercent: {{ (float)($org->sgst_percent ?? 0) }},
+        orgUpiId: '{{ $org->upi_id ?? "" }}',
+        orgName: '{{ addslashes($org->name ?? "POS") }}',
 
         // Cart / Order State
         editingOrderId: null,
@@ -1129,6 +1162,28 @@ function counterBilling() {
             }).catch(err => { this.loading = false; });
         },
 
+        renderUpiQrCode() {
+            this.$nextTick(() => {
+                const qrContainer = document.getElementById("counterUpiQrCode");
+                if (!qrContainer) return;
+                qrContainer.innerHTML = "";
+                const upiId = this.orgUpiId || '';
+                if (!upiId) return;
+                const amount = (this.modalGrandTotal || 0).toFixed(2);
+                const upiString = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(this.orgName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('Counter Order Payment')}`;
+                if (typeof QRCode !== 'undefined') {
+                    new QRCode(qrContainer, {
+                        text: upiString,
+                        width: 130,
+                        height: 130,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                }
+            });
+        },
+
         openSettleModal() {
             if (this.cart.length === 0) return;
             this.orderToSettle = 'current_cart';
@@ -1136,6 +1191,7 @@ function counterBilling() {
             this.modalGrandTotal = this.cartTotal;
             this.cashTendered = Math.ceil(this.modalGrandTotal);
             this.settleModalOpen = true;
+            if (this.paymentMethod === 'UPI') this.renderUpiQrCode();
         },
 
         openSettleModalForOrder(order) {
@@ -1144,11 +1200,13 @@ function counterBilling() {
             this.modalGrandTotal = parseFloat(order.total);
             this.cashTendered = Math.ceil(this.modalGrandTotal);
             this.settleModalOpen = true;
+            if (this.paymentMethod === 'UPI') this.renderUpiQrCode();
         },
 
         calculateModalTotal() {
             let base = this.orderToSettle === 'current_cart' ? this.cartTotal : parseFloat(this.orderToSettle.total);
             this.modalGrandTotal = Math.max(0, base - (this.discount || 0));
+            if (this.paymentMethod === 'UPI') this.renderUpiQrCode();
         },
 
         applyPercentDiscount(percent) {
