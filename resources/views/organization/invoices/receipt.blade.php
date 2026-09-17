@@ -259,38 +259,57 @@
 
         <div class="divider"></div>
 
-        @php
-            $upiVpa = $invoice->organization->upi_id ?? 'pay@upi';
-            $payAmount = $invoice->amount_due > 0 ? $invoice->amount_due : $invoice->grand_total;
-            $upiNote = 'Invoice ' . $invoice->invoice_number;
-            $thermalUpiString = "upi://pay?pa=" . rawurlencode($upiVpa) . "&pn=" . rawurlencode($invoice->organization->name) . "&am=" . number_format($payAmount, 2, '.', '') . "&cu=INR&tn=" . rawurlencode($upiNote);
-        @endphp
+        @if($invoice->status === 'Paid' || $invoice->amount_due <= 0)
+            <!-- Fully Paid Badge -->
+            <div class="text-center" style="margin-top: 6px;">
+                <div style="padding: 4px 10px; border: 1.5px solid #000; display: inline-block; font-weight: 900; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ✓ PAID IN FULL
+                </div>
+                <div style="font-size: 9px; font-weight: bold; margin-top: 6px;">Thank you for your business!</div>
+                <div style="font-size: 8px; color: #333; margin-top: 2px;">E.&O.E. | Computer Generated Receipt</div>
+            </div>
+        @else
+            @if($invoice->organization?->upi_id)
+                @php
+                    $upiVpa = $invoice->organization->upi_id;
+                    $payAmount = $invoice->amount_due;
+                    $upiNote = 'Invoice ' . $invoice->invoice_number;
+                    $thermalUpiString = "upi://pay?pa=" . rawurlencode($upiVpa) . "&pn=" . rawurlencode($invoice->organization->name) . "&am=" . number_format($payAmount, 2, '.', '') . "&cu=INR&tn=" . rawurlencode($upiNote);
+                @endphp
 
-        <!-- Dynamic UPI Payment QR & Footer -->
-        <div class="text-center" style="margin-top: 6px;">
-            <div style="font-size: 9px; font-weight: bold;">SCAN TO PAY EXACT AMOUNT</div>
-            <div style="font-size: 11px; font-weight: 900;">₹{{ number_format($payAmount, 2) }}</div>
-            <div id="receiptUpiQrCode" style="display: flex; justify-content: center; margin: 4px 0;"></div>
-            <div style="font-size: 8px; color: #333;">GPay | PhonePe | Paytm | BHIM</div>
-            
-            <div style="font-size: 9px; font-weight: bold; margin-top: 6px;">Thank you for your business!</div>
-            <div style="font-size: 8px; color: #333; margin-top: 2px;">E.&O.E. | Computer Generated Receipt</div>
-        </div>
+                <!-- Dynamic UPI Payment QR & Footer -->
+                <div class="text-center" style="margin-top: 6px;">
+                    <div style="font-size: 9px; font-weight: bold;">SCAN TO PAY BALANCE DUE</div>
+                    <div style="font-size: 11px; font-weight: 900;">₹{{ number_format($payAmount, 2) }}</div>
+                    <div id="receiptUpiQrCode" style="display: flex; justify-content: center; margin: 4px 0;"></div>
+                    <div style="font-size: 8px; color: #333;">GPay | PhonePe | Paytm | BHIM</div>
+                    
+                    <div style="font-size: 9px; font-weight: bold; margin-top: 6px;">Thank you for your business!</div>
+                    <div style="font-size: 8px; color: #333; margin-top: 2px;">E.&O.E. | Computer Generated Receipt</div>
+                </div>
 
-    </div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        new QRCode(document.getElementById("receiptUpiQrCode"), {
-            text: "{{ $thermalUpiString }}",
-            width: 68,
-            height: 68,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.M
-        });
-    });
-    </script>
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const qrElem = document.getElementById("receiptUpiQrCode");
+                    if (qrElem) {
+                        new QRCode(qrElem, {
+                            text: "{{ $thermalUpiString }}",
+                            width: 68,
+                            height: 68,
+                            colorDark : "#000000",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.M
+                        });
+                    }
+                });
+                </script>
+            @else
+                <div class="text-center" style="margin-top: 6px;">
+                    <div style="font-size: 9px; font-weight: bold;">Thank you for your business!</div>
+                    <div style="font-size: 8px; color: #333; margin-top: 2px;">E.&O.E. | Computer Generated Receipt</div>
+                </div>
+            @endif
+        @endif
 
 </body>
 </html>

@@ -334,8 +334,8 @@
 
             <!-- Record Payment Form Card -->
             @if(($actualBalanceDue > 0 || $invoice->status === 'Draft') && $invoice->status !== 'Cancelled' && $invoice->status !== 'Paid')
-            <div class="bg-white rounded-xl border-2 border-emerald-500 shadow-sm p-6">
-                <div class="flex items-center gap-2 border-b border-emerald-100 pb-3 mb-4">
+            <div class="bg-white rounded-xl border-2 border-emerald-500 shadow-sm p-6 space-y-4">
+                <div class="flex items-center gap-2 border-b border-emerald-100 pb-3">
                     <span class="w-6 h-6 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-xs">
                         ₹
                     </span>
@@ -343,6 +343,24 @@
                         Record Payment Settlement
                     </h3>
                 </div>
+
+                @if($invoice->organization?->upi_id && $actualBalanceDue > 0)
+                <!-- Live Merchant UPI QR Code Card -->
+                <div class="bg-amber-50/70 rounded-xl border border-amber-200/90 p-3.5 flex items-center gap-3.5">
+                    <div id="invoiceShowUpiQr" class="bg-white p-1.5 rounded-lg border border-amber-300 shadow-2xs shrink-0"></div>
+                    <div class="space-y-1 text-xs">
+                        <div class="font-extrabold text-amber-950 flex items-center gap-1.5 text-xs">
+                            <span>📱 Scan &amp; Pay via UPI</span>
+                        </div>
+                        <div class="text-[11px] text-slate-700">
+                            UPI ID: <strong class="font-mono text-slate-900 bg-white px-1.5 py-0.5 rounded border border-amber-200">{{ $invoice->organization->upi_id }}</strong>
+                        </div>
+                        <div class="text-[10px] text-slate-500 font-medium">
+                            Scan via PhonePe, Google Pay, Paytm, BHIM, or any UPI App
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 <form action="{{ route('organization.invoices.payments.store', $invoice) }}" method="POST" class="space-y-4">
                     @csrf
@@ -374,7 +392,7 @@
                     </div>
 
                     <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-extrabold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-2">
-                        <span>Confirm & Record Payment</span>
+                        <span>Confirm &amp; Record Payment</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                     </button>
                 </form>
@@ -383,4 +401,32 @@
         </div>
     </div>
 </div>
+
+@if($invoice->organization?->upi_id && ($actualBalanceDue ?? 0) > 0)
+@php
+    $formattedDueAmount = number_format($actualBalanceDue, 2, '.', '');
+@endphp
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const qrContainer = document.getElementById("invoiceShowUpiQr");
+        if (qrContainer) {
+            const upiVpa = "{{ $invoice->organization->upi_id }}";
+            const orgName = "{{ addslashes($invoice->organization->name) }}";
+            const amount = "{{ $formattedDueAmount }}";
+            const invNum = "{{ $invoice->invoice_number }}";
+            const upiString = `upi://pay?pa=${encodeURIComponent(upiVpa)}&pn=${encodeURIComponent(orgName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('Invoice ' + invNum)}`;
+
+            new QRCode(qrContainer, {
+                text: upiString,
+                width: 90,
+                height: 90,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+    });
+</script>
+@endif
 @endsection

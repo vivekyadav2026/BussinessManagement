@@ -80,7 +80,8 @@ class AttendanceTest extends TestCase
             'organization_id' => $org->id,
             'location_id' => $loc->id,
             'first_name' => 'John',
-            'last_name' => 'Doe'
+            'last_name' => 'Doe',
+            'joining_date' => now()->startOfMonth()->toDateString()
         ]);
 
         $date = now();
@@ -99,8 +100,8 @@ class AttendanceTest extends TestCase
         $this->assertEquals(1, $summary['absent']);
         $this->assertEquals(1, $summary['leaves']);
         
-        // 2 present + (1 half day * 0.5) = 2.5 effective working days
-        $this->assertEquals(2.5, $summary['effective_working_days']);
+        // 2 present + 1 paid leave + (1 half day * 0.5) = 3.5 effective working days
+        $this->assertEquals(3.5, $summary['effective_working_days']);
         $this->assertEquals(5, $summary['total_recorded_days']);
     }
 }

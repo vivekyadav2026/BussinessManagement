@@ -59,7 +59,7 @@ class DashboardController extends Controller
 
         // Subscriptions plan breakdown
         $plans = Plan::withCount('subscriptions')
-            ->having('subscriptions_count', '>', 0)
+            ->has('subscriptions')
             ->orderByDesc('subscriptions_count')
             ->get();
         $planLabels = [];

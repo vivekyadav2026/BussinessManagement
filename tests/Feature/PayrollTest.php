@@ -30,6 +30,7 @@ class PayrollTest extends TestCase
             'location_id' => $loc->id,
             'first_name' => 'John',
             'last_name' => 'Doe',
+            'joining_date' => '2026-08-01',
         ]);
 
         $structure = SalaryStructure::create([
@@ -61,6 +62,8 @@ class PayrollTest extends TestCase
         // Assertions
         $this->assertNotNull($payroll);
         $this->assertEquals(60000, $payroll->basic_salary + collect($payroll->allowances)->sum('amount'));
+        
+
         $this->assertEquals(15, $payroll->effective_working_days);
         
         // Math check

@@ -70,7 +70,7 @@ class ClientTest extends TestCase
         $response = $this->post(route('organization.clients.store'), [
             'name' => 'New Client',
             'email' => 'client@test.com',
-            'phone' => '1234567890'
+            'phone' => '9876543210'
         ]);
         $response->assertSessionHas('success');
         $this->assertDatabaseHas('clients', ['name' => 'New Client']);
@@ -81,7 +81,7 @@ class ClientTest extends TestCase
         $this->put(route('organization.clients.update', $client), [
             'name' => 'Updated Client',
             'email' => 'client@test.com',
-            'phone' => '1234567890'
+            'phone' => '9876543210'
         ]);
         $this->assertDatabaseHas('clients', ['name' => 'Updated Client']);
     }

@@ -32,7 +32,7 @@
 <body class="py-8 px-4 sm:px-6">
 
     @php
-        function numberToWords($number) {
+        $numberToWords = function($number) {
             $no = floor($number);
             $point = round($number - $no, 2) * 100;
             $hundred = null;
@@ -68,8 +68,9 @@
             $result = implode('', $str);
             $points = ($point > 0) ? " and " . ($words[floor($point / 10) * 10] . " " . $words[$point % 10]) . " Paise" : '';
             return ($result ? "Rupees " . trim($result) : "Rupees Zero") . ($points ? $points : "") . " Only";
-        }
-        $amountInWords = numberToWords($invoice->grand_total);
+        };
+        
+        $amountInWords = $numberToWords($invoice->grand_total);
         $orgUpi = $invoice->organization->upi_id ?? '';
         $payAmount = $invoice->amount_due > 0 ? $invoice->amount_due : $invoice->grand_total;
         $upiString = $orgUpi ? "upi://pay?pa=" . rawurlencode($orgUpi) . "&pn=" . rawurlencode($invoice->organization->name) . "&am=" . number_format($payAmount, 2, '.', '') . "&cu=INR&tn=" . rawurlencode('Invoice ' . $invoice->invoice_number) : '';
@@ -169,14 +170,26 @@
                     $upiString = "upi://pay?pa=" . rawurlencode($upiVpa) . "&pn=" . rawurlencode($invoice->organization->name) . "&am=" . number_format($payAmount, 2, '.', '') . "&cu=INR&tn=" . rawurlencode($upiNote);
                 @endphp
 
-                <div class="flex items-center justify-between pt-2 border-t border-slate-100 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
-                    <div>
-                        <div class="text-[10px] font-black text-slate-900 uppercase">Scan to Pay Exact Amount</div>
-                        <div class="text-[11px] font-black text-emerald-700 font-mono">₹{{ number_format($payAmount, 2) }}</div>
-                        <div class="text-[9px] text-slate-500 mt-0.5">GPay | PhonePe | Paytm | BHIM</div>
+                @if($invoice->status === 'Paid' || $invoice->amount_due <= 0)
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            <div>
+                                <div class="text-xs font-black text-emerald-950 uppercase tracking-wider">✓ PAID IN FULL</div>
+                                <div class="text-[10px] text-emerald-700 font-medium">No balance payment due</div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="upiPayQrCode" class="p-1 bg-white border border-slate-300 rounded-lg shadow-2xs"></div>
-                </div>
+                @elseif($invoice->organization?->upi_id)
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
+                        <div>
+                            <div class="text-[10px] font-black text-slate-900 uppercase">Scan to Pay Balance Due</div>
+                            <div class="text-[11px] font-black text-emerald-700 font-mono">₹{{ number_format($payAmount, 2) }}</div>
+                            <div class="text-[9px] text-slate-500 mt-0.5">GPay | PhonePe | Paytm | BHIM</div>
+                        </div>
+                        <div id="upiPayQrCodeTop" class="p-1 bg-white border border-slate-300 rounded-lg shadow-2xs"></div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -239,10 +252,14 @@
                             <div class="text-slate-600 font-medium">Bank Account: <b>Available on Request</b></div>
                         @endif
                     </div>
-                    @if($invoice->organization->upi_id)
+                    @if($invoice->status !== 'Paid' && $invoice->amount_due > 0 && $invoice->organization->upi_id)
                         <div class="flex flex-col items-center shrink-0">
                             <div id="upiPayQrCode" class="p-1 bg-white border border-slate-200 rounded-lg shadow-2xs"></div>
                             <span class="text-[9px] font-bold text-slate-600 mt-1">Scan to Pay</span>
+                        </div>
+                    @elseif($invoice->status === 'Paid' || $invoice->amount_due <= 0)
+                        <div class="flex flex-col items-center shrink-0 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg">
+                            <span class="text-[10px] font-black text-emerald-800 uppercase">✓ Paid</span>
                         </div>
                     @endif
                 </div>
@@ -323,6 +340,10 @@
             <div class="text-[10px] text-slate-400 space-y-0.5">
                 <div>E. & O.E. | Computer Generated Tax Invoice</div>
                 <div>Powered by {{ config('app.name', 'Vyapaargo') }} Cloud ERP</div>
+                <div class="pt-1 text-slate-600 font-medium">
+                    Have an issue with this invoice? 
+                    <a href="{{ route('public.complaint.create', ['org_id' => $invoice->organization_id, 'invoice_id' => $invoice->id]) }}" target="_blank" class="font-bold text-slate-900 underline">Lodge Ticket for {{ $invoice->organization->name }} &rarr;</a>
+                </div>
             </div>
 
             <div class="text-right space-y-8 shrink-0">
@@ -333,6 +354,7 @@
 
     </div>
 
+    @if(($invoice->status !== 'Paid' && $invoice->amount_due > 0) && $invoice->organization->upi_id)
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const upiEl = document.getElementById("upiPayQrCode");
@@ -346,7 +368,19 @@
                 correctLevel : QRCode.CorrectLevel.M
             });
         }
+        const upiTopEl = document.getElementById("upiPayQrCodeTop");
+        if (upiTopEl) {
+            new QRCode(upiTopEl, {
+                text: "{{ $upiString }}",
+                width: 58,
+                height: 58,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M
+            });
+        }
     });
     </script>
+    @endif
 </body>
 </html>

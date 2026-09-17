@@ -188,9 +188,9 @@
                                 $att = $attendances[$currentDate] ?? null;
                                 $isWeekend = $dateObj->copy()->day($day)->isWeekend();
                             @endphp
-                            <div class="p-2 min-h-[85px] rounded-lg border flex flex-col justify-between transition-colors {{ 
-                                $isWeekend ? 'bg-slate-50/70 border-slate-200/60' : 'bg-white border-slate-200 hover:border-slate-300' 
-                            }}">
+                            <a href="{{ route('organization.attendance.index', ['date' => $currentDate]) }}" class="block p-2 min-h-[85px] rounded-lg border flex flex-col justify-between transition-colors cursor-pointer {{ 
+                                $isWeekend ? 'bg-slate-50/70 border-slate-200/60' : 'bg-white border-slate-200 hover:border-amber-400 hover:ring-1 hover:ring-amber-400' 
+                            }}" title="Click to edit attendance for {{ $currentDate }}">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs font-bold {{ $isWeekend ? 'text-slate-500' : 'text-slate-900' }}">
                                         {{ $day }}
@@ -225,7 +225,7 @@
                                         {{ $isWeekend ? 'Weekend' : 'Not marked' }}
                                     </div>
                                 @endif
-                            </div>
+                            </a>
                         @endfor
                     </div>
                 </div>

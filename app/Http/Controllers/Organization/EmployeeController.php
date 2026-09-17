@@ -26,7 +26,13 @@ class EmployeeController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $orgId = auth()->user()->organization_id;
+        $locationId = \App\Services\LocationManager::getActiveLocationId();
+
         $query = Employee::where('organization_id', $orgId)->with(['user.roles', 'location']);
+
+        if (!auth()->user()->hasRole('Organization Admin') && !auth()->user()->hasRole('Super Admin')) {
+            $query->where('location_id', $locationId);
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;

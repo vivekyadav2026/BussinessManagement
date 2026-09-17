@@ -30,7 +30,7 @@ class LocationTest extends TestCase
 
         $response = $this->actingAs($admin)->post('/organization/locations', [
             'name' => 'Downtown Branch',
-            'phone' => '1234567890'
+            'phone' => '9876543210'
         ]);
 
         $response->assertRedirect('/organization/locations');

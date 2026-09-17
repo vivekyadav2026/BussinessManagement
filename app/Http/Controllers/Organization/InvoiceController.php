@@ -102,6 +102,8 @@ class InvoiceController extends Controller implements HasMiddleware
             'discount_type' => 'nullable|string|in:fixed,percent,percentage',
             'discount_value' => 'nullable|numeric|min:0',
             'amount_paid' => 'nullable|numeric|min:0',
+            'payment_method' => 'nullable|string',
+            'reference_number' => 'nullable|string|max:255',
             'status' => 'required|in:Draft,Paid,Partially Paid,Due',
             'notes' => 'nullable|string'
         ]);

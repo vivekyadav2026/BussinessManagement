@@ -38,15 +38,21 @@ class InvoiceNotification extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         $pdf = DocumentService::generateInvoicePdf($this->invoice);
+        $supportUrl = route('public.complaint.create', [
+            'org_id' => $this->invoice->organization_id,
+            'invoice_id' => $this->invoice->id
+        ]);
         
         return (new MailMessage)
                     ->subject('Invoice #' . $this->invoice->invoice_number . ' from ' . $this->invoice->organization->name)
                     ->greeting('Hello ' . ($notifiable->name ?? 'Customer') . ',')
-                    ->line('Please find attached your invoice.')
-                    ->line('Total Amount: ' . number_format($this->invoice->grand_total, 2))
-                    ->line('Amount Paid: ' . number_format($this->invoice->amount_paid, 2))
-                    ->line('Balance Due: ' . number_format($this->invoice->grand_total - $this->invoice->amount_paid, 2))
+                    ->line('Please find attached your invoice from ' . $this->invoice->organization->name . '.')
+                    ->line('Total Amount: ₹' . number_format($this->invoice->grand_total, 2))
+                    ->line('Amount Paid: ₹' . number_format($this->invoice->amount_paid, 2))
+                    ->line('Balance Due: ₹' . number_format($this->invoice->grand_total - $this->invoice->amount_paid, 2))
                     ->line('Payment Status: ' . $this->invoice->status)
+                    ->action('Lodge Support Ticket / Complaint', $supportUrl)
+                    ->line('If you have any issues with this invoice or payment, click the button above to lodge a complaint directly with ' . $this->invoice->organization->name . '.')
                     ->attachData($pdf->output(), 'invoice_' . $this->invoice->invoice_number . '.pdf', [
                         'mime' => 'application/pdf',
                     ]);

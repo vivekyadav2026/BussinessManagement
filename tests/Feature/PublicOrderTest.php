@@ -42,7 +42,7 @@ class PublicOrderTest extends TestCase
 
         // 1. Visit QR code
         $response = $this->get(route('public.menu.table', $table->public_token));
-        $response->assertStatus(200);
+        $response->assertRedirect(route('public.menu', [$table->organization_id, $table->location_id]));
         $response->assertSessionHas('restaurant_table_id', $table->id);
 
         // 2. Add to cart
@@ -56,7 +56,7 @@ class PublicOrderTest extends TestCase
         // 3. Checkout (Table session is active, so order_type is forced to Dine-in)
         $response = $this->post(route('public.order.place', [$org->id, $loc->id]), [
             'customer_name' => 'John Doe',
-            'customer_phone' => '1234567890'
+            'customer_phone' => '9876543210'
         ]);
         
         $response->assertRedirect();

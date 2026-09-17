@@ -604,53 +604,121 @@
 
                     <!-- Notifications Dropdown -->
                     @php
-                        $unreadNotifications = auth()->user()->unreadNotifications;
-                        $notificationCount = $unreadNotifications->count();
+                        $unreadNotifications = auth()->user()?->unreadNotifications ?? collect();
+                        $orgId = auth()->user()?->organization_id;
+                        $activeLocationId = \App\Services\LocationManager::getActiveLocationId();
+
+                        $lowStockProducts = collect();
+                        if ($orgId) {
+                            $lowStockProducts = \App\Models\Product::where('organization_id', $orgId)
+                                ->where('is_active', true)
+                                ->with(['inventoryStocks' => function($q) use ($activeLocationId) {
+                                    if ($activeLocationId) {
+                                        $q->where('location_id', $activeLocationId);
+                                    }
+                                }])
+                                ->get()
+                                ->filter(function($prod) {
+                                    $qty = $prod->inventoryStocks->first()?->quantity ?? 0;
+                                    $min = $prod->min_stock_level ?? 5;
+                                    return $qty <= $min;
+                                });
+                        }
+
+                        $totalNotificationCount = $unreadNotifications->count() + $lowStockProducts->count();
                     @endphp
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="p-1.5 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none relative transition-colors">
                             <span class="sr-only">View notifications</span>
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.07 6.07 0 00-1-3.5M9 17v1a3 3 0 006 0v-1m-6 0H9m0 0a3 3 0 01-3-3v-3.5M9 17h6" /></svg>
-                            @if($notificationCount > 0)
-                                <span class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
+                            @if($totalNotificationCount > 0)
+                                <span class="absolute top-1 right-1 flex h-2.5 w-2.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600 ring-2 ring-white"></span>
+                                </span>
                             @endif
                         </button>
-                        <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-80 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30" style="display: none;">
-                            <div class="px-4 py-2 text-sm font-semibold border-b border-gray-100 text-gray-800 flex justify-between items-center">
-                                Notifications
-                                @if($notificationCount > 0)
+                        <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right rounded-xl bg-white shadow-2xl ring-1 ring-black/10 focus:outline-none z-50 overflow-hidden divide-y divide-slate-100" style="display: none;">
+                            <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-extrabold text-slate-900">Notifications</span>
+                                    @if($totalNotificationCount > 0)
+                                        <span class="px-2 py-0.5 rounded-full text-[11px] font-black bg-rose-100 text-rose-800 border border-rose-200">{{ $totalNotificationCount }}</span>
+                                    @endif
+                                </div>
+                                @if($unreadNotifications->count() > 0)
                                     <form action="{{ route('organization.notifications.markAllAsRead') }}" method="POST" class="inline">
                                         @csrf
-                                        <button type="submit" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Mark all as read</button>
+                                        <button type="submit" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold transition">Mark all read</button>
                                     </form>
                                 @endif
                             </div>
-                            <div class="divide-y divide-gray-50 max-h-64 overflow-y-auto">
+
+                            <div class="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                                {{-- 1. Live Low Stock Alerts Section --}}
+                                @if($lowStockProducts->count() > 0)
+                                    <div class="bg-amber-50/60 px-4 py-2 flex items-center justify-between border-b border-amber-100 text-[11px] font-extrabold text-amber-950">
+                                        <span class="flex items-center gap-1.5">
+                                            <span class="text-amber-600">⚠️</span> Low Stock Items ({{ $lowStockProducts->count() }})
+                                        </span>
+                                        <a href="{{ route('organization.inventory.index', ['status' => 'low_stock']) }}" class="text-amber-800 hover:text-amber-950 underline font-extrabold">View Inventory &rarr;</a>
+                                    </div>
+                                    @foreach($lowStockProducts->take(5) as $lowProd)
+                                        @php
+                                            $stockQty = $lowProd->inventoryStocks->first()?->quantity ?? 0;
+                                            $isOut = $stockQty <= 0;
+                                        @endphp
+                                        <a href="{{ route('organization.inventory.index', ['search' => $lowProd->name]) }}" class="block px-4 py-3 hover:bg-amber-50/40 transition border-b border-slate-100 text-xs">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <div class="space-y-0.5">
+                                                    <p class="font-extrabold text-slate-950 leading-tight">{{ $lowProd->name }}</p>
+                                                    <p class="text-slate-600 text-[11px] font-medium">
+                                                        Remaining: <span class="font-black {{ $isOut ? 'text-rose-600' : 'text-amber-700' }}">{{ $stockQty }} units</span>
+                                                        <span class="text-slate-400 font-mono">(Min: {{ $lowProd->min_stock_level ?? 5 }})</span>
+                                                    </p>
+                                                </div>
+                                                <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider shrink-0 {{ $isOut ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-900 border border-amber-200' }}">
+                                                    {{ $isOut ? 'Out of Stock' : 'Low Stock' }}
+                                                </span>
+                                            </div>
+                                        </a>
+                                    @endforeach
+                                    @if($lowStockProducts->count() > 5)
+                                        <div class="px-4 py-2 text-center text-[11px] text-amber-900 bg-amber-50/40 font-bold border-b border-slate-100">
+                                            + {{ $lowStockProducts->count() - 5 }} more items low in stock
+                                        </div>
+                                    @endif
+                                @endif
+
+                                {{-- 2. Standard Notifications Section --}}
                                 @forelse($unreadNotifications as $notification)
-                                    <div class="px-4 py-3 hover:bg-gray-50 text-xs">
-                                        <div class="flex justify-between items-start">
+                                    <div class="px-4 py-3 hover:bg-slate-50 transition text-xs">
+                                        <div class="flex justify-between items-start gap-2">
                                             <div>
-                                                <p class="font-medium text-gray-900">{{ $notification->data['title'] ?? 'Notification' }}</p>
-                                                <p class="text-gray-500 mt-0.5">{{ $notification->data['message'] ?? '' }}</p>
-                                                <p class="text-gray-400 text-[10px] mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                                <p class="font-bold text-slate-900">{{ $notification->data['title'] ?? 'Notification' }}</p>
+                                                <p class="text-slate-600 mt-0.5 leading-relaxed">{{ $notification->data['message'] ?? '' }}</p>
+                                                <p class="text-slate-400 text-[10px] font-medium mt-1">{{ $notification->created_at->diffForHumans() }}</p>
                                             </div>
                                             <form action="{{ route('organization.notifications.markAsRead', $notification->id) }}" method="POST">
                                                 @csrf
-                                                <button type="submit" class="text-gray-400 hover:text-indigo-600 p-1" title="Mark as read">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                <button type="submit" class="text-slate-400 hover:text-indigo-600 p-1" title="Mark as read">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                 </button>
                                             </form>
                                         </div>
                                     </div>
                                 @empty
-                                    <div class="px-4 py-6 text-center text-gray-500 text-xs">
-                                        No new notifications
-                                    </div>
+                                    @if($lowStockProducts->count() == 0)
+                                        <div class="px-4 py-8 text-center text-slate-400 text-xs font-semibold">
+                                            <div class="text-xl mb-1">🔔</div>
+                                            No new notifications or low stock alerts
+                                        </div>
+                                    @endif
                                 @endforelse
-                                
-                                <div class="px-4 py-2 border-t border-gray-100 text-center">
-                                    <a href="{{ route('organization.notifications.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">View all notifications</a>
-                                </div>
+                            </div>
+
+                            <div class="px-4 py-2.5 bg-slate-50 border-t border-slate-100 text-center">
+                                <a href="{{ route('organization.notifications.index') }}" class="text-xs font-extrabold text-indigo-600 hover:text-indigo-800 transition">View all notifications &rarr;</a>
                             </div>
                         </div>
                     </div>

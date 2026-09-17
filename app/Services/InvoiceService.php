@@ -146,9 +146,14 @@ class InvoiceService
 
             // Record transaction entry if payment was collected upon creation
             if ($invoice->amount_paid > 0) {
-                $method = $data['payment_method'] ?? 'Cash';
-                if (!in_array($method, ['Cash', 'UPI', 'Card', 'Razorpay'])) {
-                    $method = 'Cash';
+                $rawMethod = $data['payment_method'] ?? 'Cash';
+                $method = 'Cash';
+                if (in_array($rawMethod, ['Cash', 'UPI', 'Card', 'Razorpay'])) {
+                    $method = $rawMethod;
+                } elseif (str_contains(strtolower($rawMethod), 'bank') || str_contains(strtolower($rawMethod), 'neft')) {
+                    $method = 'UPI';
+                } elseif (str_contains(strtolower($rawMethod), 'card')) {
+                    $method = 'Card';
                 }
 
                 \App\Models\Transaction::create([

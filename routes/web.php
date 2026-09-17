@@ -273,6 +273,7 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class, 'permiss
 
 Route::middleware(['auth', \App\Http\Middleware\LocationContext::class])->group(function () {
     Route::post('/organization/set-location', [\App\Http\Controllers\Organization\LocationController::class, 'switchLocation'])->name('organization.set-location');
+    Route::post('/organization/quick-upi', [\App\Http\Controllers\Organization\OrganizationProfileController::class, 'updateQuickUpi'])->name('organization.quick-upi');
 
     // Invoices are location-aware
     Route::middleware(['permission:invoices.view', 'plan.feature:module_retail'])->prefix('organization/invoices')->name('organization.invoices.')->group(function () {
@@ -303,6 +304,12 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class])->group(
         Route::get('/', [\App\Http\Controllers\Organization\ReceivableController::class, 'dashboard'])->name('index');
         Route::get('client-report', [\App\Http\Controllers\Organization\ReceivableController::class, 'clientReport'])->name('client_report');
         Route::get('overdue-report', [\App\Http\Controllers\Organization\ReceivableController::class, 'overdueReport'])->name('overdue_report');
+    });
+
+    // Sales & Analytics Module
+    Route::middleware(['permission:invoices.view', 'plan.feature:module_retail'])->prefix('organization/sales-analytics')->name('organization.sales-analytics.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Organization\SalesAnalyticsController::class, 'index'])->name('index');
+        Route::get('/export', [\App\Http\Controllers\Organization\SalesAnalyticsController::class, 'export'])->name('export');
     });
 
     // Attendance
@@ -344,6 +351,11 @@ Route::middleware(['auth', \App\Http\Middleware\LocationContext::class])->group(
 
 // Public Signed Routes
 Route::get('pay/invoice/{invoice}', [\App\Http\Controllers\PublicInvoiceController::class, 'show'])->name('public.invoice.pay')->middleware('signed');
+
+// Public Support Ticket & Complaint Portal
+Route::get('/support/complaint', [\App\Http\Controllers\PublicComplaintController::class, 'create'])->name('public.complaint.create');
+Route::post('/support/complaint', [\App\Http\Controllers\PublicComplaintController::class, 'store'])->name('public.complaint.store');
+Route::get('/support/complaint/success/{complaint}', [\App\Http\Controllers\PublicComplaintController::class, 'success'])->name('public.complaint.success');
 
 // Public Menu & Orders
 Route::get('/menu/{organization}/{location}', [\App\Http\Controllers\PublicMenuController::class, 'show'])->name('public.menu');

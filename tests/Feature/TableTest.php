@@ -49,7 +49,7 @@ class TableTest extends TestCase
 
         // Test public token resolution
         $response = $this->get(route('public.menu.table', $table->public_token));
-        $response->assertStatus(200);
+        $response->assertRedirect(route('public.menu', [$table->organization_id, $table->location_id]));
         $response->assertSessionHas('restaurant_table_id', $table->id);
     }
 }

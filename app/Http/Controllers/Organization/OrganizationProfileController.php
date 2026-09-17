@@ -68,6 +68,24 @@ class OrganizationProfileController extends Controller
         return redirect()->route('organization.profile')->with('success', 'Organization profile updated successfully.');
     }
 
+    public function updateQuickUpi(Request $request)
+    {
+        $request->validate([
+            'upi_id' => 'required|string|max:255',
+        ]);
+
+        $organization = auth()->user()->organization;
+        $organization->update([
+            'upi_id' => trim($request->upi_id),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'upi_id' => $organization->upi_id,
+            'message' => 'UPI ID saved successfully!'
+        ]);
+    }
+
     private function compressAndSaveImage($file, $directory)
     {
         $tempPath = $file->getRealPath();

@@ -150,31 +150,73 @@
                     </div>
                 </div>
 
-                <div class="flex justify-between items-baseline mb-6 pt-2">
+                <div class="flex justify-between items-baseline mb-4 pt-2">
                     <span class="text-xs font-extrabold uppercase tracking-wider text-slate-600">Grand Total</span>
                     <span class="text-2xl font-black text-slate-950">₹<span id="sumGrandTotal">0.00</span></span>
                 </div>
 
                 <div class="space-y-4 border-t border-slate-200 pt-4 mb-6">
                     <div>
-                        <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Save As Status</label>
-                        <select id="invoiceStatus" class="w-full border border-slate-300 rounded-lg font-bold text-xs text-slate-800 px-3 py-2 bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                            <option value="Paid">✓ Paid (Full Payment Received & Deduct Stock)</option>
-                            <option value="Due">⏳ Due (Unpaid / Credit Sale & Deduct Stock)</option>
-                            <option value="Partially Paid">🌗 Partially Paid (Partial Advance & Deduct Stock)</option>
-                            <option value="Draft">📝 Draft (Save as Estimate/Draft - Stock & Payment deferred)</option>
+                        <label class="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-1">Save As Status</label>
+                        <select id="invoiceStatus" class="w-full border border-slate-300 rounded-lg font-bold text-xs text-slate-900 px-3 py-2 bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                            <option value="Paid">✓ Paid (Full Payment Received Now)</option>
+                            <option value="Due">⏳ Due (Credit Sale - Pay Later)</option>
+                            <option value="Partially Paid">🌗 Partially Paid (Partial Advance Received)</option>
+                            <option value="Draft">📝 Draft (Estimate / Quotation Only)</option>
                         </select>
-                        <p id="statusNoticeText" class="text-[11px] text-slate-500 font-medium mt-1">Full amount will be marked as paid and warehouse stock deducted.</p>
                     </div>
 
-                    <div id="paymentReceivedGroup">
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">Payment Received Now (₹)</label>
-                            <span id="paymentStatusBadge" class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Auto: Full</span>
+                    <!-- Payment Settlement Block (Shown when Paid or Partially Paid) -->
+                    <div id="paymentDetailsBlock" class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                        <div id="partialAmountGroup" class="hidden">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">Advance Amount Paid Now (₹) *</label>
+                                <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">Partial</span>
+                            </div>
+                            <input type="number" id="sumPaid" value="0" min="0" step="0.01" class="w-full border border-slate-300 rounded-lg text-sm font-black bg-white focus:border-amber-500 text-slate-950 px-3 py-2 shadow-2xs">
                         </div>
-                        <input type="number" id="sumPaid" value="0" min="0" step="0.01" class="w-full border border-slate-300 rounded-lg text-base font-black bg-slate-50 focus:bg-white text-slate-950 px-3 py-2">
-                        <p id="paymentHelperText" class="text-[11px] text-slate-500 mt-1">For <strong>Draft</strong> or <strong>Due</strong>, initial payment is ₹0. You can record payments later from the invoice details screen.</p>
+
+                        <div>
+                            <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Payment Method *</label>
+                            <select id="paymentMethod" class="w-full border border-slate-300 rounded-lg font-bold text-xs text-slate-900 px-3 py-2 bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-2xs">
+                                <option value="Cash">💵 Cash</option>
+                                <option value="UPI">📱 UPI / QR Code</option>
+                                <option value="Card">💳 Debit / Credit Card</option>
+                                <option value="Bank Transfer">🏦 Bank Transfer / NEFT</option>
+                            </select>
+                        </div>
+
+                        <div id="paymentRefGroup" class="hidden">
+                            <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Txn Ref / UTR / Cheque #</label>
+                            <input type="text" id="paymentRef" placeholder="e.g. UPI UTR 42918401928" class="w-full border border-slate-300 rounded-lg text-xs font-medium px-3 py-2 text-slate-950 bg-white focus:border-amber-500 shadow-2xs">
+                        </div>
+
+                        <!-- Inline Quick UPI Setup (Shown when UPI is selected & upi_id is empty) -->
+                        <div id="quickUpiSetupBlock" class="hidden p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-2 text-xs text-amber-900">
+                            <div class="font-black text-amber-950 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <span>Merchant UPI ID Missing</span>
+                            </div>
+                            <p class="text-[11px] text-amber-800 leading-snug">Enter your UPI ID / VPA to display your payment QR Code on this invoice:</p>
+                            <div class="flex gap-2">
+                                <input type="text" id="quickUpiInput" placeholder="e.g. yourname@upi or 9876543210@paytm" class="w-full border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 bg-white font-mono focus:outline-none focus:border-amber-500">
+                                <button type="button" onclick="saveQuickUpiId()" id="btnSaveQuickUpi" class="bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs shrink-0 shadow-2xs transition flex items-center gap-1">
+                                    <span>Save & Show QR</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live Dynamic UPI QR Code Box -->
+                        <div id="upiQrCodeContainer" class="hidden p-3 bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center text-center space-y-2 shadow-2xs">
+                            <div class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Scan to Pay via UPI</div>
+                            <div id="createUpiQrBox" class="p-2 bg-white rounded-lg border border-slate-200 shadow-2xs min-h-[140px] flex items-center justify-center"></div>
+                            <div class="text-[11px] font-black text-slate-900 font-mono" id="upiVpaDisplay"></div>
+                            <div class="text-[11px] font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200" id="upiAmountDisplay">₹0.00</div>
+                            <div class="text-[10px] text-slate-400">Scan using GPay, PhonePe, Paytm, BHIM</div>
+                        </div>
                     </div>
+
+                    <p id="statusNoticeText" class="text-[11px] text-slate-500 font-medium leading-relaxed mt-1">Full payment will be marked as received and recorded immediately.</p>
                 </div>
 
                 <button onclick="submitInvoice()" id="btnSubmit" class="w-full py-3 px-4 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-black text-xs sm:text-sm rounded-lg shadow-xs transition flex items-center justify-center gap-2">
@@ -223,6 +265,8 @@
 
 <script>
 let cart = [];
+let orgUpiId = @json(auth()->user()?->organization?->upi_id ?? '');
+let orgName = @json(auth()->user()?->organization?->name ?? 'Merchant');
 
 const clientSearch = document.getElementById('clientSearch');
 const clientDropdown = document.getElementById('clientDropdown');
@@ -529,43 +573,149 @@ function calculateTotals() {
     document.getElementById('sumCgst').textContent = cgst.toFixed(2);
     document.getElementById('sumSgst').textContent = sgst.toFixed(2);
     document.getElementById('sumGrandTotal').textContent = grandTotal.toFixed(2);
-    
+
     let status = document.getElementById('invoiceStatus').value;
     let sumPaidInput = document.getElementById('sumPaid');
-    let badge = document.getElementById('paymentStatusBadge');
     let notice = document.getElementById('statusNoticeText');
-    let helper = document.getElementById('paymentHelperText');
+    let detailsBlock = document.getElementById('paymentDetailsBlock');
+    let partialGroup = document.getElementById('partialAmountGroup');
+    let refGroup = document.getElementById('paymentRefGroup');
+    let pMethod = document.getElementById('paymentMethod')?.value || 'Cash';
 
     if (status === 'Paid') {
-        sumPaidInput.value = grandTotal.toFixed(2);
-        badge.textContent = 'Auto: Full';
-        badge.className = 'text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
-        notice.textContent = 'Full amount will be marked as paid and warehouse stock deducted.';
-        helper.textContent = 'Full payment will be settled automatically upon creating this invoice.';
-    } else if (status === 'Draft') {
-        sumPaidInput.value = '0.00';
-        badge.textContent = 'Deferred: Draft';
-        badge.className = 'text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-700';
-        notice.textContent = 'Saved as draft/quotation. Stock will NOT be deducted and payment is deferred.';
-        helper.textContent = 'Draft invoices do not require payment upfront. You can convert to Paid/Due and record payments later.';
-    } else if (status === 'Due') {
-        sumPaidInput.value = '0.00';
-        badge.textContent = 'Credit Sale (₹0 Paid)';
-        badge.className = 'text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-800';
-        notice.textContent = 'Stock will be deducted immediately, and balance marked as Due/Receivable.';
-        helper.textContent = 'Payment is marked as ₹0 due. You can record payments later from the invoice details screen.';
+        if (sumPaidInput) sumPaidInput.value = grandTotal.toFixed(2);
+        if (detailsBlock) detailsBlock.classList.remove('hidden');
+        if (partialGroup) partialGroup.classList.add('hidden');
+        if (notice) notice.innerHTML = `✓ Full payment of <strong>₹${grandTotal.toFixed(2)}</strong> will be recorded immediately via <strong>${pMethod}</strong>. Stock deducted.`;
     } else if (status === 'Partially Paid') {
-        if (parseFloat(sumPaidInput.value) === 0 || parseFloat(sumPaidInput.value) >= grandTotal) {
+        if (sumPaidInput && (parseFloat(sumPaidInput.value) === 0 || parseFloat(sumPaidInput.value) >= grandTotal)) {
             sumPaidInput.value = (grandTotal / 2).toFixed(2);
         }
-        badge.textContent = 'Partial Payment';
-        badge.className = 'text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900';
-        notice.textContent = 'Stock will be deducted immediately, and remaining balance marked as Due.';
-        helper.textContent = 'Enter the advance/partial payment received now. Remaining balance will show as Due.';
+        if (detailsBlock) detailsBlock.classList.remove('hidden');
+        if (partialGroup) partialGroup.classList.remove('hidden');
+        if (notice) notice.innerHTML = `🌗 Advance payment recorded via <strong>${pMethod}</strong>. Remaining balance added to Receivables. Stock deducted.`;
+    } else if (status === 'Due') {
+        if (sumPaidInput) sumPaidInput.value = '0.00';
+        if (detailsBlock) detailsBlock.classList.add('hidden');
+        if (notice) notice.innerHTML = `⏳ Credit sale. Invoice added to Receivables as Unpaid. Stock deducted immediately.`;
+    } else if (status === 'Draft') {
+        if (sumPaidInput) sumPaidInput.value = '0.00';
+        if (detailsBlock) detailsBlock.classList.add('hidden');
+        if (notice) notice.innerHTML = `📝 Estimate / Quotation draft. Stock NOT deducted and payment deferred.`;
+    }
+
+    if (refGroup) {
+        if (status === 'Paid' || status === 'Partially Paid') {
+            if (pMethod === 'Cash') {
+                refGroup.classList.add('hidden');
+            } else {
+                refGroup.classList.remove('hidden');
+            }
+        }
+    }
+
+    updateUpiQrCode(grandTotal);
+}
+
+function updateUpiQrCode(grandTotal) {
+    const pMethod = document.getElementById('paymentMethod')?.value || 'Cash';
+    const status = document.getElementById('invoiceStatus')?.value || 'Paid';
+    const quickSetupBlock = document.getElementById('quickUpiSetupBlock');
+    const qrContainer = document.getElementById('upiQrCodeContainer');
+    const qrBox = document.getElementById('createUpiQrBox');
+    const vpaDisplay = document.getElementById('upiVpaDisplay');
+    const amountDisplay = document.getElementById('upiAmountDisplay');
+
+    if (pMethod !== 'UPI' || (status !== 'Paid' && status !== 'Partially Paid')) {
+        if (quickSetupBlock) quickSetupBlock.classList.add('hidden');
+        if (qrContainer) qrContainer.classList.add('hidden');
+        return;
+    }
+
+    if (!orgUpiId) {
+        if (quickSetupBlock) quickSetupBlock.classList.remove('hidden');
+        if (qrContainer) qrContainer.classList.add('hidden');
+        return;
+    }
+
+    if (quickSetupBlock) quickSetupBlock.classList.add('hidden');
+    if (qrContainer) qrContainer.classList.remove('hidden');
+
+    let collectAmount = grandTotal;
+    if (status === 'Partially Paid') {
+        collectAmount = parseFloat(document.getElementById('sumPaid')?.value) || 0;
+    }
+
+    if (vpaDisplay) vpaDisplay.textContent = orgUpiId;
+    if (amountDisplay) amountDisplay.textContent = '₹' + collectAmount.toFixed(2);
+
+    if (qrBox && typeof QRCode !== 'undefined') {
+        qrBox.innerHTML = '';
+        if (collectAmount <= 0) {
+            qrBox.innerHTML = '<div class="text-slate-400 text-[10px] font-bold text-center">Enter amount</div>';
+            return;
+        }
+
+        const upiString = `upi://pay?pa=${encodeURIComponent(orgUpiId)}&pn=${encodeURIComponent(orgName)}&am=${collectAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Invoice Payment')}`;
+
+        new QRCode(qrBox, {
+            text: upiString,
+            width: 120,
+            height: 120,
+            colorDark: "#0f172a",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+        });
     }
 }
 
+function saveQuickUpiId() {
+    const input = document.getElementById('quickUpiInput');
+    const upiVal = input.value.trim();
+    if(!upiVal) {
+        alert("Please enter a valid UPI ID (e.g. name@upi)");
+        input.focus();
+        return;
+    }
+    const btn = document.getElementById('btnSaveQuickUpi');
+    btn.disabled = true;
+    btn.innerHTML = '<span>Saving...</span>';
+
+    fetch('{{ route("organization.quick-upi") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ upi_id: upiVal })
+    })
+    .then(async res => {
+        const data = await res.json();
+        if(res.ok && data.success) {
+            orgUpiId = data.upi_id;
+            calculateTotals();
+        } else {
+            alert(data.message || "Failed to save UPI ID.");
+            btn.disabled = false;
+            btn.innerHTML = '<span>Save & Show QR</span>';
+        }
+    })
+    .catch(err => {
+        alert("An error occurred while saving UPI ID.");
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = '<span>Save & Show QR</span>';
+    });
+}
+
 document.getElementById('invoiceStatus').addEventListener('change', calculateTotals);
+if (document.getElementById('paymentMethod')) {
+    document.getElementById('paymentMethod').addEventListener('change', calculateTotals);
+}
+if (document.getElementById('sumPaid')) {
+    document.getElementById('sumPaid').addEventListener('input', calculateTotals);
+}
 
 // Quick Add Client Functions
 function openQuickClientModal() {
@@ -696,6 +846,8 @@ function submitInvoice() {
         discount_type: discountType,
         discount_value: discountInput,
         amount_paid: parseFloat(document.getElementById('sumPaid').value) || 0,
+        payment_method: document.getElementById('paymentMethod')?.value || 'Cash',
+        reference_number: document.getElementById('paymentRef')?.value || null,
         status: document.getElementById('invoiceStatus').value,
         items: cart.map(i => ({ product_id: i.id, quantity: i.qty }))
     };
@@ -731,4 +883,5 @@ function submitInvoice() {
     });
 }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 @endsection

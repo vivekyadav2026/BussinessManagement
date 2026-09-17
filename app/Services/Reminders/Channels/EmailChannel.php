@@ -16,12 +16,20 @@ class EmailChannel implements ReminderChannelInterface
             ];
         }
 
-        // TODO: Implement actual Mail::send() logic here when mailing is configured.
-        Log::info("Email reminder dispatched for Invoice {$invoice->invoice_number} to {$invoice->client->email}");
+        try {
+            \App\Services\CommunicationService::sendInvoice($invoice, ['mail']);
+            Log::info("Email invoice PDF dispatched for Invoice {$invoice->invoice_number} to {$invoice->client->email}");
 
-        return [
-            'success' => true,
-            'message' => 'Email reminder sent successfully.'
-        ];
+            return [
+                'success' => true,
+                'message' => 'Invoice email sent successfully to ' . $invoice->client->email
+            ];
+        } catch (\Exception $e) {
+            Log::error("Failed to send invoice email: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Failed to send email: ' . $e->getMessage()
+            ];
+        }
     }
 }

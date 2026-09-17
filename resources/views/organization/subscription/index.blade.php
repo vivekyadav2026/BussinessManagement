@@ -335,18 +335,34 @@
                     $isAddonMonthlyActive = $hasAddon && $addonCycle === 'monthly';
                     $isAddonYearlyActive = $hasAddon && $addonCycle === 'yearly';
                 @endphp
-                <div class="bg-white rounded-xl p-5 flex flex-col border transition-all duration-200 {{ $hasAddon ? 'border-amber-500 ring-2 ring-amber-500/20 shadow-xs' : 'border-slate-200/90 hover:border-slate-400' }}">
+                <div class="addon-card-box bg-white rounded-xl p-5 flex flex-col border transition-all duration-200 {{ $hasAddon ? 'border-amber-500 ring-2 ring-amber-500/20 shadow-xs' : 'border-slate-200/90 hover:border-slate-400' }}" id="addon-card-{{ $plan->id }}">
                     
-                    @if($hasAddon)
-                        <div class="tag-monthly {{ $isAddonMonthlyActive ? '' : 'hidden' }} mb-2">
-                            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-amber-500 text-slate-950">Active Add-on (Monthly)</span>
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            @if($hasAddon)
+                                <div class="tag-monthly {{ $isAddonMonthlyActive ? '' : 'hidden' }}">
+                                    <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-amber-500 text-slate-950">Active Add-on (Monthly)</span>
+                                </div>
+                                <div class="tag-yearly {{ $isAddonYearlyActive ? '' : 'hidden' }}">
+                                    <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-amber-500 text-slate-950">Active Add-on (Yearly)</span>
+                                </div>
+                            @else
+                                <span class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 block">Add-on Module</span>
+                            @endif
                         </div>
-                        <div class="tag-yearly {{ $isAddonYearlyActive ? '' : 'hidden' }} mb-2">
-                            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-amber-500 text-slate-950">Active Add-on (Yearly)</span>
-                        </div>
-                    @else
-                        <span class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 block mb-2">Add-on Module</span>
-                    @endif
+
+                        @if(!$hasAddon)
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer bg-slate-50 hover:bg-amber-50 px-2.5 py-1 rounded-lg border border-slate-300 hover:border-amber-400 transition" title="Select to bundle this add-on">
+                                <input type="checkbox" class="grid-addon-cb w-4 h-4 text-amber-500 rounded border-slate-300 focus:ring-amber-500 cursor-pointer" 
+                                       value="{{ $plan->id }}" 
+                                       data-name="{{ addslashes($plan->name) }}"
+                                       data-price-monthly="{{ $plan->price_monthly }}"
+                                       data-price-yearly="{{ $plan->price_yearly }}"
+                                       onchange="updateAddonSelectionBar()">
+                                <span class="text-[11px] font-bold text-slate-700">Select</span>
+                            </label>
+                        @endif
+                    </div>
 
                     <h3 class="text-base font-extrabold text-slate-950">{{ $plan->name }}</h3>
                     <p class="text-xs text-slate-500 mt-0.5 mb-3 leading-relaxed">{{ $plan->description ?: 'Specialized modular feature expansion.' }}</p>
@@ -403,6 +419,28 @@
         </div>
     </div>
     @endif
+
+    <!-- Floating Multi-Addon Selection Action Bar -->
+    <div id="multiAddonBar" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden transition-all duration-300 transform">
+        <div class="bg-slate-900 text-white px-6 py-3.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-6 min-w-[360px] justify-between">
+            <div class="flex items-center gap-3">
+                <span class="bg-amber-500 text-slate-950 font-black text-xs px-2.5 py-1 rounded-full font-mono" id="multiAddonCount">0</span>
+                <div>
+                    <div class="text-xs font-bold text-slate-100">Add-on Modules Selected</div>
+                    <div class="text-[11px] text-slate-400 font-mono" id="multiAddonTotalPrice">Total: ₹0</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="clearAddonSelections()" class="text-xs font-semibold text-slate-400 hover:text-white px-2 py-1 transition">
+                    Clear
+                </button>
+                <button type="button" onclick="checkoutSelectedAddons()" class="bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-xl shadow-xs transition flex items-center gap-1.5">
+                    <span>Subscribe Selected</span>
+                    <span>&rarr;</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- 5. Subscription & Payment History Table -->
     @if(isset($subscriptionHistory) && $subscriptionHistory->count() > 0)
@@ -598,6 +636,59 @@ function toggleDashBilling() {
         monthlyButtons.forEach(el => el.classList.remove('hidden'));
         yearlyButtons.forEach(el => el.classList.add('hidden'));
     }
+    updateAddonSelectionBar();
+}
+
+function updateAddonSelectionBar() {
+    const isYearly = document.getElementById('billing-cycle-toggle')?.checked || false;
+    const checkedBoxes = document.querySelectorAll('.grid-addon-cb:checked');
+    const bar = document.getElementById('multiAddonBar');
+    if (!bar) return;
+
+    if (checkedBoxes.length === 0) {
+        bar.classList.add('hidden');
+        return;
+    }
+
+    let total = 0;
+    checkedBoxes.forEach(cb => {
+        const price = isYearly ? parseFloat(cb.getAttribute('data-price-yearly')) : parseFloat(cb.getAttribute('data-price-monthly'));
+        total += price;
+    });
+
+    document.getElementById('multiAddonCount').textContent = checkedBoxes.length;
+    document.getElementById('multiAddonTotalPrice').textContent = 'Total: ₹' + total.toLocaleString('en-IN') + (isYearly ? ' / yr' : ' / mo');
+    bar.classList.remove('hidden');
+}
+
+function clearAddonSelections() {
+    document.querySelectorAll('.grid-addon-cb').forEach(cb => cb.checked = false);
+    updateAddonSelectionBar();
+}
+
+function checkoutSelectedAddons() {
+    const checkedBoxes = document.querySelectorAll('.grid-addon-cb:checked');
+    if (checkedBoxes.length === 0) return;
+
+    const firstPlanId = parseInt(checkedBoxes[0].value);
+    const firstName = checkedBoxes[0].getAttribute('data-name');
+    const firstPriceMonthly = parseFloat(checkedBoxes[0].getAttribute('data-price-monthly'));
+    const firstPriceYearly = parseFloat(checkedBoxes[0].getAttribute('data-price-yearly'));
+
+    openCheckoutModal(firstPlanId, firstName, firstPriceMonthly, firstPriceYearly, 'addon');
+
+    // Check all OTHER selected add-ons in the modal bundle list
+    checkedBoxes.forEach(cb => {
+        const val = cb.value;
+        if (parseInt(val) !== firstPlanId) {
+            const bundleCb = document.querySelector(`input[name="bundle_addon"][value="${val}"]`);
+            if (bundleCb) {
+                bundleCb.checked = true;
+            }
+        }
+    });
+
+    recalculateModalTotal();
 }
 
 function openCheckoutModal(planId, planName, priceMonthly, priceYearly, planType) {
@@ -612,7 +703,7 @@ function openCheckoutModal(planId, planName, priceMonthly, priceYearly, planType
         type: planType
     };
 
-    // Set Base Plan Info
+    // Set Base Plan / Primary Plan Info
     document.getElementById('modalPlanTitle').textContent = 'Subscribe: ' + planName;
     document.getElementById('modalBaseName').textContent = planName;
     document.getElementById('modalCycleBadge').textContent = isYearly ? 'Yearly Billing (Save 20%)' : 'Monthly Billing';
@@ -620,9 +711,17 @@ function openCheckoutModal(planId, planName, priceMonthly, priceYearly, planType
     const basePrice = isYearly ? currentSelectedPlan.priceYearly : currentSelectedPlan.priceMonthly;
     document.getElementById('modalBasePrice').textContent = '₹' + basePrice.toLocaleString('en-IN');
 
-    // Reset addon checkboxes
+    // Reset addon checkboxes and hide the current selected plan from the add-ons list to avoid duplicate rendering
     document.querySelectorAll('input[name="bundle_addon"]').forEach(cb => {
         cb.checked = false;
+        const container = cb.closest('label');
+        if (container) {
+            if (parseInt(cb.value) === parseInt(planId)) {
+                container.classList.add('hidden');
+            } else {
+                container.classList.remove('hidden');
+            }
+        }
     });
 
     // Update addon price tags in modal for cycle
@@ -630,12 +729,8 @@ function openCheckoutModal(planId, planName, priceMonthly, priceYearly, planType
         tag.textContent = isYearly ? tag.getAttribute('data-yearly') : tag.getAttribute('data-monthly');
     });
 
-    // If selected plan is an addon itself, hide the addon selection section
-    if (planType === 'addon') {
-        document.getElementById('modalAddonsSection').classList.add('hidden');
-    } else {
-        document.getElementById('modalAddonsSection').classList.remove('hidden');
-    }
+    // Show modalAddonsSection so additional add-ons can be bundled
+    document.getElementById('modalAddonsSection').classList.remove('hidden');
 
     recalculateModalTotal();
     document.getElementById('checkoutModal').classList.remove('hidden');
@@ -650,12 +745,12 @@ function recalculateModalTotal() {
     const basePrice = isYearly ? currentSelectedPlan.priceYearly : currentSelectedPlan.priceMonthly;
     
     let addonsTotal = 0;
-    if (currentSelectedPlan.type !== 'addon') {
-        document.querySelectorAll('input[name="bundle_addon"]:checked').forEach(cb => {
+    document.querySelectorAll('input[name="bundle_addon"]:checked').forEach(cb => {
+        if (parseInt(cb.value) !== parseInt(currentSelectedPlan.id)) {
             const addPrice = isYearly ? parseFloat(cb.getAttribute('data-price-yearly')) : parseFloat(cb.getAttribute('data-price-monthly'));
             addonsTotal += addPrice;
-        });
-    }
+        }
+    });
 
     const total = basePrice + addonsTotal;
 
@@ -670,11 +765,11 @@ function executeBundledCheckout() {
     const cycle = isYearly ? 'yearly' : 'monthly';
     
     const selectedAddonIds = [];
-    if (currentSelectedPlan.type !== 'addon') {
-        document.querySelectorAll('input[name="bundle_addon"]:checked').forEach(cb => {
+    document.querySelectorAll('input[name="bundle_addon"]:checked').forEach(cb => {
+        if (parseInt(cb.value) !== parseInt(currentSelectedPlan.id)) {
             selectedAddonIds.push(cb.value);
-        });
-    }
+        }
+    });
 
     const btn = document.getElementById('btnConfirmCheckout');
     btn.disabled = true;

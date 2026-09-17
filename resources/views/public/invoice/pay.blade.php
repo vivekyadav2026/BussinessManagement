@@ -102,20 +102,41 @@
         </div>
         
         @if($invoice->amount_due > 0 && $invoice->status !== 'Cancelled')
-        <div class="p-8 bg-indigo-50 border-t border-indigo-100 text-center">
-            <h2 class="text-xl font-bold text-indigo-900 mb-2">Ready to Pay?</h2>
-            <p class="text-indigo-700 mb-4 text-sm">Scan with <strong>any UPI app</strong> (Google Pay, PhonePe, Paytm, BHIM, Camera) or pay using Card/Netbanking.</p>
-            
+        <div class="p-8 bg-indigo-50/70 border-t border-indigo-100 text-center space-y-6">
+            <div>
+                <h2 class="text-xl font-extrabold text-indigo-950 mb-1">Pay Outstanding Invoice</h2>
+                <p class="text-indigo-700 text-xs font-medium">Scan QR code using any UPI App or click to pay online.</p>
+            </div>
+
+            @if($invoice->organization?->upi_id)
+            <div class="max-w-xs mx-auto bg-white p-5 rounded-2xl border border-indigo-200/80 shadow-xs flex flex-col items-center justify-center space-y-3">
+                <span class="text-xs font-black uppercase text-indigo-950 tracking-wider">📱 Scan &amp; Pay via UPI</span>
+                <div id="publicUpiQrCode" class="p-2 bg-white border border-slate-200 rounded-xl shadow-2xs"></div>
+                <div class="text-xs font-mono font-bold text-slate-800 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-100">
+                    {{ $invoice->organization->upi_id }}
+                </div>
+                <p class="text-[11px] text-slate-500 font-medium">Scan via GPay, PhonePe, Paytm, BHIM or any UPI App</p>
+            </div>
+            @endif
+
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
                 <button id="rzp-pay-button" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-base">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-                    Pay ₹{{ number_format($invoice->amount_due, 2) }} via Razorpay / UPI QR
+                    Pay ₹{{ number_format($invoice->amount_due, 2) }} via Gateway
                 </button>
             </div>
             
-            <p class="text-xs text-indigo-400 mt-4">Protected by Razorpay 256-bit Encryption</p>
+            <p class="text-xs text-indigo-400">Protected by 256-bit Encryption</p>
         </div>
         @endif
+    </div>
+
+    <!-- Public Support Complaint Link -->
+    <div class="mt-6 text-center">
+        <a href="{{ route('public.complaint.create', ['org_id' => $invoice->organization_id, 'invoice_id' => $invoice->id]) }}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-amber-600 transition bg-white px-4 py-2.5 rounded-xl border border-slate-200 shadow-2xs">
+            <span>📝 Have an issue with this invoice? Submit a Support Complaint &amp; Ticket</span>
+            <span>&rarr;</span>
+        </a>
     </div>
 </div>
 
@@ -193,6 +214,34 @@ document.addEventListener('DOMContentLoaded', function () {
         rzp.open();
     };
 });
+</script>
+@endif
+
+@if($invoice->organization?->upi_id && $invoice->amount_due > 0)
+@php
+    $dueAmountStr = number_format($invoice->amount_due, 2, '.', '');
+@endphp
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const qrEl = document.getElementById("publicUpiQrCode");
+        if (qrEl) {
+            const upiVpa = "{{ $invoice->organization->upi_id }}";
+            const orgName = "{{ addslashes($invoice->organization->name) }}";
+            const amount = "{{ $dueAmountStr }}";
+            const invNum = "{{ $invoice->invoice_number }}";
+            const upiString = `upi://pay?pa=${encodeURIComponent(upiVpa)}&pn=${encodeURIComponent(orgName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('Invoice ' + invNum)}`;
+
+            new QRCode(qrEl, {
+                text: upiString,
+                width: 140,
+                height: 140,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+    });
 </script>
 @endif
 
