@@ -57,7 +57,7 @@
             <div class="flex flex-wrap items-center gap-2.5">
                 <span class="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Payroll Period:</span>
                 
-                <select name="month" id="month" class="border border-slate-300 rounded-lg text-xs font-bold text-slate-950 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 py-2 px-3 bg-white outline-none cursor-pointer">
+                <select name="month" id="month" onchange="this.form.submit()" class="border border-slate-300 rounded-lg text-xs font-bold text-slate-950 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 py-2 px-3 bg-white outline-none cursor-pointer">
                     @for($i = 1; $i <= 12; $i++)
                         <option value="{{ $i }}" {{ $month == $i ? 'selected' : '' }}>
                             {{ date('F', mktime(0, 0, 0, $i, 1)) }}
@@ -65,7 +65,7 @@
                     @endfor
                 </select>
 
-                <select name="year" id="year" class="border border-slate-300 rounded-lg text-xs font-bold text-slate-950 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 py-2 px-3 bg-white outline-none cursor-pointer">
+                <select name="year" id="year" onchange="this.form.submit()" class="border border-slate-300 rounded-lg text-xs font-bold text-slate-950 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 py-2 px-3 bg-white outline-none cursor-pointer">
                     @for($i = max(2030, (int)date('Y')); $i >= 2024; $i--)
                         <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>
                             {{ $i }}
@@ -211,6 +211,8 @@
                                     </div>
                                     <div class="text-[11px] text-slate-600 font-medium mt-0.5 whitespace-nowrap">
                                         <span>#{{ $emp->employee_code ?? $emp->id }}</span>
+                                        <span class="mx-1">•</span>
+                                        <span>{{ $emp->email ?? 'No Email' }}</span>
                                         <span class="mx-1">•</span>
                                         <span>{{ $emp->designation ?? 'Staff Member' }}</span>
                                         @if($emp->location)

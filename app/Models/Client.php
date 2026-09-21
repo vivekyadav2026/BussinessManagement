@@ -10,7 +10,7 @@ class Client extends Model
     use Notifiable, \App\Traits\BelongsToOrganization;
 
     protected $fillable = [
-        'organization_id', 'name', 'phone', 'email', 'address', 'gst_number', 'notes', 'is_active'
+        'organization_id', 'location_id', 'name', 'phone', 'email', 'address', 'gst_number', 'notes', 'is_active'
     ];
 
     public function invoices()

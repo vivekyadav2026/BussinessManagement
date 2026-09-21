@@ -31,7 +31,7 @@ class PublicMenuController extends Controller
             $activeOrders = \App\Models\RestaurantOrder::with('items')
                 ->where('restaurant_table_id', $tableId)
                 ->whereDate('created_at', now()->today())
-                ->whereNotIn('status', ['Cancelled'])
+                ->whereNotIn('status', ['Cancelled', 'Completed'])
                 ->latest()
                 ->get();
         }

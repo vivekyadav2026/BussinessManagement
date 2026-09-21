@@ -346,8 +346,12 @@
                         <span>Discount</span>
                         <span class="font-mono font-bold">-₹<span x-text="discount.toFixed(2)">0.00</span></span>
                     </div>
+                    <div class="flex justify-between text-emerald-600 text-[11px]" x-show="alreadyPaidAmount > 0">
+                        <span>Paid Online</span>
+                        <span class="font-mono font-bold">-₹<span x-text="alreadyPaidAmount.toFixed(2)">0.00</span></span>
+                    </div>
                     <div class="flex justify-between items-baseline pt-2.5 border-t border-dashed border-slate-300 text-base font-black text-slate-950">
-                        <span>Grand Total Bill</span>
+                        <span>Amount Due</span>
                         <span class="text-2xl text-slate-950 font-mono font-black">₹<span x-text="grandTotal.toFixed(2)">0.00</span></span>
                     </div>
                 </div>
@@ -548,6 +552,7 @@ function waiterPos() {
         paymentMethod: 'Cash',
         tenderAmount: 0,
         sentItems: [],
+        alreadyPaidAmount: 0,
         loading: false,
 
         init() {
@@ -673,7 +678,11 @@ function waiterPos() {
                         this.activeReceiptUrl = `/organization/menu/pos/orders/${data.active_orders[0].id}/print-receipt`;
                         
                         let allSent = [];
+                        let paidAmount = 0;
                         data.active_orders.forEach(order => {
+                            if (order.payment_status === 'Paid') {
+                                paidAmount += parseFloat(order.total) || 0;
+                            }
                             order.items.forEach(i => {
                                 allSent.push({
                                     id: i.menu_item_id,
@@ -683,6 +692,7 @@ function waiterPos() {
                                 });
                             });
                         });
+                        this.alreadyPaidAmount = paidAmount;
                         this.sentItems = allSent;
                         this.calculateTotals();
                     } else {
@@ -751,6 +761,7 @@ function waiterPos() {
             this.activeKotUrl = '';
             this.activeReceiptUrl = '';
             this.discount = 0;
+            this.alreadyPaidAmount = 0;
             this.calculateTotals();
         },
 
@@ -759,7 +770,7 @@ function waiterPos() {
             this.cgst = (this.subtotal * this.cgstPercent) / 100;
             this.sgst = (this.subtotal * this.sgstPercent) / 100;
             this.totalTax = this.cgst + this.sgst;
-            this.grandTotal = Math.max(0, this.subtotal + this.totalTax - this.discount);
+            this.grandTotal = Math.max(0, this.subtotal + this.totalTax - this.discount - this.alreadyPaidAmount);
         },
 
         saveOrder(mode) {

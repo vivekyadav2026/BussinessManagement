@@ -45,9 +45,15 @@
                             <span class="text-sm font-black text-gray-900">{{ $displayName }}</span>
                         </div>
                     </div>
-                    <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200">
-                        ● Active Session
-                    </span>
+                    @if($activeOrders->count() > 0)
+                        <span class="px-2.5 py-1 bg-rose-50 text-rose-700 text-[10px] font-bold rounded-lg border border-rose-200 uppercase tracking-wider">
+                            ● Occupied
+                        </span>
+                    @else
+                        <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-lg border border-emerald-200 uppercase tracking-wider">
+                            ● Available
+                        </span>
+                    @endif
                 </div>
             @endif
 
@@ -327,13 +333,20 @@
                                     <span class="text-xs font-mono font-black text-gray-900">{{ $ord->order_number }}</span>
                                     <span class="text-[10px] text-gray-400 font-medium block">{{ $ord->created_at->format('h:i A') }}</span>
                                 </div>
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider
-                                    @if($ord->status === 'Received') bg-amber-50 text-amber-800 border border-amber-200
-                                    @elseif($ord->status === 'Preparing') bg-blue-50 text-blue-800 border border-blue-200
-                                    @elseif($ord->status === 'Ready') bg-emerald-50 text-emerald-800 border border-emerald-200
-                                    @else bg-gray-50 text-gray-800 border border-gray-200 @endif">
-                                    {{ $ord->status }}
-                                </span>
+                                <div class="flex gap-1">
+                                    @if($ord->payment_status === 'Paid')
+                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                            Paid ✅
+                                        </span>
+                                    @endif
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider
+                                        @if($ord->status === 'Received') bg-amber-50 text-amber-800 border border-amber-200
+                                        @elseif($ord->status === 'Preparing') bg-blue-50 text-blue-800 border border-blue-200
+                                        @elseif($ord->status === 'Ready') bg-emerald-50 text-emerald-800 border border-emerald-200
+                                        @else bg-gray-50 text-gray-800 border border-gray-200 @endif">
+                                        {{ $ord->status }}
+                                    </span>
+                                </div>
                             </div>
 
                             <!-- Ordered Items List -->
@@ -428,6 +441,8 @@
                 $subtotalSum = $activeOrders->sum('subtotal');
                 $taxSum = $activeOrders->sum('tax');
                 $totalSum = $activeOrders->sum('total');
+                $paidSum = $activeOrders->where('payment_status', 'Paid')->sum('total');
+                $amountDue = max(0, $totalSum - $paidSum);
             @endphp
             <div class="bg-white p-5 rounded-3xl border border-gray-200 shadow-xs space-y-4">
                 <div class="text-center pb-3 border-b border-gray-100">
@@ -463,9 +478,15 @@
                         <span>Taxes & GST</span>
                         <span class="font-mono">₹{{ number_format($taxSum, 2) }}</span>
                     </div>
+                    @if($paidSum > 0)
+                        <div class="flex justify-between text-emerald-600 text-[11px] font-bold">
+                            <span>Already Paid Online</span>
+                            <span class="font-mono">-₹{{ number_format($paidSum, 2) }}</span>
+                        </div>
+                    @endif
                     <div class="flex justify-between items-baseline pt-2 border-t border-gray-200">
-                        <span class="font-black text-sm uppercase text-gray-900">Total Payable</span>
-                        <span class="text-xl font-black text-orange-600 font-mono">₹{{ number_format($totalSum, 2) }}</span>
+                        <span class="font-black text-sm uppercase text-gray-900">Amount Due</span>
+                        <span class="text-xl font-black text-orange-600 font-mono">₹{{ number_format($amountDue, 2) }}</span>
                     </div>
                 </div>
 

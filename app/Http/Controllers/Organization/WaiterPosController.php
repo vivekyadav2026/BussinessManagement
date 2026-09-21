@@ -235,23 +235,26 @@ class WaiterPosController extends Controller
                     $ordersToSettle = $ordersToSettle->concat($extraOrders);
                 }
 
-                $grossTotal = $ordersToSettle->sum('total');
+                // Filter out already paid orders to prevent double charging
+                $unpaidOrders = $ordersToSettle->where('payment_status', '!=', 'Paid');
+                $grossTotal = $unpaidOrders->sum('total');
                 $finalTotal = max(0, $grossTotal - $discount);
 
                 // Update orders according to payment_status
                 foreach ($ordersToSettle as $o) {
                     $o->update([
-                        'payment_status' => $isPaid ? 'Paid' : 'Pending',
-                        'status' => $isPaid ? 'Completed' : $o->status,
-                        'total' => ($o->id === $order->id) ? $finalTotal : $o->total 
+                        'payment_status' => ($isPaid || $o->payment_status === 'Paid') ? 'Paid' : 'Pending',
+                        'status' => $isPaid ? 'Completed' : $o->status
                     ]);
                 }
 
-                // Generate Official Organization Invoice for accounting & ledger tracking safely
-                if (!$order->invoice_id) {
+                // Generate Official Organization Invoice ONLY for orders that don't have one
+                $ordersWithoutInvoice = $ordersToSettle->whereNull('invoice_id');
+                
+                if ($ordersWithoutInvoice->isNotEmpty()) {
                     try {
                         $invoiceItems = [];
-                        foreach ($ordersToSettle as $o) {
+                        foreach ($ordersWithoutInvoice as $o) {
                             foreach ($o->items as $item) {
                                 $invoiceItems[] = [
                                     'name' => $item->name_snapshot,
@@ -276,8 +279,8 @@ class WaiterPosController extends Controller
 
                         $invoice = InvoiceService::createInvoice($invoiceData);
                         
-                        // Link invoice to all settled orders
-                        foreach ($ordersToSettle as $o) {
+                        // Link invoice to settled orders
+                        foreach ($ordersWithoutInvoice as $o) {
                             $o->update(['invoice_id' => $invoice->id]);
                         }
                     } catch (\Exception $ex) {

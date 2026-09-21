@@ -38,21 +38,69 @@ class RegisteredUserController extends Controller
     }
 
     /**
+     * Validate form steps before reaching the payment phase.
+     */
+    public function validateStep(Request $request)
+    {
+        $rules = [];
+        
+        if ($request->step == 2) {
+            // Validating steps 1 and 2
+            $rules = [
+                'organization_name' => ['required', 'string', 'max:255'],
+                'business_type' => ['required', 'string', 'in:business,restaurant'],
+                'business_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+                'gst_number' => ['nullable', 'string', 'max:50'],
+                'country' => ['required', 'string', 'max:100'],
+                'state' => ['required', 'string', 'max:100'],
+                'pincode' => ['required', 'string', 'max:20'],
+                'address' => ['required', 'string', 'max:500'],
+                
+                'name' => ['required', 'string', 'max:255'],
+                'admin_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            ];
+        }
+
+        $request->validate($rules, [
+            'business_phone.regex' => 'Please enter a valid 10-digit Indian mobile number.',
+            'admin_phone.regex' => 'Please enter a valid 10-digit Indian mobile number.',
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Generate a Razorpay Order for registration payment.
      */
     public function createOrder(Request $request)
     {
         $request->validate([
+            // Step 1: Business Details
+            'organization_name' => ['required', 'string', 'max:255'],
+            'business_type' => ['required', 'string', 'in:business,restaurant'],
+            'business_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+            'gst_number' => ['nullable', 'string', 'max:50'],
+            'country' => ['required', 'string', 'max:100'],
+            'state' => ['required', 'string', 'max:100'],
+            'pincode' => ['required', 'string', 'max:20'],
+            'address' => ['required', 'string', 'max:500'],
+            
+            // Step 2: Admin Details
+            'name' => ['required', 'string', 'max:255'],
+            'admin_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            
+            // Step 3: Plan details
             'plan_id' => 'required|exists:plans,id',
             'addon_ids' => 'nullable|array',
             'addon_ids.*' => 'exists:plans,id',
             'billing_cycle' => 'required|in:monthly,yearly',
-            'business_name' => 'nullable|string|max:255',
-            'owner_name' => 'nullable|string|max:255',
-            'owner_email' => 'nullable|email|max:255',
-            'owner_phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
         ], [
-            'owner_phone.regex' => 'Please enter a valid 10-digit Indian mobile number.',
+            'business_phone.regex' => 'Please enter a valid 10-digit Indian mobile number.',
+            'admin_phone.regex' => 'Please enter a valid 10-digit Indian mobile number.',
         ]);
 
         $plan = \App\Models\Plan::where('id', $request->plan_id)

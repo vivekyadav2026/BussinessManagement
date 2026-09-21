@@ -72,7 +72,7 @@
         }
     </style>
 </head>
-<body onload="window.print();">
+<body>
 
     <div class="no-print" style="margin-bottom: 15px; text-align: center;">
         <button onclick="window.print()" style="padding: 9px 18px; background: #020617; color: white; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);">🖨️ Print Bill Receipt</button>
@@ -169,7 +169,7 @@
             <td class="text-left">Payment Status:</td>
             <td class="text-right bold" style="text-transform: uppercase;">
                 @if($order->payment_status === 'Paid')
-                    <span class="badge" style="background: #15803d; color: #ffffff !important; border: 1px solid #14532d; padding: 2px 6px;">PAID ONLINE ✅</span>
+                    <span class="badge" style="background: #15803d; color: #ffffff !important; border: 1px solid #14532d; padding: 2px 6px;">PAID ✅</span>
                 @else
                     <span style="color: #dc2626 !important; font-weight: 900;">PENDING ⏳</span>
                 @endif
@@ -181,7 +181,7 @@
 
     @if($order->payment_status === 'Paid')
         <div class="text-center" style="margin: 8px 0; padding: 6px; border: 1.5px solid #15803d; border-radius: 4px; background: #f0fdf4;">
-            <div style="font-size: 11px; font-weight: 900; color: #15803d !important; text-transform: uppercase;">✅ FULLY PAID (ONLINE UPI)</div>
+            <div style="font-size: 11px; font-weight: 900; color: #15803d !important; text-transform: uppercase;">✅ FULLY PAID</div>
             <div style="font-size: 9px; font-weight: bold; color: #166534 !important; margin-top: 2px;">AMOUNT DUE: ₹0.00 (NO PAYMENT REQUIRED)</div>
         </div>
     @else
@@ -218,6 +218,13 @@
                     correctLevel : QRCode.CorrectLevel.M
                 });
             }
+            setTimeout(function() { window.print(); }, 500);
+        });
+        </script>
+    @else
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() { window.print(); }, 200);
         });
         </script>
     @endif

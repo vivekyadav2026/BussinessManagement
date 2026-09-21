@@ -631,10 +631,15 @@
                             <td class="px-4 py-3 font-mono font-extrabold text-slate-950 text-sm">₹<span x-text="parseFloat(order.total).toFixed(2)"></span></td>
                             <td class="px-4 py-3 text-slate-500 font-mono text-[11px]" x-text="formatTime(order.created_at)"></td>
                             <td class="px-4 py-3 text-right">
-                                <a :href="'/organization/menu/pos/orders/' + order.id + '/print-receipt'" target="_blank" 
-                                   class="inline-flex items-center gap-1 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-extrabold transition shadow-2xs">
-                                    🖨️ Print Bill / Receipt
-                                </a>
+                                <div class="flex items-center justify-end gap-2">
+                                    <button type="button" @click="viewCompletedOrder(order)" class="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-extrabold transition shadow-2xs cursor-pointer">
+                                        👁️ View
+                                    </button>
+                                    <a :href="'/organization/menu/pos/orders/' + order.id + '/print-receipt'" target="_blank" 
+                                       class="inline-flex items-center gap-1 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-extrabold transition shadow-2xs">
+                                        🖨️ Print
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     </template>
@@ -819,6 +824,55 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- VIEW COMPLETED ORDER MODAL                 -->
+    <!-- ========================================== -->
+    <div x-show="viewModalOpen" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4" style="display: none;" x-cloak>
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200" @click.away="viewModalOpen = false">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <h3 class="font-extrabold text-lg text-slate-950 flex items-center gap-2">
+                    <span>🧾 Order #<span x-text="viewOrderData?.order_number"></span></span>
+                </h3>
+                <button type="button" @click="viewModalOpen = false" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center text-sm transition cursor-pointer">✕</button>
+            </div>
+            
+            <div class="space-y-3" x-show="viewOrderData">
+                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Customer</div>
+                        <div class="font-extrabold text-slate-950 text-sm" x-text="viewOrderData?.customer_name || 'Walk-in Guest'"></div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Amount</div>
+                        <div class="font-black text-emerald-600 font-mono text-lg">₹<span x-text="parseFloat(viewOrderData?.total || 0).toFixed(2)"></span></div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Order Items</h4>
+                    <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        <template x-for="item in viewOrderData?.items || []" :key="item.id">
+                            <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100">
+                                <div>
+                                    <span class="font-bold text-slate-900" x-text="item.quantity + 'x ' + item.name_snapshot"></span>
+                                </div>
+                                <span class="font-mono font-bold text-slate-700">₹<span x-text="(parseFloat(item.price_snapshot) * item.quantity).toFixed(2)"></span></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
+                    <button type="button" @click="viewModalOpen = false" class="py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold cursor-pointer">Close</button>
+                    <a :href="viewOrderData ? '/organization/menu/pos/orders/' + viewOrderData.id + '/print-receipt' : '#'" target="_blank" 
+                       class="py-2 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-extrabold transition shadow-2xs">
+                        🖨️ Print Receipt
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -840,6 +894,10 @@ function counterBilling() {
         sgstPercent: {{ (float)($org->sgst_percent ?? 0) }},
         orgUpiId: '{{ $org->upi_id ?? "" }}',
         orgName: '{{ addslashes($org->name ?? "POS") }}',
+
+        // View Order State
+        viewModalOpen: false,
+        viewOrderData: null,
 
         // Cart / Order State
         editingOrderId: null,
@@ -874,6 +932,11 @@ function counterBilling() {
             // Live Real-Time Auto-Refresh Active Queue Every 5 Seconds
             setInterval(() => this.fetchActiveOrders(), 5000);
             setInterval(() => this.fetchCompletedOrders(), 10000);
+        },
+
+        viewCompletedOrder(order) {
+            this.viewOrderData = order;
+            this.viewModalOpen = true;
         },
 
         playChimeSound() {

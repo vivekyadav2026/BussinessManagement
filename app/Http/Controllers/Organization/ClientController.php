@@ -41,6 +41,14 @@ class ClientController extends Controller implements HasMiddleware
 
         // Base query
         $query = Client::where('organization_id', $orgId);
+        $locationId = \App\Services\LocationManager::getActiveLocationId();
+
+        if (!auth()->user()->hasRole('Organization Admin') && !auth()->user()->hasRole('Super Admin')) {
+            $query->where(function($q) use ($locationId) {
+                $q->where('location_id', $locationId)
+                  ->orWhereNull('location_id'); // Fallback for globally shared or old clients if needed
+            });
+        }
 
         // Filter by search
         if ($request->filled('search')) {
@@ -103,6 +111,7 @@ class ClientController extends Controller implements HasMiddleware
 
         Client::create([
             'organization_id' => auth()->user()->organization_id,
+            'location_id' => \App\Services\LocationManager::getActiveLocationId(),
             'name' => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,
@@ -158,9 +167,16 @@ class ClientController extends Controller implements HasMiddleware
     public function apiSearch(Request $request)
     {
         $search = $request->q;
+        $locationId = \App\Services\LocationManager::getActiveLocationId();
         
         $clients = Client::where('organization_id', auth()->user()->organization_id)
             ->where('is_active', true)
+            ->when(!auth()->user()->hasRole('Organization Admin') && !auth()->user()->hasRole('Super Admin'), function($q) use ($locationId) {
+                $q->where(function($sub) use ($locationId) {
+                    $sub->where('location_id', $locationId)
+                        ->orWhereNull('location_id');
+                });
+            })
             ->when($search, function($q) use ($search) {
                 $q->where(function($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
@@ -197,6 +213,7 @@ class ClientController extends Controller implements HasMiddleware
 
         $client = Client::create([
             'organization_id' => auth()->user()->organization_id,
+            'location_id' => \App\Services\LocationManager::getActiveLocationId(),
             'name' => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,

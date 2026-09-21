@@ -1342,11 +1342,42 @@
                 }
 
                 if (isValid) {
-                    this.owner_name = document.getElementById('name').value;
-                    this.owner_email = document.getElementById('email').value;
-                    this.owner_phone = document.getElementById('admin_phone').value;
-                    this.step = 3;
-                    window.scrollTo({top: 40, behavior: 'smooth'});
+                    const form = document.getElementById('registrationForm');
+                    const formData = new FormData(form);
+                    formData.append('step', 2);
+                    
+                    fetch('{{ route("register.validate") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    })
+                    .then(async res => {
+                        if (!res.ok) {
+                            if (res.status === 422) {
+                                const data = await res.json();
+                                const errors = data.errors || {};
+                                const firstError = Object.values(errors)[0]?.[0] || 'Validation error.';
+                                alert(firstError);
+                            } else {
+                                alert('Error validating form. Please try again.');
+                            }
+                            throw new Error('Validation failed');
+                        }
+                        return res.json();
+                    })
+                    .then(() => {
+                        this.owner_name = document.getElementById('name').value;
+                        this.owner_email = document.getElementById('email').value;
+                        this.owner_phone = document.getElementById('admin_phone').value;
+                        this.step = 3;
+                        window.scrollTo({top: 40, behavior: 'smooth'});
+                    })
+                    .catch(err => {
+                        console.error('Validation error:', err);
+                    });
                 } else {
                     alert('Please fill out all required owner credentials.');
                     const firstInvalid = fields.find(id => {
@@ -1376,25 +1407,36 @@
                 // If paid plan selected, call Razorpay order endpoint
                 this.is_processing = true;
                 this.processing_msg = 'Connecting to Payment Gateway...';
+                
+                const formData = new FormData(form);
+                formData.append('plan_id', this.selected_plan);
+                formData.append('billing_cycle', this.billing_cycle);
+                this.selected_addons.forEach(id => formData.append('addon_ids[]', id));
 
                 fetch('{{ route("register.order") }}', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        plan_id: this.selected_plan,
-                        addon_ids: this.selected_addons,
-                        billing_cycle: this.billing_cycle,
-                        business_name: this.business_name,
-                        owner_name: this.owner_name,
-                        owner_email: this.owner_email,
-                        owner_phone: this.owner_phone
-                    })
+                    body: formData
                 })
-                .then(res => res.json())
+                .then(async res => {
+                    const data = await res.json();
+                    if (!res.ok) {
+                        this.is_processing = false;
+                        if (res.status === 422) {
+                            // Validation error
+                            const errors = data.errors || {};
+                            const firstError = Object.values(errors)[0]?.[0] || 'Please check your inputs and try again.';
+                            alert('Validation Error: ' + firstError);
+                        } else {
+                            alert(data.message || 'Unable to start payment session. Please try again.');
+                        }
+                        throw new Error('Validation failed');
+                    }
+                    return data;
+                })
                 .then(data => {
                     if (!data.success) {
                         this.is_processing = false;
@@ -1433,23 +1475,22 @@
                         "modal": {
                             "ondismiss": () => {
                                 this.is_processing = false;
+                                this.processing_msg = '';
                             }
                         }
                     };
-
                     const rzp = new Razorpay(options);
-                    rzp.on('payment.failed', (err) => {
-                        this.is_processing = false;
-                        alert('Payment failed: ' + (err.error ? err.error.description : 'Transaction was not completed.'));
+                    rzp.on('payment.failed', function (response){
+                        alert('Payment Failed: ' + response.error.description);
                     });
                     rzp.open();
                 })
                 .catch(err => {
                     this.is_processing = false;
-                    alert('Error connecting to payment gateway: ' + err.message);
+                    console.error('Checkout error:', err);
                 });
             }
-        };
+        }
     }
-    </script>
+</script>
 </x-guest-layout>
