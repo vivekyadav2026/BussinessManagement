@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Payment Receipt - {{ $transaction->invoice->invoice_number }}</title>
+    <title>Payment Receipt - {{ $transaction->invoice->invoice_number ?? 'N/A' }}</title>
     <style>
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; font-size: 14px; margin: 0; padding: 0; }
         .receipt-box { max-width: 600px; margin: auto; padding: 30px; border: 1px solid #eee; margin-top: 40px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
@@ -35,7 +35,7 @@
     <div class="receipt-box">
         <div class="header">
             <h1>Payment Receipt</h1>
-            <p>{{ $transaction->organization->name }}</p>
+            <p>{{ $transaction->organization->name ?? '' }}</p>
             <p>{{ $transaction->location->name ?? 'Head Office' }}</p>
         </div>
 
@@ -47,7 +47,7 @@
         <table class="details-table">
             <tr>
                 <td>Payment Date</td>
-                <td>{{ $transaction->payment_date->format('F d, Y') }}</td>
+                <td>{{ optional($transaction->payment_date)->format('F d, Y') ?? date('F d, Y') }}</td>
             </tr>
             <tr>
                 <td>Payment Method</td>
@@ -59,18 +59,22 @@
                 <td>{{ $transaction->reference_number }}</td>
             </tr>
             @endif
+            @if($transaction->invoice)
             <tr>
                 <td>Invoice Number</td>
                 <td>{{ $transaction->invoice->invoice_number }}</td>
             </tr>
+            @endif
             <tr>
                 <td>Received From</td>
-                <td>{{ $transaction->invoice->client->name }}</td>
+                <td>{{ $transaction->invoice->client->name ?? 'Walk-in Customer' }}</td>
             </tr>
+            @if($transaction->invoice)
             <tr>
                 <td>Remaining Invoice Balance</td>
                 <td>₹{{ number_format($transaction->invoice->amount_due, 2) }}</td>
             </tr>
+            @endif
         </table>
 
         @if($transaction->notes)
@@ -87,3 +91,4 @@
     </div>
 </body>
 </html>
+

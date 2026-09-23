@@ -133,4 +133,42 @@ class PaymentTest extends TestCase
         $this->assertEquals(800, $invoice->amount_paid); // Should not have changed
         $this->assertEquals('Partially Paid', $invoice->status);
     }
+
+    public function test_receipt_view_works_when_invoice_client_is_null()
+    {
+        $org = Organization::create(['name' => 'Org 1']);
+        $user = User::factory()->create(['organization_id' => $org->id]);
+        $role = Role::create(['name' => 'Organization Admin', 'organization_id' => $org->id]);
+        $user->roles()->attach($role);
+
+        $loc = Location::create(['organization_id' => $org->id, 'name' => 'HQ']);
+        
+        $invoice = Invoice::create([
+            'organization_id' => $org->id,
+            'location_id' => $loc->id,
+            'client_id' => null, // Walk-in customer without client record
+            'invoice_number' => 'INV-WALKIN-001',
+            'invoice_date' => now(),
+            'grand_total' => 500,
+            'amount_paid' => 500,
+            'status' => 'Paid'
+        ]);
+
+        $transaction = \App\Models\Transaction::create([
+            'organization_id' => $org->id,
+            'location_id' => $loc->id,
+            'invoice_id' => $invoice->id,
+            'amount' => 500,
+            'payment_method' => 'Cash',
+            'payment_date' => now()
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('organization.transactions.receipt', $transaction));
+        $response->assertOk();
+        $response->assertSee('Walk-in Customer');
+        $response->assertSee('INV-WALKIN-001');
+    }
 }
+

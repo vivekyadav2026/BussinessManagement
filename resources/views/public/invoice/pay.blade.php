@@ -25,9 +25,9 @@
         <div class="p-8 grid grid-cols-2 gap-8 border-b border-gray-100">
             <div>
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Billed To</h3>
-                <p class="font-bold text-gray-900 text-lg">{{ $invoice->client->name }}</p>
-                <p class="text-gray-600 text-sm">{{ $invoice->client->email }}</p>
-                <p class="text-gray-600 text-sm">{{ $invoice->client->phone }}</p>
+                <p class="font-bold text-gray-900 text-lg">{{ $invoice->client->name ?? 'Walk-in Customer' }}</p>
+                @if(optional($invoice->client)->email)<p class="text-gray-600 text-sm">{{ $invoice->client->email }}</p>@endif
+                @if(optional($invoice->client)->phone)<p class="text-gray-600 text-sm">{{ $invoice->client->phone }}</p>@endif
             </div>
             <div class="text-right">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Payment Details</h3>

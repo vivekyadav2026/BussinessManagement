@@ -10,31 +10,32 @@
             margin: 0;
         }
         * {
+            box-sizing: border-box;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
             color-adjust: exact !important;
         }
         body {
-            font-family: 'Courier New', Courier, monospace, sans-serif;
+            font-family: 'Consolas', 'Courier New', Courier, monospace, sans-serif;
             width: 78mm;
             margin: 0 auto;
-            padding: 10px;
+            padding: 8px;
             color: #000000 !important;
             background: #ffffff !important;
             font-size: 12px;
-            line-height: 1.3;
+            line-height: 1.35;
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .text-left { text-align: left; }
-        .bold { font-weight: bold; }
+        .bold { font-weight: 900; }
         .divider {
-            border-top: 1px dashed #000000;
+            border-top: 1.5px dashed #000000;
             margin: 8px 0;
         }
         .header-title {
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 900;
             text-transform: uppercase;
             color: #000000 !important;
         }
@@ -44,16 +45,18 @@
             margin: 5px 0;
         }
         th {
-            border-bottom: 1px solid #000000;
+            border-bottom: 1.5px solid #000000;
+            border-top: 1.5px solid #000000;
             padding: 4px 0;
             text-align: left;
             font-size: 11px;
+            font-weight: 900;
             color: #000000 !important;
         }
         td {
             padding: 4px 0;
             vertical-align: top;
-            font-size: 11px;
+            font-size: 11.5px;
             color: #000000 !important;
         }
         .badge {
@@ -61,14 +64,47 @@
             padding: 2px 6px;
             background: #000000;
             color: #ffffff !important;
-            font-size: 10px;
-            font-weight: bold;
+            font-size: 10.5px;
+            font-weight: 900;
             border-radius: 3px;
             border: 1px solid #000000;
         }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border: 1.5px solid #000000;
+            font-weight: 900;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .paid-badge {
+            background: #000000 !important;
+            color: #ffffff !important;
+        }
+        .pending-badge {
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
         @media print {
             .no-print { display: none !important; }
-            body { padding: 0; margin: 0; }
+            html, body {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 4px !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            * {
+                color: #000000 !important;
+                text-shadow: none !important;
+                box-shadow: none !important;
+            }
+            .paid-badge {
+                background: #000000 !important;
+                color: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>
@@ -87,12 +123,12 @@
             <img src="{{ asset('images/logo.png') }}" style="max-height: 34px; margin-bottom: 5px; display: inline-block;" alt="Vyapaargo">
         @endif
         <div class="header-title">{{ $order->organization->name ?? 'RESTRO POS' }}</div>
-        <div>{{ $order->location->name ?? 'Main Branch' }}</div>
+        <div class="bold">{{ $order->location->name ?? 'Main Branch' }}</div>
         @if($order->location->address)
             <div>{{ $order->location->address }}</div>
         @endif
         @if($order->location->phone)
-            <div>Ph: {{ $order->location->phone }}</div>
+            <div class="bold">Ph: {{ $order->location->phone }}</div>
         @endif
     </div>
 
@@ -133,7 +169,7 @@
             @foreach($itemsToPrint as $item)
             <tr>
                 <td class="text-left bold">{{ $item->name_snapshot }}</td>
-                <td class="text-center">{{ $item->quantity }}</td>
+                <td class="text-center bold">{{ $item->quantity }}</td>
                 <td class="text-right">{{ number_format($item->price_snapshot, 2) }}</td>
                 <td class="text-right bold">{{ number_format($item->total, 2) }}</td>
             </tr>
@@ -166,12 +202,12 @@
             <td class="text-right header-title" style="font-size: 14px;">₹{{ number_format($order->total, 2) }}</td>
         </tr>
         <tr>
-            <td class="text-left">Payment Status:</td>
-            <td class="text-right bold" style="text-transform: uppercase;">
+            <td class="text-left bold">Payment Status:</td>
+            <td class="text-right bold">
                 @if($order->payment_status === 'Paid')
-                    <span class="badge" style="background: #15803d; color: #ffffff !important; border: 1px solid #14532d; padding: 2px 6px;">PAID ✅</span>
+                    <span class="status-badge paid-badge">PAID ✅</span>
                 @else
-                    <span style="color: #dc2626 !important; font-weight: 900;">PENDING ⏳</span>
+                    <span class="status-badge pending-badge">PENDING ⏳</span>
                 @endif
             </td>
         </tr>
@@ -180,9 +216,9 @@
     <div class="divider"></div>
 
     @if($order->payment_status === 'Paid')
-        <div class="text-center" style="margin: 8px 0; padding: 6px; border: 1.5px solid #15803d; border-radius: 4px; background: #f0fdf4;">
-            <div style="font-size: 11px; font-weight: 900; color: #15803d !important; text-transform: uppercase;">✅ FULLY PAID</div>
-            <div style="font-size: 9px; font-weight: bold; color: #166534 !important; margin-top: 2px;">AMOUNT DUE: ₹0.00 (NO PAYMENT REQUIRED)</div>
+        <div class="text-center" style="margin: 8px 0; padding: 6px; border: 2px solid #000000; border-radius: 4px; background: #ffffff;">
+            <div style="font-size: 12px; font-weight: 900; color: #000000 !important; text-transform: uppercase;">✅ FULLY PAID</div>
+            <div style="font-size: 9.5px; font-weight: bold; color: #000000 !important; margin-top: 2px;">AMOUNT DUE: ₹0.00 (NO PAYMENT REQUIRED)</div>
         </div>
     @else
         @php
@@ -191,10 +227,12 @@
         @endphp
 
         <div class="text-center" style="margin-top: 6px;">
-            <div style="font-size: 9px; font-weight: bold; color: #000000 !important;">SCAN TO PAY EXACT BILL AMOUNT</div>
-            <div style="font-size: 12px; font-weight: 900; margin-top: 2px; color: #000000 !important;">₹{{ number_format($order->total, 2) }}</div>
-            <div id="orderUpiQrCode" style="display: flex; justify-content: center; margin: 4px 0;"></div>
-            <div style="font-size: 8px; color: #000000 !important;">GPay | PhonePe | Paytm | BHIM</div>
+            <div style="font-size: 9.5px; font-weight: 900; color: #000000 !important; text-transform: uppercase;">SCAN TO PAY EXACT BILL AMOUNT</div>
+            <div style="font-size: 14px; font-weight: 900; margin-top: 2px; color: #000000 !important;">₹{{ number_format($order->total, 2) }}</div>
+            <div style="display: flex; justify-content: center; margin: 6px 0;">
+                {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(90)->margin(0)->generate($orderUpiString) !!}
+            </div>
+            <div style="font-size: 8.5px; font-weight: bold; color: #000000 !important;">GPay | PhonePe | Paytm | BHIM</div>
         </div>
     @endif
 
@@ -203,31 +241,12 @@
         <div style="font-size: 10px; margin-top: 3px; color: #000000 !important;">Please Visit Again 🙏</div>
     </div>
 
-    @if($order->payment_status !== 'Paid')
-        <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var qrElem = document.getElementById("orderUpiQrCode");
-            if (qrElem) {
-                new QRCode(qrElem, {
-                    text: "{{ $orderUpiString }}",
-                    width: 72,
-                    height: 72,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.M
-                });
-            }
-            setTimeout(function() { window.print(); }, 500);
-        });
-        </script>
-    @else
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() { window.print(); }, 200);
-        });
-        </script>
-    @endif
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() { window.print(); }, 300);
+    });
+    </script>
 
 </body>
 </html>
+
