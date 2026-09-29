@@ -59,9 +59,6 @@ class ReceivableController extends Controller
             } else {
                 $listQuery->where('status', $request->status);
             }
-        } else {
-            // Default when no status filter selected: show unpaid invoices
-            $listQuery->whereNotIn('status', ['Paid']);
         }
         
         $invoices = $listQuery->with('client')->latest('due_date')->paginate(15)->withQueryString();

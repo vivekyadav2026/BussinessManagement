@@ -53,7 +53,7 @@ class ReceivableTest extends TestCase
         $response = $this->get(route('organization.receivables.index'));
         $response->assertStatus(200);
         $response->assertSee('800.00'); // 1000 - 200 outstanding
-        $response->assertDontSee('500.00'); // Paid should not be summed
+        $response->assertSee('500.00'); // Paid invoice is now in the history list
     }
 
     public function test_reminder_manager_resolves_channels_and_prevents_fake_whatsapp()

@@ -528,7 +528,7 @@
         </div>
 
         <!-- 4. Compact Sticky Bottom Action Bar (~64px) -->
-        <div class="sticky bottom-4 z-20 mt-8 bg-white/95 backdrop-blur-md border border-slate-300 rounded-xl shadow-lg px-5 py-3 flex items-center justify-between gap-4">
+        <div id="stickyActionBar" class="hidden sticky bottom-4 z-20 mt-8 bg-white/95 backdrop-blur-md border border-slate-300 rounded-xl shadow-lg px-5 py-3 flex items-center justify-between gap-4">
             <div class="flex items-center gap-2 text-xs text-slate-800 font-medium">
                 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                 <span class="hidden sm:inline">Unsaved changes will update all locations &amp; POS terminals.</span>
@@ -627,5 +627,22 @@
             Saving...
         `;
     });
+    // Show sticky action bar on form change
+    const formEl = document.getElementById('orgProfileForm');
+    const actionBar = document.getElementById('stickyActionBar');
+    formEl.addEventListener('input', function() {
+        if (actionBar.classList.contains('hidden')) {
+            actionBar.classList.remove('hidden');
+        }
+    });
+    
+    // Also trigger on business type selection
+    const originalSelectBusinessType = selectBusinessType;
+    window.selectBusinessType = function(type) {
+        originalSelectBusinessType(type);
+        if (actionBar.classList.contains('hidden')) {
+            actionBar.classList.remove('hidden');
+        }
+    };
 </script>
 @endsection

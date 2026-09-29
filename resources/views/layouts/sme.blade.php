@@ -1107,6 +1107,26 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Append asterisks to mandatory fields
+            const requiredFields = document.querySelectorAll('input[required], select[required], textarea[required]');
+            requiredFields.forEach(field => {
+                let label = null;
+                if (field.id) {
+                    try {
+                        label = document.querySelector('label[for="' + CSS.escape(field.id) + '"]');
+                    } catch(e) {}
+                }
+                if (!label) {
+                    const container = field.closest('div');
+                    if (container) {
+                        label = container.querySelector('label');
+                    }
+                }
+                if (label && !label.innerHTML.includes('*')) {
+                    label.innerHTML += ' <span class="text-rose-600">*</span>';
+                }
+            });
+
             const savedLang = localStorage.getItem('panel_language') || "{{ app()->getLocale() }}";
             if (savedLang && savedLang !== 'en') {
                 translateUIElements(savedLang);

@@ -821,6 +821,8 @@
                                         </div>
                                         <input id="business_phone" name="business_phone" type="tel" required
                                                class="reg-input with-icon"
+                                               pattern="[0-9]{10}" minlength="10" maxlength="10"
+                                               title="Please enter exactly 10 digits"
                                                value="{{ old('business_phone') }}" placeholder="9876543210">
                                     </div>
                                 </div>
@@ -903,6 +905,8 @@
                                         </div>
                                         <input id="admin_phone" name="admin_phone" type="tel" required
                                                class="reg-input with-icon"
+                                               pattern="[0-9]{10}" minlength="10" maxlength="10"
+                                               title="Please enter exactly 10 digits"
                                                value="{{ old('admin_phone') }}" placeholder="9876543210">
                                     </div>
                                 </div>
@@ -1269,7 +1273,14 @@
                 
                 fields.forEach(id => {
                     const el = document.getElementById(id);
+                    let invalid = false;
                     if (!el || !el.value.trim()) {
+                        invalid = true;
+                    } else if ((id === 'business_phone' || id === 'admin_phone') && el.value.trim().length !== 10) {
+                        invalid = true;
+                    }
+
+                    if (invalid) {
                         isValid = false;
                         if (el) {
                             el.style.borderColor = '#EF4444';
@@ -1316,7 +1327,14 @@
 
                 fields.forEach(id => {
                     const el = document.getElementById(id);
+                    let invalid = false;
                     if (!el || !el.value.trim()) {
+                        invalid = true;
+                    } else if ((id === 'business_phone' || id === 'admin_phone') && el.value.trim().length !== 10) {
+                        invalid = true;
+                    }
+
+                    if (invalid) {
                         isValid = false;
                         if (el) {
                             el.style.borderColor = '#EF4444';
