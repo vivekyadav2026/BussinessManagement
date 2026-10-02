@@ -174,7 +174,7 @@
             <div class="w-full md:w-56">
                 <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Status</label>
                 <select name="status" class="w-full border border-slate-300 rounded-lg text-xs font-bold text-slate-800 px-3 py-2 bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                    <option value="">All Unpaid Statuses</option>
+                    <option value="">Complete History (Default)</option>
                     <option value="Due" {{ request('status') == 'Due' ? 'selected' : '' }}>Due (Unpaid)</option>
                     <option value="Partially Paid" {{ request('status') == 'Partially Paid' ? 'selected' : '' }}>Partially Paid</option>
                     <option value="Overdue" {{ request('status') == 'Overdue' ? 'selected' : '' }}>Overdue</option>

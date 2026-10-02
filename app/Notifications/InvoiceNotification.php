@@ -62,10 +62,16 @@ class InvoiceNotification extends Notification implements ShouldQueue
     {
         $balance = number_format($this->invoice->grand_total - $this->invoice->amount_paid, 2);
         
+        $supportUrl = route('public.complaint.create', [
+            'org_id' => $this->invoice->organization_id,
+            'invoice_id' => $this->invoice->id
+        ]);
+        
         return "Hello {$notifiable->name}, your invoice #{$this->invoice->invoice_number} for {$this->invoice->organization->name} has been generated.\n" .
                "Total: {$this->invoice->grand_total}\n" .
                "Balance Due: {$balance}\n" .
                "Status: {$this->invoice->status}\n\n" .
+               "Lodge a Complaint / Support Ticket:\n{$supportUrl}\n\n" .
                "Thank you!";
     }
 }

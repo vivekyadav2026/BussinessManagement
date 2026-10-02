@@ -31,5 +31,6 @@
 @include('layouts.partials.public_js')
 @stack('scripts')
 
+<x-required-asterisks />
 </body>
 </html>

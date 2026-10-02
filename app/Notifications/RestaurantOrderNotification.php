@@ -36,6 +36,10 @@ class RestaurantOrderNotification extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
+        $supportUrl = route('public.complaint.create', [
+            'org_id' => $this->order->organization_id
+        ]);
+
         $message = (new MailMessage)
             ->subject('Order ' . $this->order->order_number . ' Update - ' . $this->order->organization->name)
             ->greeting('Hello ' . ($this->order->customer_name ?? 'Customer') . ',');
@@ -49,6 +53,7 @@ class RestaurantOrderNotification extends Notification implements ShouldQueue
         }
 
         $message->line('Total Amount: ' . number_format($this->order->total, 2));
+        $message->action('Lodge Support Ticket / Complaint', $supportUrl);
 
         return $message;
     }
@@ -56,6 +61,10 @@ class RestaurantOrderNotification extends Notification implements ShouldQueue
     public function toWhatsApp($notifiable)
     {
         $greeting = "Hello " . ($this->order->customer_name ?? "Customer");
+        
+        $supportUrl = route('public.complaint.create', [
+            'org_id' => $this->order->organization_id
+        ]);
         
         if ($this->type === 'confirmation') {
             $text = "Your order #{$this->order->order_number} has been received.";
@@ -65,6 +74,6 @@ class RestaurantOrderNotification extends Notification implements ShouldQueue
             $text = "Your order #{$this->order->order_number} status is now: {$this->order->status}.";
         }
 
-        return "{$greeting}, {$text} Total: " . number_format($this->order->total, 2) . " from " . $this->order->organization->name;
+        return "{$greeting}, {$text} Total: " . number_format($this->order->total, 2) . " from " . $this->order->organization->name . "\n\nLodge a Complaint / Support Ticket:\n{$supportUrl}";
     }
 }

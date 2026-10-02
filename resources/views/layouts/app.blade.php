@@ -33,5 +33,6 @@
                 {{ $slot }}
             </main>
         </div>
+    <x-required-asterisks />
     </body>
 </html>

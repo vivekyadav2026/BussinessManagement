@@ -153,5 +153,6 @@
         @endif
     @endif
 
+<x-required-asterisks />
 </body>
 </html>

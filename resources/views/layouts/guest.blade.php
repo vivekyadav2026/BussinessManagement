@@ -89,5 +89,6 @@
     <!-- Public JS -->
     @include('layouts.partials.public_js')
 
+<x-required-asterisks />
 </body>
 </html>

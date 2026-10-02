@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add required asterisk to labels */
+    content: ' *';
+    color: #e11d48;
+}
+
+
+/* Add required asterisk to labels */
+:has(> input[required], > select[required], > textarea[required]) > label:not(:has(.text-rose-600))::after {
+    content: ' *';
+    color: #e11d48;
+}
+

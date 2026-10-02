@@ -59,6 +59,8 @@ class ReceivableController extends Controller
             } else {
                 $listQuery->where('status', $request->status);
             }
+        } else {
+            // Keep it empty to show all history by default, as requested.
         }
         
         $invoices = $listQuery->with('client')->latest('due_date')->paginate(15)->withQueryString();

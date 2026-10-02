@@ -49,7 +49,7 @@ class RegisteredUserController extends Controller
             $rules = [
                 'organization_name' => ['required', 'string', 'max:255'],
                 'business_type' => ['required', 'string', 'in:business,restaurant'],
-                'business_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+                'business_phone' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
                 'gst_number' => ['nullable', 'string', 'max:50'],
                 'country' => ['required', 'string', 'max:100'],
                 'state' => ['required', 'string', 'max:100'],
@@ -57,7 +57,7 @@ class RegisteredUserController extends Controller
                 'address' => ['required', 'string', 'max:500'],
                 
                 'name' => ['required', 'string', 'max:255'],
-                'admin_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+                'admin_phone' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
                 'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
                 'password' => ['required', 'confirmed', Rules\Password::defaults()],
             ];
@@ -80,7 +80,7 @@ class RegisteredUserController extends Controller
             // Step 1: Business Details
             'organization_name' => ['required', 'string', 'max:255'],
             'business_type' => ['required', 'string', 'in:business,restaurant'],
-            'business_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+            'business_phone' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'gst_number' => ['nullable', 'string', 'max:50'],
             'country' => ['required', 'string', 'max:100'],
             'state' => ['required', 'string', 'max:100'],
@@ -89,7 +89,7 @@ class RegisteredUserController extends Controller
             
             // Step 2: Admin Details
             'name' => ['required', 'string', 'max:255'],
-            'admin_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+            'admin_phone' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             
@@ -194,7 +194,7 @@ class RegisteredUserController extends Controller
             // Step 1: Business Details
             'organization_name' => ['required', 'string', 'max:255'],
             'business_type' => ['required', 'string', 'in:business,restaurant'],
-            'business_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+            'business_phone' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'gst_number' => ['nullable', 'string', 'max:50'],
             'country' => ['required', 'string', 'max:100'],
             'state' => ['required', 'string', 'max:100'],
@@ -203,7 +203,7 @@ class RegisteredUserController extends Controller
             
             // Step 2: Admin Details
             'name' => ['required', 'string', 'max:255'],
-            'admin_phone' => ['required', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+            'admin_phone' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             

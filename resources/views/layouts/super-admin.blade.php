@@ -422,5 +422,6 @@
         </main>
     </div>
     @stack('scripts')
+<x-required-asterisks />
 </body>
 </html>

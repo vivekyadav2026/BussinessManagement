@@ -627,22 +627,48 @@
             Saving...
         `;
     });
-    // Show sticky action bar on form change
+    // Show sticky action bar only if form is actually dirty
     const formEl = document.getElementById('orgProfileForm');
     const actionBar = document.getElementById('stickyActionBar');
-    formEl.addEventListener('input', function() {
-        if (actionBar.classList.contains('hidden')) {
-            actionBar.classList.remove('hidden');
+    
+    function checkFormDirty() {
+        let isDirty = false;
+        const inputs = formEl.querySelectorAll('input, textarea, select');
+        
+        for (let i = 0; i < inputs.length; i++) {
+            const input = inputs[i];
+            if (input.type === 'file' && input.files.length > 0) {
+                isDirty = true; break;
+            } else if (input.type === 'checkbox' || input.type === 'radio') {
+                if (input.checked !== input.defaultChecked) { isDirty = true; break; }
+            } else if (input.id === 'businessTypeInput') {
+                if (input.value !== input.defaultValue) { isDirty = true; break; }
+            } else {
+                if (input.value !== input.defaultValue) { isDirty = true; break; }
+            }
         }
+        
+        if (isDirty) {
+            actionBar.classList.remove('hidden');
+        } else {
+            actionBar.classList.add('hidden');
+        }
+    }
+
+    formEl.addEventListener('input', function(e) {
+        if (!e.isTrusted) return;
+        checkFormDirty();
+    });
+    
+    formEl.addEventListener('reset', function(e) {
+        setTimeout(checkFormDirty, 50);
     });
     
     // Also trigger on business type selection
     const originalSelectBusinessType = selectBusinessType;
     window.selectBusinessType = function(type) {
         originalSelectBusinessType(type);
-        if (actionBar.classList.contains('hidden')) {
-            actionBar.classList.remove('hidden');
-        }
+        checkFormDirty();
     };
 </script>
 @endsection
