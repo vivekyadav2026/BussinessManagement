@@ -62,12 +62,19 @@
       <div class="footer-col">
         <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 18px; letter-spacing: 0.02em;">Core Modules</h4>
         <ul style="list-style: none; padding: 0; margin: 0;">
-          <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.features') }}">GST Invoicing &amp; Billing</a></li>
-          <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.features') }}">Barcode &amp; Inventory</a></li>
-          <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.restaurant') }}">Restaurant POS &amp; KDS</a></li>
-          <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.restaurant') }}">Table QR Digital Menus</a></li>
-          <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.payments') }}">Razorpay &amp; UPI Auto-Pay</a></li>
-          <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.features') }}">Staff Attendance &amp; Payroll</a></li>
+          @php
+            $footerModules = \App\Models\Permission::distinct('module')
+                ->whereNotIn('module', ['Dashboard', 'Roles & Permissions', 'Reports', 'Complaints', 'Employees'])
+                ->pluck('module')
+                ->take(6);
+          @endphp
+          @foreach($footerModules as $module)
+            @php
+                $route = route('public.features');
+                if (strtolower($module) === 'restaurant') $route = route('public.restaurant');
+            @endphp
+            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ $route }}">{{ $module }}</a></li>
+          @endforeach
         </ul>
       </div>
 
@@ -102,11 +109,11 @@
           <div style="color: #64748B; font-size: 11px; font-family: 'IBM Plex Mono'; text-transform: uppercase;">Direct Helpdesk</div>
           <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px;">
             <svg width="14" height="14" fill="none" stroke="#10B981" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-            <a href="tel:{{ $siteSettings['support_phone'] ?? '+919876543210' }}" style="color: #F8FAFC; font-weight: 600; text-decoration: none;">{{ $siteSettings['support_phone'] ?? '+91 98765 43210' }}</a>
+            <a href="tel:{{ $siteSettings['support_phone'] }}" style="color: #F8FAFC; font-weight: 600; text-decoration: none;">{{ $siteSettings['support_phone'] }}</a>
           </div>
           <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px;">
             <svg width="14" height="14" fill="none" stroke="#38BDF8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            <a href="mailto:{{ $siteSettings['support_email'] ?? 'support@vyapaargo.com' }}" style="color: #94A3B8; text-decoration: none;">{{ $siteSettings['support_email'] ?? 'support@vyapaargo.com' }}</a>
+            <a href="mailto:{{ $siteSettings['support_email'] }}" style="color: #94A3B8; text-decoration: none;">{{ $siteSettings['support_email'] }}</a>
           </div>
         </div>
 
@@ -114,13 +121,13 @@
           <div style="color: #64748B; font-size: 11px; font-family: 'IBM Plex Mono'; text-transform: uppercase;">Corporate Address</div>
           <div style="color: #CBD5E1; margin-top: 4px; font-size: 12.5px; display: flex; align-items: flex-start; gap: 8px;">
             <svg width="15" height="15" fill="none" stroke="#F59E0B" viewBox="0 0 24 24" style="flex-shrink:0; margin-top: 2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span>{{ $siteSettings['company_address'] ?? 'Plot No. 42, Cyber City, Phase 2, Gurugram, Haryana - 122002, India' }}</span>
+            <span>{{ $siteSettings['company_address'] }}</span>
           </div>
         </div>
 
         <div style="font-size: 12px; color: #64748B; font-family: 'IBM Plex Mono'; display: flex; align-items: center; gap: 8px;">
           <svg width="13" height="13" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span>{{ $siteSettings['business_hours'] ?? 'Mon - Sat: 9:00 AM - 7:00 PM IST' }}</span>
+          <span>{{ $siteSettings['business_hours'] }}</span>
         </div>
       </div>
     </div>
@@ -128,7 +135,7 @@
     <!-- Footer Bottom Bar -->
     <div class="footer-bottom">
       <div style="font-size: 13px; color: #64748B;">
-        &copy; {{ date('Y') }} {{ $siteSettings['company_name'] ?? config('app.name', 'Vyapaargo') }}. Made with <span style="color:#EF4444;">&hearts;</span> in India for growing businesses.
+        &copy; {{ date('Y') }} {{ $siteSettings['company_name'] }}. Made with <span style="color:#EF4444;">&hearts;</span> in India for growing businesses.
       </div>
       <div class="footer-badges">
         <span class="f-badge">GST Ready</span>
