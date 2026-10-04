@@ -62,19 +62,9 @@
       <div class="footer-col">
         <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 18px; letter-spacing: 0.02em;">Core Modules</h4>
         <ul style="list-style: none; padding: 0; margin: 0;">
-          @php
-            $footerModules = \App\Models\Permission::distinct('module')
-                ->whereNotIn('module', ['Dashboard', 'Roles & Permissions', 'Reports', 'Complaints', 'Employees'])
-                ->pluck('module')
-                ->take(6);
-          @endphp
-          @foreach($footerModules as $module)
-            @php
-                $route = route('public.features');
-                if (strtolower($module) === 'restaurant') $route = route('public.restaurant');
-            @endphp
-            <li style="margin-bottom: 11px; list-style: none;"><a href="{{ $route }}">{{ $module }}</a></li>
-          @endforeach
+          <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.features') }}">Retail ERP &amp; Features</a></li>
+          <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.restaurant') }}">Restaurant POS &amp; KDS</a></li>
+          <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.payments') }}">Razorpay &amp; UPI Payments</a></li>
         </ul>
       </div>
 
