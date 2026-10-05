@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        \Illuminate\Support\Facades\View::composer(['layouts.public', 'pages.*', 'welcome'], function ($view) {
+        \Illuminate\Support\Facades\View::composer(['layouts.*', 'pages.*', 'welcome', 'auth.*', 'layouts.partials.*'], function ($view) {
             try {
                 $view->with('siteSettings', \App\Models\SystemSetting::getAllSettings());
                 $view->with('siteFaqs', \App\Models\SystemSetting::getFaqs());
